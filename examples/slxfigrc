@@ -1,0 +1,17 @@
+%-*- slang -*-
+
+% slxfig autogenerates eps files by running latex.  The xfig_set_autoeps_dir
+% function allows the directory where these files are to be placed.
+xfig_set_autoeps_dir ("$HOME/.slxfig/autoeps"$);
+
+% Directory where temporary files are to be placed.
+xfig_set_tmp_dir ("slxfigtmp");
+
+xfig_set_paper_size ("Letter");	       %  A4, ....
+xfig_add_latex_package ("mathpazo");
+
+% If you have ps2ps installed, you might try using this command to
+% create the postscript files:
+%
+%   xfig_set_output_driver ("ps", "fig2dev -L ps -c -z %P %I %B-tmp.ps"
+%                                  + ";ps2ps %B-tmp.ps %O; rm -f %B-tmp.ps");

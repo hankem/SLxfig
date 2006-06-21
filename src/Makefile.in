@@ -1,0 +1,113 @@
+# -*- sh -*-
+
+#---------------------------------------------------------------------------
+# List of modules and associated .sl files to install
+#---------------------------------------------------------------------------
+MODULES = gcontour-module.so
+SL_FILES = gcontour.sl xfig.sl vector.sl
+XFIG_SL_FILES = xfig/*.sl
+MODULE_VERSION	= `./mkversion.sh`
+
+#---------------------------------------------------------------------------
+# Installation Directories
+#---------------------------------------------------------------------------
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+MODULE_INSTALL_DIR = @MODULE_INSTALL_DIR@
+SL_FILES_INSTALL_DIR = @SL_FILES_INSTALL_DIR@
+
+#---------------------------------------------------------------------------
+# C Compiler to create a shared library
+#---------------------------------------------------------------------------
+CC_SHARED 	= @CC_SHARED@
+
+#---------------------------------------------------------------------------
+# Location of the S-Lang library and its include file
+#---------------------------------------------------------------------------
+SLANG_INC	= @SLANG_INC@
+SLANG_LIB	= @SLANG_LIB@ -lslang
+
+#---------------------------------------------------------------------------
+# Additional Libraries required by the module
+#---------------------------------------------------------------------------
+RPATH		= @RPATH@
+
+#---------------------------------------------------------------------------
+# Misc Programs required for installation
+#---------------------------------------------------------------------------
+INSTALL		= @INSTALL@
+INSTALL_DATA	= @INSTALL_DATA@
+MKINSDIR	= ../autoconf/mkinsdir.sh
+RM		= rm -f
+LN		= ln -s
+#---------------------------------------------------------------------------
+# DESTDIR is designed to facilitate making packages.  Normally it is empty
+#---------------------------------------------------------------------------
+DESTDIR =
+DEST_MODULE_INSTALL_DIR = $(DESTDIR)$(MODULE_INSTALL_DIR)
+DEST_SL_FILES_INSTALL_DIR = $(DESTDIR)$(SL_FILES_INSTALL_DIR)
+
+#---------------------------------------------------------------------------
+LIBS = $(SLANG_LIB) $(RPATH) $(DL_LIB) -lm
+INCS = $(SLANG_INC)
+
+all: $(MODULES)
+
+#---------------------------------------------------------------------------
+# Put Rules to create the modules here
+#---------------------------------------------------------------------------
+gcontour-module.so: gcontour-module.c
+	$(CC_SHARED) $(INCS) gcontour-module.c -o gcontour-module.so $(LIBS)
+#---------------------------------------------------------------------------
+# Regression tests
+#---------------------------------------------------------------------------
+test:
+	@for X in tests/test_*.sl; \
+	do \
+		slsh $$X; \
+	done
+#---------------------------------------------------------------------------
+# Installation Rules
+#---------------------------------------------------------------------------
+install_directories:
+	$(MKINSDIR) $(DEST_MODULE_INSTALL_DIR)
+	$(MKINSDIR) $(DEST_SL_FILES_INSTALL_DIR)/xfig
+
+install_modules:
+	@for X in $(MODULES); \
+	do \
+		Y=$$X.$(MODULE_VERSION); \
+		YDEST=$(DEST_MODULE_INSTALL_DIR)/$$Y; \
+		echo $(INSTALL_DATA) $$X $$YDEST; \
+		$(INSTALL_DATA) $$X $$YDEST; \
+		if [ "$$?" != "0" ]; then \
+		  exit 1; \
+		fi; \
+		$(RM) $(DEST_MODULE_INSTALL_DIR)/$$X; \
+		$(LN) $$Y $(DEST_MODULE_INSTALL_DIR)/$$X; \
+	done
+
+install_slfiles:
+	@for X in $(SL_FILES); \
+	do \
+		echo $(INSTALL_DATA) $$X $(DEST_SL_FILES_INSTALL_DIR); \
+		$(INSTALL_DATA) $$X $(DEST_SL_FILES_INSTALL_DIR); \
+		if [ "$$?" != "0" ]; then \
+		  exit 1; \
+		fi; \
+	done
+	@for X in $(XFIG_SL_FILES); \
+	do \
+		echo $(INSTALL_DATA) $$X $(DEST_SL_FILES_INSTALL_DIR)/xfig/; \
+		$(INSTALL_DATA) $$X $(DEST_SL_FILES_INSTALL_DIR)/xfig/; \
+		if [ "$$?" != "0" ]; then \
+		  exit 1; \
+		fi; \
+	done
+
+install: all install_directories install_modules install_slfiles
+
+clean:
+	-/bin/rm -f $(MODULES) *~ \#*
+distclean: clean
+	-/bin/rm -f config.h Makefile

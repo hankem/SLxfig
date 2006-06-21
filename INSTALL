@@ -1,0 +1,50 @@
+-*- text -*-
+
+To use this package you need to have slang-2, LaTeX, and xfig installed.
+
+Installing the package involves running the configure script, then
+running `make`, followed by `make install`.  The configure script has
+two important options:
+
+   --prefix=/installation-path-prefix
+   
+       This specifies path-prefix for the slxfig package
+       
+   --with-slang=/prefix-for-slang-2
+
+       This option is used to specify where slang-2 is located.  If
+       this option is unspecified, the argument specified for --prefix
+       will be used.
+
+For example, suppose that slang-2 is installed under /usr/local, and
+that you wish to install the slxfig package under /home/bob/soft/.  Then
+run the configure script via:
+
+   ./configure --prefix=/home/bob/soft --with-slang=/usr/local
+
+This will cause the slxfig package to be installed in
+
+   /home/bob/soft/lib/slang/v2/modules/
+   /home/bob/soft/share/slsh/local-packages/
+
+Since in this case the installation directory is different from the
+slang location, slsh will not be able to find the slxfig package
+unless told where to look.  The standard mechanism for doing this is
+to add:
+
+  append_to_slang_load_path("/home/bob/soft/share/slsh/local-packages");
+  set_import_module_path (get_import_module_path()
+                          + ":/home/bob/soft/lib/slang/v2/modules);
+
+to your ~/.slshrc file.
+
+Now type make to create the package:
+
+   make
+
+Assuming this step was successful, install it:
+
+   make install
+
+To test the installation, try building some of the examples in the
+examples directory.

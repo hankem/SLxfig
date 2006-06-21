@@ -1,0 +1,10 @@
+slxfig is a package that implements a number of slang routines that
+interface with fig2dev and LaTeX to produce drawings.  Examples
+include publication quality plots, etc.
+
+INSTALLATION:  Read the INSTALL file.
+
+DOCUMENTATION: Currently, there is very little documentation.
+Eventually it will be in the doc/ directory.  
+
+See examples/slxfigrc for an example setup file.

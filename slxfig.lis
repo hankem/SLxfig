@@ -1,0 +1,47 @@
+@slxfig.lis
+@INSTALL
+@Makefile
+@README
+@COPYING
+@configure 0755
+@autoconf/Makefile.in
+@autoconf/aclocal.m4
+@autoconf/config.guess 0755
+@autoconf/config.sub 0755
+@autoconf/configure.ac
+@autoconf/install.sh 0755
+@autoconf/mkinsdir.sh 0755
+@doc/tm/Makefile
+@doc/tm/fixtex.sl
+@doc/tm/slxfig.tm
+@doc/help/slxfig.hlp
+@doc/text/slxfig.txt
+@examples/slxfigrc
+@examples/plot/Makefile
+@examples/plot/color.sl
+@examples/plot/errbar.sl
+@examples/plot/histplt.sl
+@examples/plot/image.sl
+@examples/plot/overlay.sl
+@examples/plot/project.sl
+@examples/plot/simple.sl
+@examples/plot/subplot.sl
+@examples/plot/symbol.sl
+@src/Makefile.in
+@src/config.hin
+@src/gcontour-module.c
+@src/gcontour.sl
+@src/mkversion.sh 0755
+@src/version.h
+@src/xfig.sl
+@src/vector.sl
+@src/xfig/NOTES
+@src/xfig/clip.sl
+@src/xfig/core.sl
+@src/xfig/ellipse.sl
+@src/xfig/latex.sl
+@src/xfig/objects.sl
+@src/xfig/plot.sl
+@src/xfig/png.sl
+@src/xfig/polyline.sl
+@src/xfig/text.sl
