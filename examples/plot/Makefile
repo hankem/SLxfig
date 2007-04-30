@@ -9,5 +9,4 @@ png: $(PNG_FILES)
 clean:
 	/bin/rm -f $(PNG_FILES) *.fig *~
 	/bin/rm -rf slxfigtmp
-
-
+	/bin/rm -rf tmp_* autoeps

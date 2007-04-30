@@ -1,4 +1,4 @@
-$1 = 0; $2 = 1; $3 = 0;
+$1 = 0; $2 = 1; $3 = 1;
 variable _xfig_version = $1*10000 + $2*100 + $3;
 variable _xfig_version_string = "$1.$2.$3"$;
 

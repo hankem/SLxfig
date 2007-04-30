@@ -7,6 +7,7 @@ all:
 	cd src; $(MAKE) all
 clean:
 	cd src; $(MAKE) clean
+	cd examples/plot; $(MAKE) clean	
 	/bin/rm -f *~ \#*
 distclean: clean
 	cd src; $(MAKE) distclean
