@@ -260,6 +260,31 @@ xfig_plot_new_png
 
 --------------------------------------------------------------
 
+xfig_meshgrid
+
+ SYNOPSIS
+  Produce grid points for an image
+
+ USAGE
+  (xx,yy) = xfig_meshgrid (xx, yy)
+
+ DESCRIPTION
+ This function takes two 1-d vectors representing the orthogonal
+ grids for a rectangular region in the (x,y) plane and returns two
+ 2-d arrays corresponding to the (x,y) coordinates of each
+ intersecting grid point.
+
+ Suppose that one wants to evaluate a
+ function `f(x,y)' at each point defined by the two grid
+ vectors.  Simply calling `f(x,y)' using the grid vectors would
+ lead to either a type-mismatch error or produce a 1-d result.  The
+ correct way to do this is to use the `xfig_meshgrid' function:
+
+    result = f(xfig_meshgrid(x,y));
+
+
+--------------------------------------------------------------
+
 xfig_scale_pict
 
  SYNOPSIS

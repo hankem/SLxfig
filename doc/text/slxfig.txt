@@ -1,6 +1,6 @@
   SLxfig Reference
   John E. Davis, jed@jedsoft.org
-  Jun 21, 2006
+  Apr 30, 2007
   ____________________________________________________________
 
   Table of Contents
@@ -21,8 +21,9 @@
      1.11 xfig_plot_title
      1.12 xfig_plot_png
      1.13 xfig_plot_new_png
-     1.14 xfig_scale_pict
-     1.15 xfig_center_pict_in_box
+     1.14 xfig_meshgrid
+     1.15 xfig_scale_pict
+     1.16 xfig_center_pict_in_box
 
 
   ______________________________________________________________________
@@ -318,7 +319,33 @@
         w = xfig_plot_new_png (file)
 
 
-  [1m1.1.14.  xfig_scale_pict[0m
+  [1m1.1.14.  xfig_meshgrid[0m
+
+
+      [1mSynopsis[0m
+        Produce grid points for an image
+
+      [1mUsage[0m
+        (xx,yy) = xfig_meshgrid (xx, yy)
+
+      [1mDescription[0m
+        This function takes two 1-d vectors representing the orthogonal
+        grids for a rectangular region in the (x,y) plane and returns
+        two 2-d arrays corresponding to the (x,y) coordinates of each
+        intersecting grid point.
+
+        Suppose that one wants to evaluate a function f(x,y) at each
+        point defined by the two grid vectors.  Simply calling f(x,y)
+        using the grid vectors would lead to either a type-mismatch
+        error or produce a 1-d result.  The correct way to do this is to
+        use the xfig_meshgrid function:
+
+
+              result = f(xfig_meshgrid(x,y));
+
+
+
+  [1m1.1.15.  xfig_scale_pict[0m
 
 
       [1mSynopsis[0m
@@ -326,9 +353,7 @@
 
       [1mUsage[0m
         xfig_scale_pict (pict, sx [,sy])
-
-
-  [1m1.1.15.  xfig_center_pict_in_box[0m
+  [1m1.1.16.  xfig_center_pict_in_box[0m
 
 
       [1mSynopsis[0m
@@ -367,8 +392,9 @@
   1.1.11. xfig_plot_title  . . . . . . . . . . . . . . . . . . . . .   6
   1.1.12. xfig_plot_png  . . . . . . . . . . . . . . . . . . . . . .   6
   1.1.13. xfig_plot_new_png  . . . . . . . . . . . . . . . . . . . .   6
-  1.1.14. xfig_scale_pict  . . . . . . . . . . . . . . . . . . . . .   6
-  1.1.15. xfig_center_pict_in_box  . . . . . . . . . . . . . . . . .   6
+  1.1.14. xfig_meshgrid  . . . . . . . . . . . . . . . . . . . . . .   6
+  1.1.15. xfig_scale_pict  . . . . . . . . . . . . . . . . . . . . .   6
+  1.1.16. xfig_center_pict_in_box  . . . . . . . . . . . . . . . . .   7
 
 
 
