@@ -156,7 +156,11 @@ private define compute_major_tics (xmin, xmax, maxtics, tic_intervals)
 define get_major_tics (xmin, xmax, islog, maxtics)
 {
    variable tic_intervals = [1.0,2.0,5.0];
+   % 1, 1.2,1.4,1.6,1.8, 2
+   % 2, 3.0, 4
+   % 5, 6.0,7.0,8.0,9.0, 10, ...
    variable num_minor = [4, 1, 4];
+   variable ti, n;
 
    if (islog)
      {
@@ -169,13 +173,28 @@ define get_major_tics (xmin, xmax, islog, maxtics)
 	if (xmax > 0)
 	  xmax += 1.0;
 	xmax = int(xmax);
-	tic_intervals = [1];
-	maxtics = (xmax - xmin + 1);
-	
-	variable tics = compute_major_tics (xmin, xmax, maxtics, tic_intervals);
-	return tics [where (tics == int(tics))];
+
+	num_minor = [0:5];
+	tic_intervals = num_minor+1.0;
+	if ((xmax - xmin + 1) <= maxtics)
+	  {
+	     num_minor = 0;
+	     tic_intervals = [1.0];
+	  }
+#iffalse
+	variable try_max_tics = (xmax - xmin + 1);
+	tic_intervals = 1;
+	while (try_max_tics > maxtics)
+	  {
+	     tic_intervals++;
+	     try_max_tics = (xmax - xmin + 1)/tic_intervals;
+	  }
+	n = tic_intervals-1;
+	tic_intervals = [1.0*tic_intervals];
+	(ti,) = compute_major_tics (xmin, xmax, maxtics, tic_intervals);
+	return ti [where (ti == int(ti))], n;
+#endif
      }
-   variable ti, n;
    
    (ti, n) = compute_major_tics (xmin, xmax, maxtics, tic_intervals);
    return ti, num_minor[n];
@@ -684,26 +703,21 @@ private define make_tic_intervals (axis)
    
    (major_tics, num_minor) = get_major_tics (xmin, xmax, islog, axis.maxtics);
 
-   if (islog)
-     {
-	%major_tics = 10.0^major_tics;
-	num_minor = 8;
-     }
-
-   variable minor_tics = Double_Type[num_minor*length(major_tics)];
    variable major_tic_interval = major_tics[1] - major_tics[0];
    variable minor_tic_interval;
-   variable i, j;
+   variable j = [1:num_minor];
+   variable i = j-1;
 
-   j = [1:num_minor];
-   i = j-1;
-   if (islog)
+   if (islog && (num_minor == 0))
      {
-	j = log10 (j+1);
+	num_minor = 8;
+	i = [0:num_minor-1];
+	j = log10 ([2:9]);	       %  log10([2:9])
 	minor_tic_interval = 1.0;
      }
-   else
-     minor_tic_interval = major_tic_interval/(num_minor+1.0);
+   else minor_tic_interval = major_tic_interval/(num_minor+1.0);
+
+   variable minor_tics = Double_Type[num_minor*length(major_tics)];
 
    foreach (major_tics)
      {

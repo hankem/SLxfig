@@ -1,6 +1,4 @@
 % -*- mode: slang; mode: fold; -*-
-_debug_info = 1;
-_traceback = 1;
 
 % Creates a rectangle with the LL corner at the origin
 define xfig_new_rectangle (dx, dy)

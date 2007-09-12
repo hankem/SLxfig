@@ -1,0 +1,4 @@
+Changes since 0.1.0
+
+1. src/xfig/plot.sl: modified major/minor axis routines to better deal
+   with tic marks that span many orders of magnitude for log plots.
