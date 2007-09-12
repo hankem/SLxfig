@@ -181,22 +181,15 @@ define get_major_tics (xmin, xmax, islog, maxtics)
 	     num_minor = 0;
 	     tic_intervals = [1.0];
 	  }
-#iffalse
-	variable try_max_tics = (xmax - xmin + 1);
-	tic_intervals = 1;
-	while (try_max_tics > maxtics)
-	  {
-	     tic_intervals++;
-	     try_max_tics = (xmax - xmin + 1)/tic_intervals;
-	  }
-	n = tic_intervals-1;
-	tic_intervals = [1.0*tic_intervals];
-	(ti,) = compute_major_tics (xmin, xmax, maxtics, tic_intervals);
-	return ti [where (ti == int(ti))], n;
-#endif
      }
    
    (ti, n) = compute_major_tics (xmin, xmax, maxtics, tic_intervals);
+   if (islog)
+     {
+	% For a log axis, only integer valued major tics are meaningful
+	ti = ti[where (feqs (ti, int(ti)))];
+     }
+
    return ti, num_minor[n];
 }
 
@@ -221,12 +214,13 @@ define get_major_tics (xmin, xmax, islog, maxtics)
 private variable Plot_Axis_Type = struct
 {
    X, dX, dY,			       %  position of axis, direction, tic dir
-   xmin, xmax, islog, wcs_transform,
+   xmin, xmax, wcs_transform,
+   islog, 			       %  if non-zero, is a log axis.  if < 0 format tics as non-log
      major_tics, minor_tics, maxtics, 
      %tic_label_format, tic_labels, tic_labels_dX,   %  from tic
      tic_label_format, tic_labels, 
      tic_labels_tweak, % from tic
-     tic_labels_just,    % justification
+     tic_labels_just,    % justification for tic labels and axis_label
      max_tic_h, max_tic_w,	       % max width and height of tic label bbox
      line, major_tic_marks, minor_tic_marks,
      axis_label,
@@ -606,7 +600,7 @@ private define construct_tic_labels (axis, tics)
    variable i, alt_fmt = NULL;
    variable tic_labels;
 
-   if (axis.islog)
+   if (axis.islog > 0)
      {
 	if (format == NULL)
 	  {
@@ -655,7 +649,6 @@ private define construct_tic_labels (axis, tics)
 private define make_tic_labels (axis, tic_labels_just, tweakx, tweaky)
 {
    variable tics = axis.major_tics;
-   variable islog = axis.islog;
    variable tic_labels = axis.tic_labels;
    variable max_tic_h = 0, max_tic_w = 0;
 
@@ -702,6 +695,19 @@ private define make_tic_intervals (axis)
      }
    
    (major_tics, num_minor) = get_major_tics (xmin, xmax, islog, axis.maxtics);
+
+   if (islog)
+     {
+	if (length (where (log10(xmin) <= major_tics <= log10(xmax))) < 2)
+	  {
+	     % Do not allow as many major tics to avoid "bunching" on
+	     % the log scale
+	     variable maxtics = (2*axis.maxtics)/3;
+	     (major_tics, num_minor) = get_major_tics (xmin, xmax, 0, maxtics);
+	     axis.islog = -1;
+	     islog = 0;
+	  }
+     }
 
    variable major_tic_interval = major_tics[1] - major_tics[0];
    variable minor_tic_interval;
@@ -887,9 +893,11 @@ private define setup_axis_tics (p, axis, geom, want_tic_labels)
    variable ticofs_x = geom[0], ticofs_y = geom[1], tic_tweak_x = geom[2], 
      tic_tweak_y = geom[3], tx = geom[4], ty = geom[5], theta = geom[6];
 
+   variable tic_labels_just = vector (ticofs_x, ticofs_y, 0);
+   axis.tic_labels_just = tic_labels_just;
+
    if (want_tic_labels) 
-     make_tic_labels (axis, vector (ticofs_x, ticofs_y, 0), 
-		      tic_tweak_x, tic_tweak_y);
+     make_tic_labels (axis, tic_labels_just, tic_tweak_x, tic_tweak_y);
    %else axis.tic_labels = NULL;
 
    axis.color = p.line_color;

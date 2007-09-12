@@ -2,3 +2,6 @@ Changes since 0.1.0
 
 1. src/xfig/plot.sl: modified major/minor axis routines to better deal
    with tic marks that span many orders of magnitude for log plots.
+2. src/xfig/plot.sl: If a log-axis does not include a point 10^n, then
+   use linear tics-marks.
+
