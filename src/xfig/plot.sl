@@ -1,41 +1,13 @@
+% -*- mode: slang; mode: fold; -*-
 private variable DEFAULT_IMAGE_DEPTH = 89;
-private variable DEFAULT_LINE_DEPTH = DEFAULT_IMAGE_DEPTH-10;
+private variable DEFAULT_TIC_DEPTH = DEFAULT_IMAGE_DEPTH-10;
+private variable DEFAULT_LINE_DEPTH = DEFAULT_TIC_DEPTH-10;
 private variable DEFAULT_POINT_DEPTH = DEFAULT_LINE_DEPTH-10;
-private variable DEFAULT_AXIS_DEPTH = DEFAULT_POINT_DEPTH-10;
+private variable DEFAULT_FRAME_DEPTH = DEFAULT_POINT_DEPTH-10;
 
 private variable ERRBAR_TERMINAL_SIZE = 0.1;
 
-#iffalse
-define xfig_new_plot2d_axes (dx, dy, xlabel, ylabel)
-{
-   variable xaxis = xfig_new_polyline_with_arrow (vector ([0,dx], [0,0],[0,0]), 0.2, 0.4);
-   variable yaxis = xfig_new_polyline_with_arrow (vector ([0,0], [0,dy],[0,0]), 0.2, 0.4);
-   variable w, h, x, y;
-   if (xlabel != NULL)
-     {
-	xlabel = xfig_new_text (xlabel);
-	(w, h) = xfig_get_pict_bbox (xlabel);
-	x = 0.5*(dx - w);
-	if (x < 0)
-	  x = 0.1*dx;
-	xfig_translate_object (xlabel, vector (x, -1.1*h, 0));
-     }
-
-   if (xlabel != NULL)
-     {
-	ylabel = xfig_new_text (ylabel);
-	xfig_rotate_pict (ylabel, 90);
-	(w, h) = xfig_get_pict_bbox (ylabel);
-	y = 0.5*(dy - h);
-	if (y < 0)
-	  y = 0.1*dy;
-	x = -1.1*w;
-	xfig_translate_object (ylabel, vector (x, y, 0));
-     }
-   
-   return xfig_new_compound (xaxis, yaxis, xlabel, ylabel);
-}
-#endif
+% convert a scalar to an array of size n
 private define convert_to_array (s, n)
 {
    variable type = typeof (s);
@@ -47,7 +19,6 @@ private define convert_to_array (s, n)
    return a;
 }
 
-   
 %!%+
 %\function{xfig_new_legend}
 %\synopsis{Create a plot legend object}
@@ -77,121 +48,29 @@ define xfig_new_legend (labels, colors, linestyles,
 	
 	variable obj = xfig_new_text (labels[i]);
 	xfig_justify_object (obj, vector (x,y,0), vector (-0.5, 0.5, 0));
-	xfig_compound_list_insert (legend, obj);
+	legend.insert (obj);
 
-	(,,y0,y1,,) = xfig_get_object_bbox (obj);
+	(,,y0,y1,,) = obj.get_bbox ();
 	y = 0.5*(y0+y1);
 	obj = xfig_new_polyline (vector([0,width], [y,y], [0,0]));
-	xfig_set_pen_color (obj, colors[i]);
-	xfig_set_thickness (obj, thicknesses[i]);
-	xfig_set_line_style (obj, linestyles[i]);
-	xfig_compound_list_insert (legend, obj);
+	obj.set_pen_color (colors[i]);
+	obj.set_thickness (thicknesses[i]);
+	obj.set_line_style (linestyles[i]);
+	legend.insert (obj);
 
 	y = y0 - 0.1 * (y1-y0);
      }
    
-   (x0, x1, y0, y1,,) = xfig_get_object_bbox (legend);
+   (x0, x1, y0, y1,,) = legend.get_bbox ();
    variable border = (0.5 * (y1-y0))/num;
-   xfig_translate_object (legend, vector (border-x0, border-y0, 0));
+   legend.translate (vector (border-x0, border-y0, 0));
    variable box = xfig_new_rectangle ((x1-x0)+2*border, (y1-y0)+2*border);
-   xfig_compound_list_insert (legend, box);
+   legend.insert (box);
    return legend;
 }
 
 
-private define compute_major_tics (xmin, xmax, maxtics, tic_intervals)
-{
-   variable diff = xmax - xmin;
-   variable multiplier = 1.0;
-   variable factor = 10.0;
-   variable last_diff;
-   variable max_diff = tic_intervals[-1]*maxtics;
-
-   while (diff <= max_diff)
-     {
-	multiplier *= factor;
-	last_diff = diff;
-	diff *= factor;
-	if (last_diff == diff)
-	  return [xmin,xmax], 0;
-     }
-   while (diff > max_diff)
-     {
-	multiplier *= 1.0/factor;
-	last_diff = diff;
-	diff *= 1.0/factor;
-	if (last_diff == diff)
-	  return [xmin,xmax], 0;
-     }
-
-   variable tic_interval;
-   variable nth_chosen = 0;
-   foreach (tic_intervals)
-     {
-	tic_interval = ();
-	if (diff/tic_interval <= maxtics)
-	  break;
-	nth_chosen++;
-     }
-
-   tic_interval /= multiplier;
-   variable nmin = xmin / tic_interval;
-   if (abs(nmin) > 0x7FFFFFFF)
-     return [xmin,xmax];
-   nmin = int(nmin);
-   if (xmin < 0)
-     nmin--;
-
-   variable nmax = xmax/tic_interval;
-   if (abs(nmin) > 0x7FFFFFFE)
-     return [xmin,xmax];
-   nmax = int(nmax);
-   if (xmax > 0)
-     nmax++;
-
-   tic_intervals = [nmin:nmax]*tic_interval;
-   return tic_intervals, nth_chosen;
-}
-
-define get_major_tics (xmin, xmax, islog, maxtics)
-{
-   variable tic_intervals = [1.0,2.0,5.0];
-   % 1, 1.2,1.4,1.6,1.8, 2
-   % 2, 3.0, 4
-   % 5, 6.0,7.0,8.0,9.0, 10, ...
-   variable num_minor = [4, 1, 4];
-   variable ti, n;
-
-   if (islog)
-     {
-	xmin = log10(xmin);
-	xmax = log10(xmax);
-	if (xmin < 0)
-	  xmin -= 1.0;
-	xmin = int(xmin);
-
-	if (xmax > 0)
-	  xmax += 1.0;
-	xmax = int(xmax);
-
-	num_minor = [0:5];
-	tic_intervals = num_minor+1.0;
-	if ((xmax - xmin + 1) <= maxtics)
-	  {
-	     num_minor = 0;
-	     tic_intervals = [1.0];
-	  }
-     }
-   
-   (ti, n) = compute_major_tics (xmin, xmax, maxtics, tic_intervals);
-   if (islog)
-     {
-	% For a log axis, only integer valued major tics are meaningful
-	ti = ti[where (feqs (ti, int(ti)))];
-     }
-
-   return ti, num_minor[n];
-}
+%{{{ Plot_Axis_Type, etc 
 
 % A "Plot" consists of a plotting area surrounded by a box, with optional tic
 % marks and labels:
@@ -214,19 +93,34 @@ define get_major_tics (xmin, xmax, islog, maxtics)
 private variable Plot_Axis_Type = struct
 {
    X, dX, dY,			       %  position of axis, direction, tic dir
-   xmin, xmax, wcs_transform,
-   islog, 			       %  if non-zero, is a log axis.  if < 0 format tics as non-log
-     major_tics, minor_tics, maxtics, 
-     %tic_label_format, tic_labels, tic_labels_dX,   %  from tic
-     tic_label_format, tic_labels, 
-     tic_labels_tweak, % from tic
-     tic_labels_just,    % justification for tic labels and axis_label
-     max_tic_h, max_tic_w,	       % max width and height of tic label bbox
-     line, major_tic_marks, minor_tic_marks,
-     axis_label,
-     
-     color, line_style, thickness, depth,
+   xmin = 0.1, xmax = 1.0, wcs_transform,
+   islog = 0, 			       %  if non-zero, is a log axis.  if < 0 format tics as non-log
+   major_tics, minor_tics, maxtics, 
+   %tic_label_format, tic_labels, tic_labels_dX,   %  from tic
+   tic_label_format, tic_label_strings, tic_labels_font_struct = xfig_make_font (),
+   tic_label_objects,
+   tic_labels_tweak, % from tic
+   tic_labels_just,    % justification for tic labels and axis_label
+   max_tic_h=0.0, max_tic_w=0.0,	       % max width and height of tic label bbox
+   geom,			       %  geometric parameters
+   line, major_tic_marks, minor_tic_marks,
+   minor_tic_len = 0.15,
+   major_tic_len = 0.25,
+   major_tic_color = "black",
+   minor_tic_color = "black",
+   major_tic_linestyle = 0,
+   minor_tic_linestyle = 0,
+   major_tic_thickness = 1,
+   minor_tic_thickness = 1,
+   axis_color = "black",
+   axis_linestyle = 0,
+   axis_thickness = 1,
+   axis_label, axis_label_rotated = 0,
 
+   draw_line=1, draw_major_tics=1, draw_minor_tics=1, draw_tic_labels=1,
+   inited = 0,
+   axis_depth = DEFAULT_FRAME_DEPTH,
+   tic_depth = DEFAULT_TIC_DEPTH,
 };
 
 private variable XFig_Plot_Legend_Type = struct
@@ -235,18 +129,26 @@ private variable XFig_Plot_Legend_Type = struct
    names, objects
 };
 
-private variable XFig_Plot_Type = struct
+private variable XFig_Plot_Data_Type = struct
 {
-     X,
-     plot_width, plot_height,	       %  plot window, does not include labels
-     x1axis, y1axis, x2axis, y2axis,   %  Plot_Axis_Type
-     line_color, line_style, thickness, 
-     point_color, point_size,
-     object_list, title,
-     line_depth, point_depth, axis_depth, image_depth,
-     legend
+   X,
+   plot_width, plot_height,	       %  plot window, does not include labels
+   x1axis, y1axis, x2axis, y2axis,   %  Plot_Axis_Type
+   world1_inited = 0, world2_inited = 0,
+   line_color, line_style, thickness, 
+   point_color, point_size,
+   object_list, 
+   num_plots = 0,
+
+   % methods
+   title,
+   line_depth, point_depth, axis_depth, image_depth,
+   legend
 };
 
+%}}}
+
+%{{{ Coordinate transforms: linear, log, etc 
 
 private variable WCS_Transforms = Assoc_Type[];
 private define setup_axis_wcs (axis, wcs_type)
@@ -362,7 +264,109 @@ private define resid_normalized_to_world (t, xmin, xmax)
 xfig_plot_add_transform ("resid", &resid_world_to_normalized, &resid_normalized_to_world);
 
 
-private define make_tics (axis, tics, X, xmin, xmax, dX, dY, ticlen, add_tic_labels)
+%}}}
+
+private define compute_major_tics (xmin, xmax, maxtics, tic_intervals) %{{{
+{
+   variable diff = xmax - xmin;
+   variable multiplier = 1.0;
+   variable factor = 10.0;
+   variable last_diff;
+   variable max_diff = tic_intervals[-1]*maxtics;
+
+   while (diff <= max_diff)
+     {
+	multiplier *= factor;
+	last_diff = diff;
+	diff *= factor;
+	if (last_diff == diff)
+	  return [xmin,xmax], 0;
+     }
+   while (diff > max_diff)
+     {
+	multiplier *= 1.0/factor;
+	last_diff = diff;
+	diff *= 1.0/factor;
+	if (last_diff == diff)
+	  return [xmin,xmax], 0;
+     }
+
+   variable tic_interval;
+   variable nth_chosen = 0;
+   foreach (tic_intervals)
+     {
+	tic_interval = ();
+	if (diff/tic_interval <= maxtics)
+	  break;
+	nth_chosen++;
+     }
+
+   tic_interval /= multiplier;
+   variable nmin = xmin / tic_interval;
+   if (abs(nmin) > 0x7FFFFFFF)
+     return [xmin,xmax];
+   nmin = int(nmin);
+   if (xmin < 0)
+     nmin--;
+
+   variable nmax = xmax/tic_interval;
+   if (abs(nmin) > 0x7FFFFFFE)
+     return [xmin,xmax];
+   nmax = int(nmax);
+   if (xmax > 0)
+     nmax++;
+
+   tic_intervals = [nmin:nmax]*tic_interval;
+   return tic_intervals, nth_chosen;
+}
+
+
+%}}}
+
+private define get_major_tics (xmin, xmax, islog, maxtics) %{{{
+{
+   variable tic_intervals = [1.0,2.0,5.0];
+   % 1, 1.2,1.4,1.6,1.8, 2
+   % 2, 3.0, 4
+   % 5, 6.0,7.0,8.0,9.0, 10, ...
+   variable num_minor = [4, 1, 4];
+   variable ti, n;
+
+   if (islog)
+     {
+	xmin = log10(xmin);
+	xmax = log10(xmax);
+	if (xmin < 0)
+	  xmin -= 1.0;
+	xmin = int(xmin);
+
+	if (xmax > 0)
+	  xmax += 1.0;
+	xmax = int(xmax);
+
+	num_minor = [0:5];
+	tic_intervals = num_minor+1.0;
+	if ((xmax - xmin + 1) <= maxtics)
+	  {
+	     num_minor = 0;
+	     tic_intervals = [1.0];
+	  }
+     }
+   
+   (ti, n) = compute_major_tics (xmin, xmax, maxtics, tic_intervals);
+   if (islog)
+     {
+	% For a log axis, only integer valued major tics are meaningful
+	ti = ti[where (feqs (ti, int(ti)))];
+     }
+
+   return ti, num_minor[n];
+}
+
+
+%}}}
+
+private define make_tic_objects (axis, tics, X, xmin, xmax, dX, dY, ticlen, add_tic_labels) %{{{
 {
    xmin = double(xmin);
    xmax = double(xmax);
@@ -373,10 +377,10 @@ private define make_tics (axis, tics, X, xmin, xmax, dX, dY, ticlen, add_tic_lab
    dY = vector_mul (ticlen, dY);
    variable Xmax = vector_sum (X, dX);
 
-   variable tic_labels = NULL;
+   variable tic_label_objects = NULL;
    if (add_tic_labels)
      {
-	tic_labels = axis.tic_labels;
+	tic_label_objects = axis.tic_label_objects;
      }
 
    _for (0, length(tics)-1, 1)
@@ -389,35 +393,32 @@ private define make_tics (axis, tics, X, xmin, xmax, dX, dY, ticlen, add_tic_lab
 	variable X0 = vector_sum (X, vector_mul(x, dX));
 	variable X1 = vector_sum (X0, dY);
 
-	variable tic = xfig_make_polyline (vector ([X0.x, X1.x],
-						   [X0.y, X1.y],
-						   [X0.z, X1.z]));
-	xfig_polyline_list_insert (list, tic);
-	if (tic_labels != NULL)
+	list.insert (vector ([X0.x, X1.x],
+			     [X0.y, X1.y],
+			     [X0.z, X1.z]));
+	if (tic_label_objects != NULL)
 	  {
-	     xfig_justify_object (tic_labels[i], X0 + axis.tic_labels_tweak, axis.tic_labels_just);
+	     xfig_justify_object (tic_label_objects[i], X0 + axis.tic_labels_tweak, axis.tic_labels_just);
 	     if (dX.y != 0)
 	       {
 		  % y tic
 		  variable y0, y1, dy = 0;
-		  (,,y0,y1,,) = xfig_get_object_bbox (tic_labels[i]);
+		  (,,y0,y1,,) = tic_label_objects[i].get_bbox();
 		  if (y1 > Xmax.y)
 		    dy = Xmax.y - y1;
 		  if (y0 < X.y)
 		    dy = X.y - y0;
 		  if (dy != 0)
-		    xfig_translate_object (tic_labels[i], vector (0,dy,0));
+		    tic_label_objects[i].translate (vector (0,dy,0));
 	       }
 	  }
      }
-   xfig_set_pen_color (list, axis.color);
-   xfig_set_line_style (list, axis.line_style);
-   xfig_set_thickness (list, axis.thickness);
-   xfig_set_depth (list, axis.depth);
    return list;
 }
+%}}}
 
-private define make_tic_marks_and_tic_labels (axis)
+% Create the xfig objects for the tics and tic-labels
+private define make_tic_marks_and_tic_labels (axis) %{{{
 {
    if (axis == NULL)
      return;
@@ -428,13 +429,17 @@ private define make_tic_marks_and_tic_labels (axis)
    variable islog = axis.islog;
 
    variable X1 = vector_sum (X, dX);
-   variable line = xfig_new_polyline (vector ([X.x, X1.x],[X.y,X1.y],[X.z,X1.z]));
-   xfig_set_pen_color (line, axis.color);
-   xfig_set_line_style (line, axis.line_style);
-   xfig_set_thickness (line, axis.thickness);
-   xfig_set_depth (line, axis.depth);
-   
-   axis.line = line;
+   if (axis.draw_line)
+     {
+	variable line = xfig_new_polyline (vector ([X.x, X1.x],[X.y,X1.y],[X.z,X1.z]));
+	line.set_pen_color (axis.axis_color);
+	line.set_line_style (axis.axis_linestyle);
+	line.set_thickness (axis.axis_thickness);
+	line.set_depth (axis.axis_depth);
+
+	axis.line = line;
+     }
+
    axis.minor_tic_marks = NULL;
    axis.major_tic_marks = NULL;
 
@@ -442,159 +447,46 @@ private define make_tic_marks_and_tic_labels (axis)
    variable tics;
    tics = axis.major_tics;
 
-   if (tics != NULL)
+   if ((tics != NULL) && axis.draw_major_tics)
      {
-	ticlen = 0.25;
-	axis.major_tic_marks = make_tics (axis, tics, X, xmin, xmax, dX, dY, 
-					  ticlen, 1);
+	tics = make_tic_objects (axis, tics, X, xmin, xmax, dX, dY, 
+				 axis.major_tic_len, 1);
+	tics.set_pen_color (axis.major_tic_color);
+	tics.set_line_style (axis.major_tic_linestyle);
+	tics.set_thickness (axis.major_tic_thickness);
+	tics.set_depth (axis.tic_depth);
+	axis.major_tic_marks = tics;
      }
 
    tics = axis.minor_tics;
-   if (tics != NULL)
+   if ((tics != NULL) && (axis.draw_minor_tics))
      {
-	ticlen = 0.15;
-	axis.minor_tic_marks = make_tics (axis, tics, X, xmin, xmax, dX, dY, 
-					  ticlen, 0);
+	tics = make_tic_objects (axis, tics, X, xmin, xmax, dX, dY, 
+				 axis.minor_tic_len, 0);
+	tics.set_pen_color (axis.minor_tic_color);
+	tics.set_line_style (axis.minor_tic_linestyle);
+	tics.set_thickness (axis.minor_tic_thickness);
+	tics.set_depth (axis.tic_depth);
+	axis.minor_tic_marks = tics;
      }
 
-   % Convert the tic labels to a compound object for ease of manipulation
-   variable compound = xfig_new_compound_list ();
-   foreach (axis.tic_labels)
+   if (axis.draw_tic_labels)
      {
-	variable label = ();
-	xfig_compound_list_insert (compound, label);
+	% Convert the tic labels to a compound object for ease of manipulation
+	variable compound = xfig_new_compound_list ();
+	foreach (axis.tic_label_objects)
+	  {
+	     variable label = ();
+	     compound.insert(label);
+	  }
+	axis.tic_label_objects = compound;
      }
-   axis.tic_labels = compound;
 }
 
-private define render_tics_for_axis (axis, fp)
-{
-   if (axis == NULL)
-     return;
 
-   xfig_render_object (axis.line, fp);
-   xfig_render_object (axis.major_tic_marks, fp);
-   xfig_render_object (axis.tic_labels, fp);
-   xfig_render_object (axis.minor_tic_marks, fp);
-   xfig_render_object (axis.axis_label, fp);
-}
+%}}}
 
-private define render_plot_axes (p, fp)
-{
-   variable axis;
-   variable w = p.plot_width;
-   variable h = p.plot_height;
-   variable tic, ticlen;
-   
-   variable dX, dY, xmin, xmax;
-
-   axis = p.x1axis;
-   render_tics_for_axis (axis, fp);
-
-   axis = p.y1axis;
-   render_tics_for_axis (axis, fp);
-
-   axis = p.x2axis;
-   render_tics_for_axis (axis, fp);
-
-   axis = p.y2axis;
-   render_tics_for_axis (axis, fp);
-}
-
-private define translate_axis (axis, X)
-{
-   axis.X = vector_sum (axis.X, X);
-   xfig_translate_object (axis.line, X);
-   xfig_translate_object (axis.major_tic_marks, X);
-   xfig_translate_object (axis.minor_tic_marks, X);
-   xfig_translate_object (axis.tic_labels, X);
-   xfig_translate_object (axis.axis_label, X);
-}
-
-private define plot_translate (p, X)
-{
-   p.X = vector_sum (p.X, X);
-   translate_axis (p.x1axis, X);
-   translate_axis (p.x2axis, X);
-   translate_axis (p.y1axis, X);
-   translate_axis (p.y2axis, X);
-   xfig_translate_object (p.object_list, X);
-}
-
-private define rotate_axis (axis, normal, theta)
-{
-   axis.X = vector_rotate (axis.X, normal, theta);
-   xfig_rotate_object (axis.line, normal, theta);
-   xfig_rotate_object (axis.major_tic_marks, normal, theta);
-   xfig_rotate_object (axis.minor_tic_marks, normal, theta);
-   xfig_rotate_object (axis.tic_labels, normal, theta);
-   xfig_rotate_object (axis.axis_label, normal, theta);
-}
-
-private define plot_rotate (p, normal, theta)
-{
-#iffalse
-   vmessage ("plot_rotate not implemented");
-   return;
-#else
-   p.X = vector_rotate (p.X, normal, theta);
-   rotate_axis (p.x1axis, normal, theta);
-   rotate_axis (p.x2axis, normal, theta);
-   rotate_axis (p.y1axis, normal, theta);
-   rotate_axis (p.y2axis, normal, theta);
-   xfig_rotate_object (p.object_list, normal, theta);
-#endif
-}
-
-private define plot_scale (p, sx, sy, sz)
-{
-   variable X = p.X;
-   X.x *= sx;
-   X.y *= sy;
-   X.z *= sz;
-}
-
-private define plot_set_attr (p, attr, val)
-{
-}
-
-private define get_axis_bbox (axis)
-{
-   return xfig_get_object_bbox (xfig_new_compound (axis.line, axis.tic_labels, axis.axis_label));
-}
-
-private define plot_get_bbox (p)
-{
-   vmessage ("Warning: plot bounding box not fully supported");
-   variable xmin, xmax, ymin, ymax, zmin, zmax;
-   variable x0, x1, y0, y1, z0, z1;
-
-   (xmin, xmax, ymin, ymax, zmin, zmax) = get_axis_bbox (p.x1axis);
-   foreach ([p.x2axis, p.y1axis, p.y2axis])
-     {
-	variable axis = ();
-	(x0, x1, y0, y1, z0, z1) = get_axis_bbox (axis);
-	if (x0 < xmin) xmin = x0;
-	if (x1 > xmax) xmax = x1;
-	if (y0 < ymin) ymin = y0;
-	if (y1 > ymax) ymax = y1;
-	if (z0 < zmin) zmin = z0;
-	if (z1 > zmax) zmax = z1;
-     }
-   return xmin, xmax, ymin, ymax, zmin, zmax;
-}
-
-private define plot_render (p, fp)
-{
-   variable plot_width = p.plot_width;
-   variable plot_height= p.plot_height;
-
-   xfig_render_object (p.object_list, fp);
-   % It looks better when the axes are rendered after the plot object
-   render_plot_axes (p, fp);
-}
-
-private define construct_tic_labels (axis, tics)
+private define construct_tic_label_strings (axis, tics) %{{{
 {
    variable format = axis.tic_label_format;
    variable i, alt_fmt = NULL;
@@ -646,25 +538,31 @@ private define construct_tic_labels (axis, tics)
    return tic_labels;
 }
 
-private define make_tic_labels (axis, tic_labels_just, tweakx, tweaky)
+
+%}}}
+
+private define make_tic_label_objects (axis, tic_labels_just, tweakx, tweaky) %{{{
 {
    variable tics = axis.major_tics;
-   variable tic_labels = axis.tic_labels;
    variable max_tic_h = 0, max_tic_w = 0;
 
-   if ((tics == NULL) or (length(tics) == 0))
-     return;
-   
-   if (tic_labels == NULL)
-     tic_labels = construct_tic_labels (axis, tics);
-
-   tic_labels = array_map (Struct_Type, &xfig_new_text, tic_labels);
-   variable tic_labels_dX = Struct_Type[length(tic_labels)];
-   _for (0, length(tic_labels)-1, 1)
+   if ((tics == NULL) || (length(tics) == 0) || (axis.draw_tic_labels == 0))
      {
-	variable i = ();
+	axis.tic_label_objects = NULL;
+	return;
+     }
+
+   variable tic_label_strings = construct_tic_label_strings (axis, tics);
+
+   variable tic_label_objects
+     = array_map (Struct_Type, &xfig_new_text, tic_label_strings, axis.tic_labels_font_struct);
+
+   variable tic_labels_dX = Struct_Type[length(tic_label_objects)];
+   foreach (tic_label_objects)
+     {
+	variable obj = ();
 	variable w, h;
-	(w,h) = xfig_get_pict_bbox (tic_labels[i]);
+	(w,h) = obj.get_pict_bbox ();
 	if (max_tic_w < w)
 	  max_tic_w = w;
 	if (max_tic_h < h)
@@ -675,10 +573,14 @@ private define make_tic_labels (axis, tic_labels_just, tweakx, tweaky)
    axis.max_tic_w = max_tic_w + 2*abs(tweakx);
    axis.tic_labels_tweak = vector (tweakx, tweaky, 0);
    axis.tic_labels_just = tic_labels_just;
-   axis.tic_labels = tic_labels;
+   axis.tic_label_objects = tic_label_objects;
+   axis.tic_label_strings = tic_label_strings;
 }
 
-private define make_tic_intervals (axis)
+
+%}}}
+
+private define make_major_minor_tic_positions (axis) %{{{
 {
    variable xmin = axis.xmin;
    variable xmax = axis.xmax;
@@ -713,14 +615,14 @@ private define make_tic_intervals (axis)
    variable minor_tic_interval;
    variable j = [1:num_minor];
    variable i = j-1;
-
+ 
    if (islog && (num_minor == 0))
-     {
-	num_minor = 8;
-	i = [0:num_minor-1];
-	j = log10 ([2:9]);	       %  log10([2:9])
-	minor_tic_interval = 1.0;
-     }
+      {
+	 num_minor = 8;
+	 i = [0:num_minor-1];
+	 j = log10 ([2:9]);	       %  log10([2:9])
+	 minor_tic_interval = 1.0;
+      }
    else minor_tic_interval = major_tic_interval/(num_minor+1.0);
 
    variable minor_tics = Double_Type[num_minor*length(major_tics)];
@@ -741,242 +643,24 @@ private define make_tic_intervals (axis)
    axis.minor_tics = minor_tics[where ((minor_tics >= xmin) and (minor_tics <= xmax))];
 }
 
-private define allocate_axis_type (len, maxtics, xpos, ypos, dirx, diry, ticdirx, ticdiry)
+%}}}
+
+private define setup_axis_tics (p, axis) %{{{
 {
-   variable a = @Plot_Axis_Type;
-   a.xmin = 0.1;
-   a.xmax = 1.0;
-   a.islog = 0;
-   setup_axis_wcs (a, "linear");
-   a.maxtics = maxtics;
-   a.max_tic_w = 0.0;
-   a.max_tic_h = 0.0;
-   a.X = vector (xpos, ypos, 0);
-   a.dX = vector (dirx*len, diry*len, 0);
-   a.dY = vector (ticdirx, ticdiry,0);
-   return a;
-}
+   variable geom = axis.geom;
 
-
-%!%+
-%\function{xfig_plot_new}
-%\synopsis{Create a new plot object}
-%\usage{w = xfig_plot_new ( [Int_Type width, Int_Type height] );}
-%\description
-% This function creates a new plot object of the specified width and height.
-% If the width and height parameters are not given, defaults will be used.
-% The width and height values specify the size of the plotting area and do not
-% include the space for tic marks and labels.
-%\example
-%#v+
-%   w = xfig_plot_new ();
-%#v-
-%\seealso{xfig_plot_define_world, xfig_render_object}
-%!%-
-define xfig_plot_new ()
-{
-   variable w, h;
-   if (_NARGS == 0)
-     (14, 10);
-   (w, h) = ();
-
-   variable p = @XFig_Plot_Type;
-   p.plot_width = w;
-   p.plot_height = h;
-   variable maxticsx = int(w*0.5 + 1.5);
-   variable maxticsy = int(h+1.5);
-   p.x1axis = allocate_axis_type (w, maxticsx, (0,0), (1,0), (0,1));
-   p.y1axis = allocate_axis_type (h, maxticsy, (0,0), (0,1), (1,0));
-   p.x2axis = allocate_axis_type (w, maxticsx, (0,h), (1,0), (0,-1));
-   p.y2axis = allocate_axis_type (h, maxticsy, (w,0), (0,1), (-1,0));
-
-   p.line_color = "black";
-   p.line_style = 0;
-   p.thickness = 2;
-   p.point_color = "black";
-   p.point_size = 1;
-   p.line_depth = DEFAULT_LINE_DEPTH;
-   p.point_depth = DEFAULT_POINT_DEPTH;
-   p.axis_depth = DEFAULT_AXIS_DEPTH;
-   p.image_depth = DEFAULT_IMAGE_DEPTH;
-
-   p.X = vector(0,0,0);
-   p.object_list = xfig_new_compound_list ();
-
-   variable obj = xfig_new_object (p);
-   obj.render_fun = &plot_render;
-   obj.rotate_fun = &plot_rotate;
-   obj.translate_fun = &plot_translate;
-   obj.scale_fun = &plot_scale;
-   obj.set_attr_fun = &plot_set_attr;
-   obj.get_bbox_fun = &plot_get_bbox;
-   obj.flags |= XFIG_RENDER_AS_COMPOUND;
-   return obj;
-}
-
-private define get_world_min_max (x0, x1)
-{
-   if (isnan (x0) or isnan (x1) or isinf (x0) or isinf (x1))
-     {
-	() = fprintf (stderr, "xfig_plot_define_world: Axis limits must be finite.\n");
-	return 0.1, 1.0;
-     }
-       
-   if (x0 == x1)
-     {
-	x0 = 0.5*x0;
-	x1 = 2.0*x0;
-	if (x0 == x1)
-	  {
-	     () = fprintf (stderr, "xfig_plot_define_world: invalid world limits");
-	     x0 = 0.0;
-	     x1 = 1.0;
-	  }
-     }
-   return x0, x1;
-}
-
-private define get_define_world_args (nargs)
-{
-   variable xdata, ydata;
-   variable x0, x1, y0, y1;
-   switch (nargs)
-     {
-      case 3:
-	(xdata, ydata) = ();
-	(x0, x1) = (min(xdata), max(xdata));
-	(y0, y1) = (min(ydata), max(ydata));
-     }
-     {
-      case 5:
-	(x0, x1, y0, y1) = ();
-     }
-     {
-	usage ("xfig_plot_define_world (plotwin, [x0, x1], [y0, y1])");
-     }
-   variable w = ();
-   return w, get_world_min_max (x0, x1), get_world_min_max (y0, y1);
-}
-
-   
-define xfig_plot_define_world1 ()
-{
-   variable p, xmin, xmax, ymin, ymax;
-   (p, xmin, xmax, ymin, ymax) = get_define_world_args (_NARGS);
-   variable axis;
-   p = p.object;
-   axis = p.x1axis; axis.xmin = double(xmin); axis.xmax = double(xmax);
-   axis = p.y1axis; axis.xmin = double(ymin); axis.xmax = double(ymax);
-}
-
-define xfig_plot_define_world2 ()
-{
-   variable p, xmin, xmax, ymin, ymax;
-   (p, xmin, xmax, ymin, ymax) = get_define_world_args (_NARGS);
-   variable axis;
-   p = p.object;
-   axis = p.x2axis; axis.xmin = double(xmin); axis.xmax = double(xmax);
-   axis = p.y2axis; axis.xmin = double(ymin); axis.xmax = double(ymax);
-}
-
-define xfig_plot_define_world ()
-{
-   variable p, xmin, xmax, ymin, ymax;
-   (p, xmin, xmax, ymin, ymax) = get_define_world_args (_NARGS);
-
-   xfig_plot_define_world1 (p, xmin, xmax, ymin, ymax);
-   xfig_plot_define_world2 (p, xmin, xmax, ymin, ymax);
-}
-
-private define setup_axis_tics (p, axis, geom, want_tic_labels)
-{
-   variable ticofs_x = geom[0], ticofs_y = geom[1], tic_tweak_x = geom[2], 
-     tic_tweak_y = geom[3], tx = geom[4], ty = geom[5], theta = geom[6];
-
-   variable tic_labels_just = vector (ticofs_x, ticofs_y, 0);
-   axis.tic_labels_just = tic_labels_just;
-
-   if (want_tic_labels) 
-     make_tic_labels (axis, tic_labels_just, tic_tweak_x, tic_tweak_y);
-   %else axis.tic_labels = NULL;
-
-   axis.color = p.line_color;
-   axis.line_style = p.line_style;
-   axis.thickness = p.thickness;
-   axis.depth = p.axis_depth;
-
+   make_tic_label_objects (axis, axis.tic_labels_just, geom.tic_tweak_x, geom.tic_tweak_y);
    make_tic_marks_and_tic_labels (axis);
 }
 
-private define add_axis (p, axis, wcs_type, label,
-			want_tic_labels, geom)
-{
-   variable ticofs_x = geom[0], ticofs_y = geom[1], tic_tweak_x = geom[2], 
-     tic_tweak_y = geom[3], tx = geom[4], ty = geom[5], theta = geom[6];
+%}}}
 
-   setup_axis_wcs (axis, wcs_type);
-   make_tic_intervals (axis);
-
-   setup_axis_tics (p, axis, geom, want_tic_labels);
-
-   if (label == NULL)
-     return;
-
-   label = xfig_new_text (label);
-   if (theta != 0) xfig_rotate_pict (label, theta);
-
-   variable X = 0.5 * (2*axis.X + axis.dX);
-   X += vector (tx*axis.max_tic_w, ty*axis.max_tic_h, 0);
-
-   xfig_justify_object (label, X, axis.tic_labels_just);
-   axis.axis_label = label;
-}
-
-% Usage:
-% xfig_add_*_axis (obj, islog|wcs, label [,make_tic_labels])
-% Here major/minor_tics is an array of world coord system values where the 
-% major/minor tics will be placed.
-private define get_add_axis_args (axis_name, nargs)
-{
-   variable p, axis = NULL, wcs_type, label,
-     want_tic_labels = 1, major_tics = NULL, minor_tics = NULL;
-
-   switch (nargs)
-     {
-      case 4:
-	want_tic_labels = ();
-     }
-     {
-	if (nargs != 3)
-	  usage ("xfig_add_*_axis (obj, islog|wcs, label [,make_tic_labels])");
-     }
-   (p, wcs_type, label) = ();
-   if (typeof (wcs_type) != String_Type)
-     {
-	if (wcs_type == 1)
-	  wcs_type = "log";
-	else wcs_type = "linear";
-     }
-
-   if (axis_name != NULL)
-     {
-	p = p.object;
-	axis = get_struct_field (p, axis_name);
-     }
-   return p, axis, wcs_type, label, want_tic_labels;
-}
-
-
-private variable X1_Axis_Geom = [ 0.0,   0.5,  0.0, -0.1,   0.0, -1.0,   0];
-private variable X2_Axis_Geom = [ 0.0,  -0.5,  0.0,  0.0,   0.1,  1.0,   0];
-private variable Y1_Axis_Geom = [ 0.5,   0.0, -0.1,  0.0,  -1.0,  0.0,  90];
-private variable Y2_Axis_Geom = [-0.5,   0.0,  0.1,  0.0,   1.0,  0.0, -90];
 
 % Usage: xfig_plot_set_*_tics (win, major_tics [,tic_labels,[minor_tics]])
 % If tic_labels is NULL or not present then they will be generated.  
 % If tic_labels is "", then none will be generated.
 
-private define pop_set_tic_args (fun, nargs)
+private define pop_set_tic_args (fun, nargs) %{{{
 {
    variable win, major_tics, tic_labels = NULL, minor_tics = NULL;
    switch (nargs)
@@ -996,11 +680,13 @@ private define pop_set_tic_args (fun, nargs)
    return win, major_tics, tic_labels, minor_tics;
 }
 
-private define set_xx_axis_tics (axis_name, fun, geom, nargs)
+
+%}}}
+#iffalse
+private define set_xx_axis_tics (axis_name, fun, nargs) %{{{
 {
-   variable win, major_tics, tic_labels, minor_tics;
-   (win, major_tics, tic_labels, minor_tics) = pop_set_tic_args (fun, nargs);
-   variable obj = win.object;
+   variable obj, major_tics, tic_labels, minor_tics;
+   (obj, major_tics, tic_labels, minor_tics) = pop_set_tic_args (fun, nargs);
    variable axis = get_struct_field (obj, axis_name);
    variable want_tic_labels = (tic_labels != NULL);
    if (typeof (tic_labels) == String_Type)
@@ -1025,29 +711,30 @@ private define set_xx_axis_tics (axis_name, fun, geom, nargs)
    axis.tic_labels = tic_labels;
    axis.major_tics = major_tics;
    axis.minor_tics = minor_tics;
-   setup_axis_tics (obj, axis, geom, want_tic_labels);
+   setup_axis_tics (obj, axis);
 }
+
+%}}}
 
 define xfig_plot_set_x1_tics ()
 {
-   set_xx_axis_tics ("x1axis", _function_name, X1_Axis_Geom, _NARGS);
+   set_xx_axis_tics ("x1axis", _function_name, _NARGS);
 }
 
 define xfig_plot_set_x2_tics ()
 {
-   set_xx_axis_tics ("x2axis", _function_name, X2_Axis_Geom, _NARGS);
+   set_xx_axis_tics ("x2axis", _function_name, _NARGS);
 }
 
 define xfig_plot_set_y1_tics ()
 {
-   set_xx_axis_tics ("y1axis", _function_name, Y1_Axis_Geom, _NARGS);
+   set_xx_axis_tics ("y1axis", _function_name, _NARGS);
 }
 
 define xfig_plot_set_y2_tics ()
 {
-   set_xx_axis_tics ("y2axis", _function_name, Y2_Axis_Geom, _NARGS);
+   set_xx_axis_tics ("y2axis", _function_name, _NARGS);
 }
-
 define xfig_plot_set_x_tics ()
 {
    variable win, major_tics, tic_labels, minor_tics;
@@ -1065,48 +752,550 @@ define xfig_plot_set_y_tics ()
    xfig_plot_set_y1_tics (win, major_tics, tic_labels, minor_tics);
    xfig_plot_set_y2_tics (win, major_tics, "", minor_tics);
 }
+#endif
 
-
-define xfig_plot_add_x1_axis ()
+private define position_axis_label (axis)
 {
-   add_axis (get_add_axis_args ("x1axis", _NARGS), X1_Axis_Geom);
+   variable label = axis.axis_label;
+   if (label == NULL)
+     return;
+
+   variable geom = axis.geom;
+   variable theta = geom.theta;
+
+   % This routine may have already been called if the label was added
+   % before the axis.
+   ifnot (axis.axis_label_rotated)
+     {
+	if (theta != 0) label.rotate_pict (theta);
+	axis.axis_label_rotated = 1;
+     }
+
+   variable X = 0.5 * (2*axis.X + axis.dX);
+   X += vector (geom.tx*axis.max_tic_w, geom.ty*axis.max_tic_h, 0);
+
+   xfig_justify_object (axis.axis_label, X, axis.tic_labels_just);
 }
 
-define xfig_plot_add_x2_axis ()
+private define add_axis_label (p, axis, label)
 {
-   add_axis (get_add_axis_args ("x2axis", _NARGS), X2_Axis_Geom);
+   if (label == NULL)
+     return;
+
+   axis.axis_label = xfig_new_text (label ;; __qualifiers);
+   position_axis_label (axis);
 }
 
-define xfig_plot_add_y1_axis ()
+private define add_axis (p, axis, wcs_type) %{{{
 {
-   add_axis (get_add_axis_args ("y1axis", _NARGS), Y1_Axis_Geom);
+   setup_axis_wcs (axis, wcs_type);
+   make_major_minor_tic_positions (axis);
+
+   setup_axis_tics (p, axis);
+   
+   position_axis_label (axis);
+   axis.inited = 1;
+}
+
+%}}}
+
+private define render_tics_for_axis (axis, fp) %{{{
+{
+   if (axis == NULL)
+     return;
+
+   if (axis.line != NULL)
+     axis.line.render (fp);
+   if (axis.major_tic_marks != NULL)
+     axis.major_tic_marks.render (fp);
+   if (axis.tic_label_objects != NULL)
+     axis.tic_label_objects.render (fp);
+   if (axis.minor_tic_marks != NULL)
+     axis.minor_tic_marks.render (fp);
+   if (axis.axis_label != NULL)
+     axis.axis_label.render (fp);
+   %xfig_render_object (axis.axis_label, fp);
+}
+
+%}}}
+
+private define render_plot_axes (p, fp) %{{{
+{
+   variable axis;
+   variable w = p.plot_width;
+   variable h = p.plot_height;
+   variable tic, ticlen;
+   
+   variable dX, dY, xmin, xmax;
+
+   axis = p.x1axis;
+   render_tics_for_axis (axis, fp);
+
+   axis = p.y1axis;
+   render_tics_for_axis (axis, fp);
+
+   axis = p.x2axis;
+   render_tics_for_axis (axis, fp);
+
+   axis = p.y2axis;
+   render_tics_for_axis (axis, fp);
 }
 
 
-define xfig_plot_add_y2_axis ()
+%}}}
+
+private define translate_axis (axis, X) %{{{
 {
-   add_axis (get_add_axis_args ("y2axis", _NARGS), Y2_Axis_Geom);
+   axis.X = vector_sum (axis.X, X);
+   if (axis.line != NULL)
+     axis.line.translate(X);
+   if (axis.major_tic_marks != NULL)
+     axis.major_tic_marks.translate(X);
+   if (axis.minor_tic_marks != NULL)
+     axis.minor_tic_marks.translate(X);
+   if (axis.tic_label_objects != NULL)
+     axis.tic_label_objects.translate(X);
+   if (axis.axis_label != NULL)
+     axis.axis_label.translate(X);
 }
 
-define xfig_plot_add_x_axis ()
-{
-   variable p, axis, wcs_type, label, want_tic_labels;
-   (p, axis, wcs_type, label, want_tic_labels)
-     = get_add_axis_args (NULL, _NARGS);
 
-   xfig_plot_add_x1_axis (p, wcs_type, label, want_tic_labels);
-   xfig_plot_add_x2_axis (p, wcs_type, NULL, 0);
+%}}}
+
+private define plot_translate (p, X) %{{{
+{
+   p = p.plot_data;
+   p.X = vector_sum (p.X, X);
+   translate_axis (p.x1axis, X);
+   translate_axis (p.x2axis, X);
+   translate_axis (p.y1axis, X);
+   translate_axis (p.y2axis, X);
+   p.object_list.translate(X);
 }
 
-define xfig_plot_add_y_axis ()
+private define rotate_axis (axis, normal, theta)
 {
-   variable p, axis, wcs_type, label, want_tic_labels;
-   (p, axis, wcs_type, label, want_tic_labels)
-       = get_add_axis_args (NULL, _NARGS);
-
-   xfig_plot_add_y1_axis (p, wcs_type, label, want_tic_labels);
-   xfig_plot_add_y2_axis (p, wcs_type, NULL, 0);
+   axis.X = vector_rotate (axis.X, normal, theta);
+   axis.line.rotate(normal, theta);
+   axis.major_tic_marks.rotate(normal, theta);
+   axis.minor_tic_marks.rotate(normal, theta);
+   axis.tic_label_objects.rotate(normal, theta);
+   axis.axis_label.rotate(normal, theta);
 }
+
+%}}}
+
+private define plot_rotate (p, normal, theta) %{{{
+{
+   p.X = vector_rotate (p.X, normal, theta);
+   rotate_axis (p.x1axis, normal, theta);
+   rotate_axis (p.x2axis, normal, theta);
+   rotate_axis (p.y1axis, normal, theta);
+   rotate_axis (p.y2axis, normal, theta);
+   p.object_list.rotate(normal, theta);
+}
+
+
+%}}}
+
+private define plot_scale (p, sx, sy, sz) %{{{
+{
+   variable X = p.X;
+   X.x *= sx;
+   X.y *= sy;
+   X.z *= sz;
+}
+
+%}}}
+
+private define plot_set_attr (p, attr, val)
+{
+}
+
+private define get_axis_bbox (axis)
+{
+   variable x0, x1, y0, y1, z0, z1;
+   (x0, x1, y0, y1, z0, z1) = xfig_new_compound (axis.line, axis.tic_label_objects, axis.axis_label).get_bbox ();
+
+   variable X0 = axis.X, X1 = X0+axis.dX;
+   variable x = [X0.x, X1.x];
+   variable y = [X0.y, X1.y];
+   variable z = [X0.z, X1.z];
+   return min([x,x0]), max([x,x1]), min([y,y0]), max([y,y1]), min([z,z0]), max([z,z1]);
+}
+
+private define plot_get_bbox (p) %{{{
+{
+   vmessage ("Warning: plot bounding box not fully supported");
+   p = p.plot_data;
+   variable xmin, xmax, ymin, ymax, zmin, zmax;
+   variable x0, x1, y0, y1, z0, z1;
+
+   (xmin, xmax, ymin, ymax, zmin, zmax) = get_axis_bbox (p.x1axis);
+   foreach ([p.x2axis, p.y1axis, p.y2axis])
+     {
+	variable axis = ();
+	(x0, x1, y0, y1, z0, z1) = get_axis_bbox (axis);
+	if (x0 < xmin) xmin = x0;
+	if (x1 > xmax) xmax = x1;
+	if (y0 < ymin) ymin = y0;
+	if (y1 > ymax) ymax = y1;
+	if (z0 < zmin) zmin = z0;
+	if (z1 > zmax) zmax = z1;
+     }
+   return xmin, xmax, ymin, ymax, zmin, zmax;
+}
+
+
+%}}}
+
+private define plot_render (p, fp) %{{{
+{
+   p = p.plot_data;
+   variable plot_width = p.plot_width;
+   variable plot_height= p.plot_height;
+
+   p.object_list.render (fp);
+   % It looks better when the axes are rendered after the plot object
+   render_plot_axes (p, fp);
+}
+
+%}}}
+
+private variable X1_Axis_Geom = struct
+{
+   ticofs_x = 0.0, ticofs_y = 0.5, tic_tweak_x = 0.0,
+   tic_tweak_y = -0.1, tx = 0.0, ty = -1.0, theta = 0.0
+};
+private variable X2_Axis_Geom = struct
+{
+   ticofs_x = 0.0, ticofs_y = -0.5, tic_tweak_x = 0.0,
+   tic_tweak_y = 0.1, tx = 0.1, ty = 1.0, theta = 0.0
+};
+private variable Y1_Axis_Geom = struct
+{
+   ticofs_x = 0.5, ticofs_y = 0.0, tic_tweak_x = -0.1,
+   tic_tweak_y = 0.0, tx = -1.0, ty = 0.0, theta = 90.0
+};
+private variable Y2_Axis_Geom = struct
+{
+   ticofs_x = -0.5, ticofs_y = 0.0, tic_tweak_x = 0.1,
+   tic_tweak_y = 0.0, tx = 1.0, ty = 0.0, theta = -90.0
+};
+
+
+private define allocate_axis_type (len, maxtics, has_tic_labels, xpos, ypos, dirx, diry, ticdirx, ticdiry, geom) %{{{
+{
+   variable a = @Plot_Axis_Type;
+   setup_axis_wcs (a, "linear");
+   a.maxtics = maxtics;
+   a.X = vector (xpos, ypos, 0);
+   a.dX = vector (dirx*len, diry*len, 0);
+   a.dY = vector (ticdirx, ticdiry,0);
+   a.geom = geom;
+   a.tic_labels_just = vector (geom.ticofs_x, geom.ticofs_y, 0);
+   a.draw_tic_labels = has_tic_labels;
+   return a;
+}
+
+%}}}
+
+private define do_axis_method (name, grid_axis)
+{
+   variable p;
+   switch (_NARGS-2)
+     {
+      case 1: p = ();
+     }
+     {
+	_pop_n (_NARGS-2);
+	usage (".axis ( [;qualifiers] )\n", +
+	       "Qualifiers:\n", +
+	       " off, on, color=val, line=val, major=array, minor=array,\n" +
+	       " width=val, depth=val, ticlabels=0|1, maxtics=val\n" +
+	       "wcs=val, lin, log\n"
+	      );
+     }
+
+   p = p.plot_data;
+   variable axis = get_struct_field (p, name);
+   variable q = qualifier("off");
+   if (q != NULL)
+     q = 0;
+   if (qualifier_exists("on"))
+     q = 1;
+   if (q != NULL)
+     {
+	axis.draw_major_tics = q;
+	axis.draw_line = q;
+	axis.draw_minor_tics = q;
+	axis.draw_tic_labels = q;
+     }
+   % FIXME: allow major/Minor = Array_Type to specify custom tic
+   % positions
+   q = qualifier ("minor");
+   if (typeof (q) == Int_Type)
+     axis.draw_minor_tics = q;
+   q = qualifier ("major");
+   if (typeof (q) == Int_Type)
+     axis.draw_major_tics = q;
+   
+   q = qualifier ("color");
+   if (q != NULL)
+     {
+	axis.axis_color = q;
+	axis.major_tic_color = q;
+	axis.minor_tic_color = q;
+     }
+   axis.major_tic_color = qualifier ("major_color", axis.major_tic_color);
+   axis.minor_tic_color = qualifier ("minor_color", axis.major_tic_color);
+   
+   q = qualifier ("width");
+   if (q != NULL)
+     {
+	axis.axis_thickness = q;
+	axis.major_tic_thickness = q;
+	axis.minor_tic_thickness = q;
+     }
+   axis.minor_tic_thickness = qualifier ("minor_width", axis.minor_tic_thickness);
+   axis.major_tic_thickness = qualifier ("major_width", axis.major_tic_thickness);
+
+   q = qualifier ("line");
+   if (q != NULL)
+     {
+	axis.axis_linestyle = q;
+	axis.major_tic_linestyle = q;
+	axis.minor_tic_linestyle = q;
+     }
+   axis.major_tic_linestyle = qualifier ("major_line", axis.major_tic_linestyle);
+   axis.minor_tic_linestyle = qualifier ("minor_line", axis.minor_tic_linestyle);
+
+   axis.major_tic_len = qualifier ("major_len", axis.major_tic_len);
+   axis.minor_tic_len = qualifier ("minor_len", axis.minor_tic_len);
+
+   axis.axis_depth = qualifier ("depth", axis.axis_depth);
+   axis.tic_depth = qualifier ("tic_depth", axis.tic_depth);
+   axis.maxtics = qualifier ("maxtics", axis.maxtics);
+
+   variable f = axis.tic_labels_font_struct;
+   f.style = qualifier ("ticlabel_style", f.style);
+   f.color = qualifier ("ticlabel_color", f.color);
+   f.size = qualifier ("ticlabel_size", f.size);
+
+   % .islog already has a default value.  Don't muck with it unless
+   % requested.
+   if (qualifier_exists ("linear")) axis.islog = 0;
+   if (qualifier_exists ("log")) axis.islog = 1;
+
+   % Ditto
+   q = qualifier ("ticlabels");
+   if (typeof (q) == Int_Type)
+     axis.draw_tic_labels = q;
+
+   if (axis.draw_major_tics == 0)
+     axis.draw_tic_labels = 0;
+
+   if (grid_axis)
+     {
+	variable len = p.plot_height;
+	if (grid_axis == 2)
+	  len = p.plot_width;
+	q = qualifier ("grid");
+	if (q == 1)
+	  {
+	     axis.major_tic_len = len;
+	     axis.minor_tic_len = len;
+	  }
+	q = qualifier ("major_grid");
+	if (q == 1)
+	  axis.major_tic_len = len;
+	q = qualifier ("minor_grid");
+	if (q == 1)
+	  axis.minor_tic_len = len;
+     }
+
+   variable wcs = qualifier ("wcs");
+   if (wcs == NULL)
+     {
+	wcs = "linear";
+	if (axis.islog)
+	  wcs = "log";
+     }
+   add_axis (p, axis, wcs);
+}
+
+private define xaxis_method ()
+{
+   variable args = __pop_args (_NARGS);
+   do_axis_method (__push_args (args), "x1axis", 1 ;; __qualifiers);
+   do_axis_method (__push_args (args), "x2axis", 0 ;; __qualifiers);
+}
+
+private define yaxis_method ()
+{
+   variable args = __pop_args (_NARGS);
+   do_axis_method (__push_args (args), "y1axis", 2 ;; __qualifiers);
+   do_axis_method (__push_args (args), "y2axis", 0 ;; __qualifiers);
+}
+
+private define x1axis_method ()
+{
+   variable args = __pop_args (_NARGS);
+   do_axis_method (__push_args (args), "x1axis", 1 ;; __qualifiers);
+}
+
+private define x2axis_method ()
+{
+   variable args = __pop_args (_NARGS);
+   do_axis_method (__push_args (args), "x2axis", 1 ;; __qualifiers);
+}
+
+private define y1axis_method ()
+{
+   variable args = __pop_args (_NARGS);
+   do_axis_method (__push_args (args), "y1axis", 2 ;; __qualifiers);
+}
+
+private define y2axis_method ()
+{
+   variable args = __pop_args (_NARGS);
+   do_axis_method (__push_args (args), "y2axis", 2 ;; __qualifiers);
+}
+
+private define axis_method ()
+{
+   variable args = __pop_args (_NARGS);
+   xaxis_method (__push_args (args);; __qualifiers);
+   yaxis_method (__push_args (args);; __qualifiers);
+}
+
+private define get_world_min_max (x0, x1, islog, pad) %{{{
+{
+   if (isnan (x0) or isnan (x1) or isinf (x0) or isinf (x1))
+     {
+	() = fprintf (stderr, "xfig_plot_define_world: Axis limits must be finite.\n");
+	return 0.1, 1.0;
+     }
+       
+   if (x0 == x1)
+     {
+	x0 = 0.5*x0;
+	x1 = 2.0*x0;
+	if (x0 == x1)
+	  {
+	     () = fprintf (stderr, "xfig_plot_define_world: invalid world limits");
+	     x0 = 0.0;
+	     x1 = 1.0;
+	  }
+     }
+
+   if (islog)
+     (x0, x1) = check_xmin_xmax_for_log (x0, x1);
+
+   if (pad == 0.0)
+     return x0, x1;
+   
+   if (islog)
+     {
+	x0 = log10 (x0);
+	x1 = log10 (x1);
+     }
+   variable dx = pad*(x1 - x0);
+   x0 -= dx;
+   x1 += dx;
+   if (islog)
+     {
+	x0 = 10^x0;
+	x1 = 10^x1;
+     }
+   return x0, x1;
+}
+
+%}}}
+
+private define get_log_qualifiers ()
+{
+   variable xlog = (qualifier_exists ("xlog") || qualifier_exists ("loglog") || qualifier_exists("logx"));
+   variable ylog = (qualifier_exists ("ylog") || qualifier_exists ("loglog") || qualifier_exists ("logy"));
+   
+   return xlog, ylog;
+}
+
+private define do_world_method (nth, nargs) %{{{
+{
+   variable xdata, ydata;
+   variable w, x0, x1, y0, y1;
+   variable pad = 0.0;
+
+   switch (nargs)
+     {
+      case 3:
+	(w, xdata, ydata) = ();
+	x0 = NULL;
+	pad = 0.05;
+     }
+     {
+      case 5:
+	(w, x0, x1, y0, y1) = ();
+     }
+     {
+	usage (".world ([x0, x1], [y0, y1] ; xlog, ylog, loglog)");
+     }
+
+   variable p = w.plot_data;
+   variable xaxis = get_struct_field (p, "x${nth}axis"$);
+   variable yaxis = get_struct_field (p, "y${nth}axis"$);
+
+   variable xlog, ylog;
+   (xlog, ylog) = get_log_qualifiers (;;__qualifiers);
+   xlog = xlog or xaxis.islog;
+   ylog = ylog or yaxis.islog;
+
+   if (x0 == NULL)
+     {
+	if (xlog) xdata = xdata[where (xdata>0)];
+	if (ylog) ydata = ydata[where (ydata>0)];
+
+	(x0, x1) = (min(xdata), max(xdata));
+	(y0, y1) = (min(ydata), max(ydata));
+     }
+
+   (x0, x1) = get_world_min_max (x0, x1, xlog, pad);
+   (y0, y1) = get_world_min_max (y0, y1, ylog, pad);
+   
+   xaxis.xmin = double(x0); xaxis.xmax = double(x1); xaxis.islog = xlog;
+   yaxis.xmin = double(y0); yaxis.xmax = double(y1); yaxis.islog = ylog;
+   xaxis.inited = 0;
+   yaxis.inited = 0;
+
+   set_struct_field (p, "world${nth}_inited"$, 1);
+}
+
+%}}}
+   
+private define world1_method () %{{{
+{
+   return do_world_method (1, _NARGS ;; __qualifiers);
+}
+
+%}}}
+
+private define world2_method () %{{{
+{
+   return do_world_method (2, _NARGS ;; __qualifiers);
+}
+
+%}}}
+
+private define world_method () %{{{
+{
+   variable args = __pop_args (_NARGS);
+   world1_method (__push_args (args) ;; __qualifiers);
+   world2_method (__push_args (args) ;; __qualifiers);
+}
+
+%}}}
+
 
 private define scale_coords_for_axis (axis, axis_len, x)
 {
@@ -1117,16 +1306,21 @@ private define scale_coords_for_axis (axis, axis_len, x)
 
 private define make_nsided_polygon (n, x0, y0, radius)
 {
-   variable theta = [0:n]*(2*PI/n);
+   variable theta = [0:n]*(2*PI/n); theta = [theta, 0];
    variable x = x0 + radius * cos (theta);
    variable y = y0 + radius * sin (theta);
    return x, y;
 }
 
-define xfig_plot_lines (p, x, y)
+private define plot_lines (p, x, y)
 {
-   p = p.object;
+   p = p.plot_data;
    variable ax = p.x1axis, ay = p.y1axis;
+   if (qualifier_exists ("world2"))
+     {
+	ax = p.x2axis;
+	ay = p.y2axis;
+     }
    variable w = p.plot_width, h = p.plot_height;
    
    if (length (x) < 2)
@@ -1137,8 +1331,13 @@ define xfig_plot_lines (p, x, y)
    variable bad = Int_Type [length(x)+1];
    bad[-1] = 1;
 
-   variable i = where ((x != x) or (y != y));
+   variable i = where (isnan (x) or isnan (y));
    bad[i] = 1;
+
+   variable depth = qualifier ("depth", p.line_depth);
+   variable thickness = qualifier ("width", p.thickness);
+   variable color = qualifier ("color", p.line_color);
+   variable linestyle = qualifier ("line", p.line_style);
 
    variable i0 = 0;
    foreach (where (bad))
@@ -1148,12 +1347,12 @@ define xfig_plot_lines (p, x, y)
 	  {
 	     variable ii = [i0:i-1];
 	     variable lines = xfig_clip_polyline2d (x[ii], y[ii], 0, w, 0, h);
-	     xfig_translate_object (lines, p.X);
-	     xfig_set_depth (lines, p.line_depth);
-	     xfig_set_thickness (lines, p.thickness);
-	     xfig_set_pen_color (lines, p.line_color);
-	     xfig_set_line_style (lines, p.line_style);
-	     xfig_compound_list_insert (p.object_list, lines);
+	     lines.translate (p.X);
+	     lines.set_depth (depth);
+	     lines.set_thickness (thickness);
+	     lines.set_pen_color (color);
+	     lines.set_line_style (linestyle);
+	     p.object_list.insert(lines);
 	  }
 	i0 = i+1;
      }
@@ -1175,24 +1374,36 @@ private define pop_plot_err_parms (nargs)
 	  dy = dy[i];
 	else if (isnan (dy)) dy = dy[i];
      }
-   return p.object, x, y, dy, term_factor;
+   return p.plot_data, x, y, dy, term_factor;
 }
 
 private define insert_errbar_list (p, lines)
 {
-   xfig_translate_object (lines, p.X);
-   xfig_set_depth (lines, p.line_depth);
-   xfig_set_thickness (lines, p.thickness);
-   xfig_set_pen_color (lines, p.line_color);
-   xfig_set_line_style (lines, p.line_style);
-   xfig_compound_list_insert (p.object_list, lines);
+   variable depth = qualifier ("depth", p.line_depth);
+   variable width = qualifier ("width", p.thickness);
+   variable color = qualifier ("color", p.line_color);
+   variable style = qualifier ("eb_line", p.line_style);
+   color = qualifier ("eb_color", color);
+   width = qualifier ("eb_width", width);
+
+   lines.translate(p.X);
+   lines.set_depth(depth);
+   lines.set_thickness (width);
+   lines.set_pen_color (color);
+   lines.set_line_style (style);
+   p.object_list.insert(lines);
 }
 
-define xfig_plot_erry ()
+private define plot_erry ()
 {
    variable p, x, y, dy, term_factor;
    (p, x, y, dy, term_factor) = pop_plot_err_parms (_NARGS);
    variable ax = p.x1axis, ay = p.y1axis;
+   if (qualifier_exists ("world2"))
+     {
+	ax = p.x2axis;
+	ay = p.y2axis;
+     }
    variable w = p.plot_width, h = p.plot_height;
 
    x = scale_coords_for_axis (ax, w, x);
@@ -1225,27 +1436,32 @@ define xfig_plot_erry ()
 	if (y1_i < h)
 	  {
 	     if (term_factor)
-	       xfig_polyline_list_insert (lines, xfig_make_polyline (vector (dx, [y1_i, y1_i], dz)));
+	       lines.insert (vector (dx, [y1_i, y1_i], dz));
 	  }
 	else y1_i = h;
 
 	if (y0_i > 0)
 	  {
 	     if (term_factor)
-	       xfig_polyline_list_insert (lines, xfig_make_polyline (vector (dx, [y0_i, y0_i], dz)));
+	       lines.insert (vector (dx, [y0_i, y0_i], dz));
 	  }
 	else y0_i = 0;
 
-	xfig_polyline_list_insert (lines, xfig_make_polyline (vector ([x_i, x_i], [y0_i,y1_i], dz)));
+	lines.insert (vector ([x_i, x_i], [y0_i,y1_i], dz));
      }
-   insert_errbar_list (p, lines);
+   insert_errbar_list (p, lines ;; __qualifiers);
 }
 
-define xfig_plot_errx ()
+private define plot_errx ()
 {
    variable p, x, y, dx, term_factor;
    (p, x, y, dx, term_factor) = pop_plot_err_parms (_NARGS);
    variable ax = p.x1axis, ay = p.y1axis;
+   if (qualifier_exists ("world2"))
+     {
+	ax = p.x2axis;
+	ay = p.y2axis;
+     }
    variable w = p.plot_width, h = p.plot_height;
    
    y = scale_coords_for_axis (ay, h, y);
@@ -1278,23 +1494,25 @@ define xfig_plot_errx ()
 	if (x1_i < w)
 	  {
 	     if (term_factor)
-	       xfig_polyline_list_insert (lines, xfig_make_polyline (vector ([x1_i, x1_i], dy, dz)));
+	       lines.insert (vector ([x1_i, x1_i], dy, dz));
 	  }
 	else x1_i = w;
 
 	if (x0_i > 0)
 	  {
 	     if (term_factor)
-	       xfig_polyline_list_insert (lines, xfig_make_polyline (vector ([x0_i, x0_i], dy, dz)));
+	       lines.insert (vector ([x0_i, x0_i], dy, dz));
 	  }
 	else x0_i = 0;
 
-	xfig_polyline_list_insert (lines, xfig_make_polyline (vector ([x0_i, x1_i], [y_i,y_i], dz)));
+	lines.insert (vector ([x0_i, x1_i], [y_i,y_i], dz));
      }
-   insert_errbar_list (p, lines);
+   insert_errbar_list (p, lines ;; __qualifiers);
 }
 
-private variable Make_Symbol_Funs = Assoc_Type[Ref_Type];
+%{{{ Routines that define and create the plot symbols 
+
+private variable Make_Symbol_Funs = {};
 
 %!%+
 %\function{xfig_plot_add_symbol}
@@ -1312,30 +1530,54 @@ private variable Make_Symbol_Funs = Assoc_Type[Ref_Type];
 %!%-
 define xfig_plot_add_symbol (name, fun)
 {
-   Make_Symbol_Funs[name] = fun;
+   list_append (Make_Symbol_Funs, struct{name=name, fun=fun});
 }
 
-private define make_triangle (radius)
+private define find_symbol (symp)
+{
+   variable sym = @symp;
+   variable s;
+
+   if (typeof (sym) != String_Type)
+     {
+        s = Make_Symbol_Funs[sym mod length(Make_Symbol_Funs)];
+	@symp = s.name;
+	return s.fun;
+     }
+
+   foreach s (Make_Symbol_Funs)
+     {
+	if (s.name == sym)
+	  return s.fun;
+     }
+   return NULL;
+}
+
+private define make_circle (radius)
+{
+   variable point_size = xfig_scale_to_inches (radius) * 80.0;
+   variable nsides;
+   if (point_size == 0)
+     nsides = 1;
+   else if (point_size < 16)
+     nsides = 4 + (point_size-1)*2;
+   else 
+     nsides = 32;
+   return make_nsided_polygon (nsides, 0, 0, radius);
+}
+
+private define make_point (radius)
+{
+   return make_circle (radius/6.0);
+}
+xfig_plot_add_symbol ("point", &make_point);
+
+private define make_triangle_up (radius)
 {
    variable t = [-30, 90, 210, -30] * (PI/180.0);
    return radius * cos (t), radius * sin(t);
 }
-xfig_plot_add_symbol ("triangle", &make_triangle);
-xfig_plot_add_symbol ("triangle-up", &make_triangle);
-
-private define make_triangle_down (radius)
-{
-   variable t = [30, 150, 270, 30] * (PI/180.0);
-   return radius * cos (t), radius * sin(t);
-}
-xfig_plot_add_symbol ("triangle-down", &make_triangle_down);
-
-private define make_diamond (radius)
-{
-   variable t = [0, 90, 180, 270, 0] * (PI/180.0);
-   return radius * cos (t), radius * sin(t);
-}
-xfig_plot_add_symbol ("diamond", &make_diamond);
+xfig_plot_add_symbol ("triangle", &make_triangle_up);
 
 private define make_square (radius)
 {
@@ -1343,6 +1585,13 @@ private define make_square (radius)
    return radius * cos (t), radius * sin(t);
 }
 xfig_plot_add_symbol ("square", &make_square);
+
+private define make_diamond (radius)
+{
+   variable t = [0, 90, 180, 270, 0] * (PI/180.0);
+   return 0.5*radius * cos (t), radius * sin(t);
+}
+xfig_plot_add_symbol ("diamond", &make_diamond);
 
 private define make_plus (radius)
 {
@@ -1352,11 +1601,68 @@ private define make_plus (radius)
    x[1] = [0, 0]; y[1] = [-radius, radius];
    return x,y;
 }
-   
-define xfig_plot_symbols (p, x, y, symbol)
+xfig_plot_add_symbol ("+", &make_plus);
+
+private define make_cross (radius)
 {
-   p = p.object;
+   variable x = Array_Type[2];
+   variable y = Array_Type[2];
+   radius *= sqrt(0.5);
+   x[0] = [-radius, radius];  y[0] = [-radius, radius];
+   x[1] = [-radius, radius]; y[1] = [radius, -radius];
+   return x,y;
+}
+xfig_plot_add_symbol ("x", &make_cross);
+
+private define make_asterisk (radius)
+{
+   variable x = Array_Type[3];
+   variable y = Array_Type[3];
+   variable r1 = radius * cos (PI/3);
+   variable r2 = radius * cos (PI/6);
+   x[0] = [-radius, radius];  y[0] = [0,0];
+   x[1] = [-r1, r1]; y[1] = [-r2, r2];
+   x[2] = [-r1, r1]; y[2] = [r2, -r2];
+   return x,y;
+}
+xfig_plot_add_symbol ("*", &make_asterisk);
+
+xfig_plot_add_symbol ("circle", &make_circle);
+
+private define make_triangle_down (radius)
+{
+   variable t = [30, 150, 270, 30] * (PI/180.0);
+   return radius * cos (t), radius * sin(t);
+}
+xfig_plot_add_symbol ("triangle1", &make_triangle_down);
+
+private define make_triangle_left (radius)
+{
+   variable t = [60, 180, 300, 60] * (PI/180.0);
+   return radius * cos (t), radius * sin(t);
+}
+xfig_plot_add_symbol ("triangle2", &make_triangle_left);
+
+private define make_triangle_right (radius)
+{
+   variable t = [0, 120, 240, 0] * (PI/180.0);
+   return radius * cos (t), radius * sin(t);
+}
+xfig_plot_add_symbol ("triangle3", &make_triangle_right);
+
+
+
+%}}}
+
+private define plot_symbols (p, x, y) %{{{
+{
+   p = p.plot_data;
    variable ax = p.x1axis, ay = p.y1axis;
+   if (qualifier_exists ("world2"))
+     {
+	ax = p.x2axis;
+	ay = p.y2axis;
+     }
    
    variable bad = Int_Type [length(x)+1];
    bad[-1] = 1;
@@ -1366,13 +1672,32 @@ define xfig_plot_symbols (p, x, y, symbol)
    x = scale_coords_for_axis (ax, w, x);
    y = scale_coords_for_axis (ay, h, y);
 
-   variable point_size = p.point_size;
-   if (point_size == 0)
-     point_size = 1;
-   point_size *= 5;
+   variable point_size = qualifier ("size", p.point_size);
+   variable symbol = qualifier ("sym", "point");
 
-   variable fun = Make_Symbol_Funs [symbol];
+   variable fun = find_symbol (&symbol);
+   if (fun == NULL)
+     {
+	() = fprintf (stderr, "***Warning: symbol %s does not exist-- using point\n", symbol);
+	symbol = "point";
+	fun = &make_point;
+     }
+   point_size *= 10;
+
+   if (point_size == 0)
+     point_size++;
+
    variable radius = xfig_scale_from_inches (0.5*point_size/80.0);
+   
+   variable color = qualifier ("color", p.point_color);
+   color = qualifier ("symcolor", color);
+   variable fill_color = qualifier ("fillcolor", color);
+   variable depth = qualifier ("depth", p.point_depth);
+   depth = qualifier ("symdepth", depth);
+   variable area_fill = qualifier ("fill", -1);
+   variable size = qualifier ("width", p.thickness);
+   size = qualifier ("symwidth",size);
+   variable linestyle = qualifier ("symlinestyle", p.line_style);
    foreach (where (bad == 0))
      {
 	variable i = ();
@@ -1387,37 +1712,52 @@ define xfig_plot_symbols (p, x, y, symbol)
 		  variable yy_j = yy[j];
 		  xx_j += x[i];
 		  yy_j += y[i];
-		  lines = xfig_clip_polygon2d (xx_j, yy_j, 0, w, 0, h);
-		  xfig_set_pen_color (lines, p.point_color);
-		  xfig_set_fill_color (lines, p.point_color);
-		  xfig_set_depth (lines, p.point_depth);
-		  xfig_translate_object (lines, p.X);
-		  xfig_compound_list_insert (p.object_list, lines);
+		  (xx_j, yy_j) = _xfig_clip_polygon2d (__tmp(xx_j), __tmp(yy_j), 0, w, 0, h);
+		  if (length(xx_j) == 0)
+		    continue;
+		  lines = xfig_new_polyline (vector(xx_j,yy_j,0*xx_j));
+		  lines.set_pen_color (color);
+		  lines.set_fill_color (fill_color);
+		  lines.set_depth (depth);
+		  lines.set_thickness (size);
+		  lines.translate (p.X);
+		  lines.set_line_style (linestyle);
+		  p.object_list.insert(lines);
 	       }
 	     continue;
 	  }
 	xx += x[i];
 	yy += y[i];
-	lines = xfig_clip_polygon2d (xx, yy, 0, w, 0, h);
-	xfig_set_pen_color (lines, p.point_color);
-	xfig_set_fill_color (lines, p.point_color);
-	xfig_set_area_fill (lines, 20);
-	xfig_set_depth (lines, p.point_depth);
-	xfig_translate_object (lines, p.X);
-	xfig_compound_list_insert (p.object_list, lines);
+	(xx, yy) = _xfig_clip_polygon2d (__tmp(xx), __tmp(yy), 0, w, 0, h);
+	if (length (xx) == 0)
+	  continue;
+
+	lines = xfig_new_polyline (vector(xx,yy,0*xx));
+	lines.set_pen_color (color);
+	lines.set_fill_color (fill_color);
+	lines.set_line_style (linestyle);
+	lines.set_area_fill (area_fill);
+	lines.set_thickness (size);
+	lines.set_depth(depth);
+	lines.translate (p.X);
+	p.object_list.insert(lines);
      }
 }
 
-define xfig_plot_points (p, x, y)
-{
-   p = p.object;
-   variable ax = p.x1axis, ay = p.y1axis;
-   
-   variable bad = Int_Type [length(x)+1];
-   bad[-1] = 1;
+%}}}
 
+define plot_points (p, x, y) %{{{
+{
+   p = p.plot_data;
+   variable ax = p.x1axis, ay = p.y1axis;
+   if (qualifier_exists ("world2"))
+     {
+	ax = p.x2axis;
+	ay = p.y2axis;
+     }
    variable w = p.plot_width, h = p.plot_height;
 
+   variable bad = isnan (x) or isnan(y);
    x = scale_coords_for_axis (ax, w, x);
    y = scale_coords_for_axis (ay, h, y);
 
@@ -1431,20 +1771,138 @@ define xfig_plot_points (p, x, y)
      nsides = 32;
 
    variable radius = xfig_scale_from_inches (0.5*point_size/80.0);
+   variable points = xfig_new_polygon_list ();
+   variable count = 0;
    foreach (where (bad == 0))
      {
 	variable i = ();
 	variable xx, yy;
 	(xx,yy) = make_nsided_polygon (nsides, x[i], y[i], radius);
-	variable lines = xfig_clip_polygon2d (xx, yy, 0, w, 0, h);
-	xfig_set_fill_color (lines, p.point_color);
-	xfig_set_pen_color (lines, p.point_color);
-	xfig_set_area_fill (lines, 20);
-	xfig_set_depth (lines, p.point_depth);
-	xfig_translate_object (lines, p.X);
-	xfig_compound_list_insert (p.object_list, lines);
+	(xx, yy) = _xfig_clip_polygon2d (xx, yy, 0, w, 0, h);
+
+	if (length (xx) == 0)
+	  continue;
+
+	variable point = xfig_new_polygon (vector (xx, yy, 0*xx));
+	point.set_fill_color (p.point_color);
+	point.set_pen_color (p.point_color);
+	point.set_area_fill (20);
+	point.set_depth (p.point_depth);
+	point.translate (p.X);
+	points.insert (point);
+	count++;
+     }
+   if (count)
+     p.object_list.insert (points);
+}
+
+%}}}
+
+private define check_axis (p, axis, init_fun, ticlabels, has_log_qualifier)
+{
+   ifnot (axis.inited)
+     {
+	if (has_log_qualifier)
+	  (@init_fun)(p; log, ticlabels=ticlabels);
+	else
+	  (@init_fun)(p; ticlabels=ticlabels);
+	return;
+     }
+
+   if (has_log_qualifier && (axis.islog == 0))
+     add_axis (p.plot_data, axis, "log");
+}
+
+private define initialize_plot (p, x, y)
+{
+   variable d = p.plot_data;
+   d.num_plots++;
+
+   if (d.num_plots > 1)
+     return;
+
+   variable x1axis = d.x1axis;
+   variable x2axis = d.x2axis;
+   variable y1axis = d.y1axis;
+   variable y2axis = d.y2axis;
+
+   variable logx, logy;
+   (logx, logy) = get_log_qualifiers (;;__qualifiers);
+
+   variable xmin = NULL, xmax = NULL;
+   if ((x != NULL) && (y != NULL))
+     {
+	if (not d.world1_inited
+	    || (logx && ((x1axis.xmin <= 0) || (x1axis.xmax <= 0)))
+	    || (logy && ((y1axis.xmin <= 0) || (y1axis.xmax <= 0))))
+	  p.world1 (x,y ;; __qualifiers);
+
+	if (not d.world2_inited
+	    || (logx && ((x2axis.xmin <= 0) || (x2axis.xmax <= 0)))
+	    || (logy && ((y2axis.xmin <= 0) || (y2axis.xmax <= 0))))
+	  p.world2 (x,y ;; __qualifiers);
+     }
+
+   check_axis (p, d.x1axis, &x1axis_method, 1, logx);
+   check_axis (p, d.x2axis, &x2axis_method, 0, logx);
+   check_axis (p, d.y1axis, &y1axis_method, 1, logy);
+   check_axis (p, d.y2axis, &y2axis_method, 0, logy);
+}
+
+private define plot_method () %{{{
+{
+   variable x, y, dx = NULL, dy = NULL, p;
+
+   switch (_NARGS)
+     {
+      case 2:
+	x = ();
+	y = [1:length(x)];
+     }
+     {
+      case 3:
+	(x,y) = ();
+     }
+     {
+      case 4:
+	(x,y,dy) = ();
+     }
+     {
+      case 5:
+	(x,y,dx,dy) = ();
+     }
+     {
+	_pop_n (_NARGS);
+	usage (".plot (x [, y [, dy | dx, dy]] ; qualifiers\n" +
+	       "Common qualifiers:\n" +
+	       " color=val, line=val, linewidth=val, width=val, sym=val, symcolor=val\n"
+	      );
+     }
+   p = ();
+   initialize_plot (p, x, y ;;__qualifiers);
+
+   variable line = qualifier ("line", 1);
+   variable sym = qualifier ("sym");
+
+   if ((line != NULL) && (line != 0))
+     {
+	plot_lines (p, x, y ;; __qualifiers);
+     }
+   if (sym != NULL)
+     {
+	plot_symbols (p, x, y ;; __qualifiers);
+     }
+   if (dx != NULL)
+     {
+	plot_errx (p, x, y, dx ;; __qualifiers);
+     }
+   if (dy != NULL)
+     {
+	plot_erry (p, x, y, dy ;; __qualifiers);
      }
 }
+
+%}}}
 
 % Usage: xfig_plot_histogram (w, x, y [,fill_color, area_fill])
 define xfig_plot_histogram (w, xpts, ypts)
@@ -1468,13 +1926,13 @@ define xfig_plot_histogram (w, xpts, ypts)
 #else
    y[-1] = 0;
 #endif
-   xfig_plot_lines (w, x, y);
+   plot_lines (w, x, y ;; __qualifiers);
 }
 
 
 define xfig_plot_shaded_histogram (p, x, y, color, area_fill)
 {
-   p = p.object;
+   p = p.plot_data;
    variable ax = p.x1axis, ay = p.y1axis;
    variable w = p.plot_width, h = p.plot_height;
    x = scale_coords_for_axis (ax, w, x);
@@ -1495,81 +1953,80 @@ define xfig_plot_shaded_histogram (p, x, y, color, area_fill)
 	variable x1 = x[i+1];
 	variable y1 = y[i];
 	
-	variable bin = xfig_make_polyline (vector([x0, x0, x1, x1], [y0,y1,y1,y0], [0.0,0.0,0.0,0.0]));
-	xfig_polyline_list_insert (list, bin);
+	list.insert (vector([x0, x0, x1, x1], [y0,y1,y1,y0], [0.0,0.0,0.0,0.0]));
      }
-   xfig_translate_object (list, p.X);
-   xfig_set_depth (list, p.line_depth-1);
-   xfig_set_pen_color (list, p.line_color);
-   xfig_set_line_style (list, p.line_style);
-   xfig_set_fill_color (list, color);
-   xfig_set_area_fill (list, area_fill);
-   xfig_compound_list_insert (p.object_list, list);
+   list.translate (p.X);
+   list.set_depth (p.line_depth-1);
+   list.set_pen_color (p.line_color);
+   list.set_line_style (p.line_style);
+   list.set_fill_color (color);
+   list.set_area_fill (area_fill);
+   p.object_list.insert (list);
 }
 
 define xfig_plot_set_line_color (p, color)
 {
-   p.object.line_color = color;
+   p.plot_data.line_color = color;
 }
 
 define xfig_plot_set_line_style (p, style)
 {
-   p.object.line_style = style;
+   p.plot_data.line_style = style;
 }
 
 define xfig_plot_set_line_thickness (p, thickness)
 {
-   p.object.thickness = thickness;
+   p.plot_data.thickness = thickness;
 }
 
 define xfig_plot_set_line_depth (p, depth)
 {
-   p.object.line_depth = depth;
+   p.plot_data.line_depth = depth;
 }
 define xfig_plot_set_axis_depth (p, depth)
 {
-   p.object.axis_depth = depth;
+   p.plot_data.axis_depth = depth;
 }
 define xfig_plot_set_point_depth (p, depth)
 {
-   p.object.point_depth = depth;
+   p.plot_data.point_depth = depth;
 }
 define xfig_plot_inc_line_depth (p, depth)
 {
-   p.object.line_depth += depth;
+   p.plot_data.line_depth += depth;
 }
 define xfig_plot_inc_axis_depth (p, depth)
 {
-   p.object.axis_depth += depth;
+   p.plot_data.axis_depth += depth;
 }
 define xfig_plot_inc_point_depth (p, depth)
 {
-   p.object.point_depth += depth;
+   p.plot_data.point_depth += depth;
 }
 define xfig_plot_get_line_depth (p, depth)
 {
-   return p.object.line_depth;
+   return p.plot_data.line_depth;
 }
 define xfig_plot_get_axis_depth (p, depth)
 {
-   return p.object.axis_depth;
+   return p.plot_data.axis_depth;
 }
 define xfig_plot_get_point_depth (p, depth)
 {
-   return p.object.point_depth;
+   return p.plot_data.point_depth;
 }
 
 define xfig_plot_inc_image_depth (p, depth)
 {
-   p.object.image_depth += depth;
+   p.plot_data.image_depth += depth;
 }
 define xfig_plot_get_image_depth (p, depth)
 {
-   return p.object.image_depth;
+   return p.plot_data.image_depth;
 }
 define xfig_plot_set_image_depth (p, depth)
 {
-   p.object.image_depth = depth;
+   p.plot_data.image_depth = depth;
 }
 
 
@@ -1577,13 +2034,12 @@ define xfig_plot_set_point_size (p, point_size)
 {
    if (point_size < 0)
      point_size = 0;
-   p.object.point_size = point_size;
+   p.plot_data.point_size = point_size;
 }
 define xfig_plot_set_point_color (p, color)
 {
-   p.object.point_color = color;
+   p.plot_data.point_color = color;
 }
-
 
 %!%+
 %\function{xfig_plot_add_object}
@@ -1599,7 +2055,7 @@ define xfig_plot_set_point_color (p, color)
 %  corner of the object to the specified coordinate.
 %\seealso{xfig_plot_define_world1}
 %!%-
-define xfig_plot_add_object ()
+private define add_object_method ()
 {
    variable p, obj, x=NULL, y=NULL, dx=0, dy=0;
    switch (_NARGS)
@@ -1617,7 +2073,7 @@ define xfig_plot_add_object ()
      }
    (p, obj) = ();
 	
-   p = p.object;
+   p = p.plot_data;
 
    if ((x != NULL) and (y != NULL))
      {
@@ -1627,7 +2083,7 @@ define xfig_plot_add_object ()
 	xfig_justify_object (obj, p.X + vector (x,y,0), vector(dx, dy, 0));
      }
 
-   xfig_compound_list_insert (p.object_list, obj);
+   p.object_list.insert(obj);
 }
 
 
@@ -1663,8 +2119,58 @@ define xfig_plot_text ()
    (w, text, x, y) = ();
    
    text = xfig_new_text (text);
-   xfig_plot_add_object (w, text, x, y, dx, dy);
+   add_object_method (w, text, x, y, dx, dy);
 }
+
+
+private define xlabel_method ()
+{
+   if (_NARGS != 2)
+     {
+	usage (".xlabel (label [; qualifiers])");
+     }
+   variable p, label;
+   (p, label) = ();
+   p = p.plot_data;
+   add_axis_label (p, p.x1axis, label ;; __qualifiers);
+}
+
+private define ylabel_method ()
+{
+   if (_NARGS != 2)
+     {
+	usage (".ylabel (label [; qualifiers])");
+     }
+   variable p, label;
+   (p, label) = ();
+   p = p.plot_data;
+   add_axis_label (p, p.y1axis, label ;; __qualifiers);
+}
+
+private define x2label_method ()
+{
+   if (_NARGS != 2)
+     {
+	usage (".x2label (label [; qualifiers])");
+     }
+   variable p, label;
+   (p, label) = ();
+   p = p.plot_data;
+   add_axis_label (p, p.x2axis, label ;; __qualifiers);
+}
+
+private define y2label_method ()
+{
+   if (_NARGS != 2)
+     {
+	usage (".x2label (label [; qualifiers])");
+     }
+   variable p, label;
+   (p, label) = ();
+   p = p.plot_data;
+   add_axis_label (p, p.y2axis, label ;; __qualifiers);
+}
+
 
 
 %!%+
@@ -1672,62 +2178,151 @@ define xfig_plot_text ()
 %\synopsis{Add a title to a plot}
 %\usage{xfig_plot_title (w, title)}
 %!%-
-define xfig_plot_title ()
+private define title_method (w, title)
 {
-   variable w, title;
-   (w, title) = ();
-
    variable x0, x1, y, z;
-   (,,,y,,z) = xfig_get_object_bbox (w);
+   (,,,y,,z) = w.get_bbox ();
 
-   variable p = w.object;
+   variable p = w.plot_data;
    x0 = p.X.x;
    x1 = x0 + p.plot_width;
 
    if (typeof (title) == String_Type)
-     title = xfig_new_text (title);
+     title = xfig_new_text (title ;; __qualifiers);
    xfig_justify_object (title, vector(0.5*(x0+x1), y, z), vector(0,-1,0));
-   xfig_plot_add_object (w, title);
+   w.add_object (title);
 }
 
 private define add_pict_to_plot (w, png)
 {
    variable dx, dy;
-   (dx, dy) = xfig_get_pict_bbox (png);
-   variable p = w.object;
+   (dx, dy) = png.get_pict_bbox ();
+   variable p = w.plot_data;
    variable width = p.plot_width;
    variable height = p.plot_height;
-   xfig_scale_pict (png, width/dx, height/dy);
+   png.scale_pict (width/dx, height/dy);
 
-   xfig_center_pict_in_box (png, p.X + 0.5*vector (width,height,0), width, height);
-   xfig_plot_add_object (w, png);
-   xfig_set_depth (png, p.image_depth);
+   png.center_pict (p.X + 0.5*vector (width,height,0), width, height);
+   w.add_object (png);
+   png.set_depth (p.image_depth);
 }
-
 
 %!%+
 %\function{xfig_plot_png}
 %\synopsis{Add a png file to a plot, scaling it to the window}
 %\usage{xfig_plot_png (w, file)}
 %!%-
-define xfig_plot_png (w, png)
+define plot_png_method ()
 {
+   variable w, png;
+   if (_NARGS != 2)
+     usage (".plot_png (img)");
+   
+   (w, png) = ();
    png = xfig_new_png (png);
+   initialize_plot (w, NULL, NULL ;;__qualifiers);
    add_pict_to_plot (w, png);
 }
 
+private variable XFig_Plot_Type = struct
+{
+   plot_data,
+
+   % Methods
+   title = &title_method,
+   add_object = &add_object_method,
+   world = &world_method,
+   world1 = &world1_method,
+   world2 = &world2_method,
+   plot = &plot_method,
+   xlabel = &xlabel_method,
+   ylabel = &ylabel_method,
+   x2label = &x2label_method,
+   y2label = &y2label_method,
+   x1axis = &x1axis_method,
+   y1axis = &y1axis_method,
+   x2axis = &x2axis_method,
+   y2axis = &y2axis_method,
+   xaxis = &xaxis_method,
+   yaxis = &yaxis_method,
+   axis = &axis_method,
+   axes = &axis_method,
+   plot_png = &plot_png_method,
+};
+
+%!%+
+%\function{xfig_plot_new}
+%\synopsis{Create a new plot object}
+%\usage{w = xfig_plot_new ( [Int_Type width, Int_Type height] );}
+%\description
+% This function creates a new plot object of the specified width and height.
+% If the width and height parameters are not given, defaults will be used.
+% The width and height values specify the size of the plotting area and do not
+% include the space for tic marks and labels.
+%\example
+%#v+
+%   w = xfig_plot_new ();
+%#v-
+%\seealso{xfig_plot_define_world, xfig_render_object}
+%!%-
+define xfig_plot_new ()
+{
+   variable w, h;
+   if (_NARGS == 0)
+     (14, 10);
+   (w, h) = ();
+
+   variable p = @XFig_Plot_Data_Type;
+   p.plot_width = w;
+   p.plot_height = h;
+   variable maxticsx = int(w*0.5 + 1.5);
+   variable maxticsy = int(h+1.5);
+   p.x1axis = allocate_axis_type (w, maxticsx, 1, (0,0), (1,0), (0,1), X1_Axis_Geom);
+   p.y1axis = allocate_axis_type (h, maxticsy, 1, (0,0), (0,1), (1,0), Y1_Axis_Geom);
+   p.x2axis = allocate_axis_type (w, maxticsx, 0, (0,h), (1,0), (0,-1), X2_Axis_Geom);
+   p.y2axis = allocate_axis_type (h, maxticsy, 0, (w,0), (0,1), (-1,0), Y2_Axis_Geom);
+
+   p.line_color = "black";
+   p.line_style = 0;
+   p.thickness = 2;
+   p.point_color = "black";
+   p.point_size = 1;
+   p.line_depth = DEFAULT_LINE_DEPTH;
+   p.point_depth = DEFAULT_POINT_DEPTH;
+   p.axis_depth = DEFAULT_FRAME_DEPTH;
+   p.image_depth = DEFAULT_IMAGE_DEPTH;
+
+   p.X = vector(0,0,0);
+   p.object_list = xfig_new_compound_list ();
+
+   
+   variable obj = xfig_new_object (@XFig_Plot_Type);
+   obj.plot_data = p;
+
+   obj.render_to_fp = &plot_render;
+   obj.rotate = &plot_rotate;
+   obj.translate = &plot_translate;
+   obj.scale = &plot_scale;
+   obj.get_bbox = &plot_get_bbox;
+   obj.flags |= XFIG_RENDER_AS_COMPOUND;
+   return obj;
+}
 
 
 %!%+
 %\function{xfig_plot_new_png}
 %\synopsis{Create a new plot window for a png file}
 %\usage{w = xfig_plot_new_png (file)}
+%\description
+%\example
+%\notes
+%\seealso{}
 %!%-
 define xfig_plot_new_png (png)
 {
    png = xfig_new_png (png);
    variable dx, dy;
-   (dx, dy) = xfig_get_pict_bbox (png);
+   (dx, dy) = png.get_pict_bbox ();
    variable w = xfig_plot_new (dx, dy);
    add_pict_to_plot (w, png);
    return w;
@@ -1739,8 +2334,7 @@ private define ones()
    variable a = __pop_args (_NARGS);
    return 1 + Int_Type[__push_args (a)];
 }
-
-
+ 
 %!%+
 %\function{xfig_meshgrid}
 %\synopsis{Produce grid points for an image}
@@ -1763,7 +2357,7 @@ private define ones()
 define xfig_meshgrid ()
 {
    variable x,y;
-
+ 
    if (_NARGS != 2)
      usage ("(xx,yy)=xfig_meshgrid (x,y) ==> produces grid vectors for an image");
    
@@ -1778,3 +2372,29 @@ define xfig_meshgrid ()
 
    return xx, yy;
 }
+
+%
+%------------------------------------------------------------------------
+%
+define xfig_plot_add_object ()
+{
+   message ("xfig_plot_add_object is obsolete");
+   variable args = __pop_list (_NARGS);
+   variable w = args[0];
+   (@w.add_object) (__push_list (args));
+}
+
+define xfig_plot_title ()
+{
+   message ("xfig_plot_title is obsolete");
+   variable args = __pop_list (_NARGS);
+   (@args[0].title) (__push_list (args));
+}
+
+define xfig_plot_define_world ()
+{
+   message ("xfig_plot_define_world is obsolete");
+   variable args = __pop_list (_NARGS);
+   (@args[0].world)(__push_list (args));
+}
+

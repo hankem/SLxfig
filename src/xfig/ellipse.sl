@@ -104,12 +104,17 @@ private define get_bbox_ellipse (e)
    return min(X.x), max(X.x), min(X.y), max(X.y), min(X.z), max(X.z);
 }
 
+private define set_depth (obj, depth)
+{
+   obj.depth = depth;
+}
+
 
 define xfig_new_ellipse (a, b)
 {
    variable obj = xfig_new_object (make_ellipse (a,b));
    obj.render_fun = &render_ellipse;
-   obj.set_attr_fun = &xfig_primative_set_attr;
+   obj.set_depth = &set_depth;
    obj.rotate_fun = &rotate_ellipse;
    obj.translate_fun = &translate_ellipse;
    obj.scale_fun = &scale_ellipse;

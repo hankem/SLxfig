@@ -165,19 +165,19 @@ private define text_scale (f, sx, sy, sz)
    X.z *= sz;
 }
 
-private define text_set_attr (f, attr, val)
+private define text_set_depth (obj, depth)
 {
-   xfig_primative_set_attr (f, attr, val);
+   obj.depth = depth;
 }
 
 define xfig_new_xfig_text (fontname, str)
 {
    variable text = xfig_make_xfig_text (fontname, str);
    variable obj = xfig_new_object (text);
-   obj.render_fun = &text_render;
-   obj.translate_fun = &text_translate;
-   obj.rotate_fun = &text_rotate;
-   obj.scale_fun = &text_scale;
-   obj.set_attr_fun = &text_set_attr;
+   obj.render = &text_render;
+   obj.translate = &text_translate;
+   obj.rotate = &text_rotate;
+   obj.scale = &text_scale;
+   obj.set_depth = &text_set_depth;
    return obj;
 }

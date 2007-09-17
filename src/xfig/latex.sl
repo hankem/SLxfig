@@ -1,6 +1,5 @@
 % -*- mode: slang; mode: fold -*-
 % LaTeX and EPS interface
-_debug_info = 1;
 
 %{{{ Tmpfile and Dir handling Functions 
 
@@ -180,16 +179,6 @@ private define open_latex_file (file)
    return fp;
 }
 
-private define map_color_to_rgb (f)
-{
-   if (f == "red") return 0xFF0000;
-   if (f == "green") return 0x00FF00;
-   if (f == "blue") return 0x0000FF;
-   if (f == "black") return 0;
-   () = fprintf (stderr, "***** map_color_to_rgb: not implemented\n");
-   return NULL;
-}
-
 private define check_font_struct (s)
 {
    variable f = s.size;
@@ -211,13 +200,8 @@ private define check_font_struct (s)
 
    if (typeof (f) == String_Type)
      {
-	(f,) = strreplace (strlow (f), " ", strlen (f));
-	f = map_color_to_rgb (f);
-	if (f == NULL)
-	  {
-	     () = fprintf (stderr, "*** Warning: unable to map %s to RGB\n", f);
-	     f = 0;
-	  }
+	(f,) = strreplace (strlow (f), " ", "", strlen (f));
+	f = xfig_lookup_color_rgb (f);
      }
    s.color = f;
    
@@ -237,26 +221,36 @@ private define check_font_struct (s)
    s.style = f;
 }
 
+private define make_font_struct ()
+{
+   return struct
+     {
+	color = qualifier ("color",  Latex_Default_Color),
+	style = qualifier ("style",  Latex_Default_Font_Style),
+	size = qualifier ("size", "\\normalsize"),
+     };
+}
+
 define xfig_make_font ()
 {
+   variable s = make_font_struct (;;__qualifiers);
+   if (_NARGS == 0)
+     return s;
+   
    if (_NARGS != 3)
      {
 	usage ("font = %s (style, size, color)", _function_name ());
      }
-
-   variable s = struct
-     {
-	style, color, size
-     };
-
-   (s.style, s.size, s.color) = ();
-
-   if (s.style == NULL)
-     s.style = Latex_Default_Font_Style;
+   
+   variable style, size, color;
+   if (style != NULL) s.style = style;
+   if (size != NULL) s.size = size;
+   if (color != NULL) s.color = color;
 
    return s;
 }
 
+   
 private define make_preamble (font)
 {
    variable str;
@@ -281,13 +275,14 @@ private define make_preamble (font)
 		       str, r / 255.0, g/255.0, b/255.0);
 	str = strcat (str, "\\color{defaultcolor}\n");
      }
-   if ((font.size != NULL) and (font.size != "\\normalsize"))
-     str = strcat (str, font.size, "\n");
    % End of preamble
 
    str = strcat (str, "\\begin{document}\n\\pagestyle{empty}\n");
    if (font.style != NULL)
      str = strcat (str, font.style, "\n");
+
+   if ((font.size != NULL) && (font.size != "\\normalsize"))
+     str = strcat (str, font.size, "\n");
 
    return str;
 }
@@ -439,6 +434,9 @@ define xfig_eq2eps ()
    variable fontstruct = NULL;
    if (_NARGS == 2)
      fontstruct = ();
+   if (fontstruct == NULL)
+     fontstruct = make_font_struct (;;__qualifiers);
+
    variable eq = ();
    return equation_function_env (eq, "equation*", fontstruct);
 }
@@ -447,6 +445,8 @@ define xfig_eqnarray2eps ()
    variable fontstruct = NULL;
    if (_NARGS == 2)
      fontstruct = ();
+   if (fontstruct == NULL)
+     fontstruct = make_font_struct (;;__qualifiers);
    variable eq = ();
    return equation_function_env (eq, "eqnarray*", fontstruct);
 }
@@ -468,12 +468,17 @@ private define do_xfig_new_xxx (fun, text, fontstruct)
 
 define xfig_new_eq (eq)
 {
-   do_xfig_new_xxx (&xfig_eq2eps, eq);
+   variable fontstruct = NULL;
+   if (_NARGS == 2)
+     fontstruct = ();
+   if (fontstruct == NULL)
+     fontstruct = make_font_struct (;;__qualifiers);
+   do_xfig_new_xxx (&xfig_eq2eps, eq, fontstruct);
 }
 
 
 %!%+
-%\function{xfig_new_text}
+%\function{xfig_new_text (text [,font_object])}
 %\synopsis{Create a text object by running LaTeX}
 %\usage{obj = xfig_new_text (String_Type text [,font_object])}
 %\description
@@ -489,6 +494,8 @@ define xfig_new_text ()
    variable fontstruct = NULL;
    if (_NARGS == 2)
      fontstruct = ();
+   if (fontstruct == NULL)
+     fontstruct = make_font_struct (;;__qualifiers);
    variable text = ();
    do_xfig_new_xxx (&xfig_text2eps, text, fontstruct);
 }
