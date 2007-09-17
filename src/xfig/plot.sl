@@ -1019,18 +1019,15 @@ private define do_axis_method (name, grid_axis)
 
    p = p.plot_data;
    variable axis = get_struct_field (p, name);
-   variable q = qualifier("off");
-   if (q != NULL)
-     q = 0;
+   variable q = not qualifier_exists("off");
    if (qualifier_exists("on"))
      q = 1;
-   if (q != NULL)
-     {
-	axis.draw_major_tics = q;
-	axis.draw_line = q;
-	axis.draw_minor_tics = q;
-	axis.draw_tic_labels = q;
-     }
+
+   axis.draw_major_tics = q;
+   axis.draw_line = q;
+   axis.draw_minor_tics = q;
+   axis.draw_tic_labels = q;
+
    % FIXME: allow major/Minor = Array_Type to specify custom tic
    % positions
    q = qualifier ("minor");
@@ -1085,7 +1082,7 @@ private define do_axis_method (name, grid_axis)
    % .islog already has a default value.  Don't muck with it unless
    % requested.
    if (qualifier_exists ("linear")) axis.islog = 0;
-   if (qualifier_exists ("log")) axis.islog = 1;
+   if (qualifier_exists ("log")) axis.islog = qualifier ("log");
 
    % Ditto
    q = qualifier ("ticlabels");
