@@ -1213,12 +1213,23 @@ private define get_world_min_max (x0, x1, islog, pad) %{{{
 
 %}}}
 
+private define get_log_qualifier (name)
+{
+   if (0 == qualifier_exists (name))
+     return 0;
+   variable q = qualifier (name);
+   if (q == NULL) return 1;
+   return q;
+}
 private define get_log_qualifiers ()
 {
-   variable xlog = (qualifier_exists ("xlog") || qualifier_exists ("loglog") || qualifier_exists("logx"));
-   variable ylog = (qualifier_exists ("ylog") || qualifier_exists ("loglog") || qualifier_exists ("logy"));
-   
-   return xlog, ylog;
+   return (get_log_qualifier ("xlog" ;; __qualifiers)
+	   || get_log_qualifier ("logx" ;; __qualifiers)
+	   || qualifier_exists ("loglog")
+	   ,
+	   get_log_qualifier ("ylog" ;; __qualifiers)
+	   || get_log_qualifier ("logy" ;; __qualifiers)
+	   || qualifier_exists ("loglog"));
 }
 
 private define do_world_method (nth, nargs) %{{{
