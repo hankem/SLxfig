@@ -580,7 +580,7 @@ private define make_tic_label_objects (axis, tic_labels_just, tweakx, tweaky) %{
 
 %}}}
 
-private define make_major_minor_tic_positions (axis) %{{{
+private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{{
 {
    variable xmin = axis.xmin;
    variable xmax = axis.xmax;
@@ -588,14 +588,22 @@ private define make_major_minor_tic_positions (axis) %{{{
    if (xmax < xmin)
      (xmin, xmax) = (xmax, xmin);
 
+   if (major_tics != NULL)
+     {
+	axis.major_tics = major_tics[where ((major_tics >= xmin) and (major_tics <= xmax))];
+	if (minor_tics != NULL)
+	  minor_tics = minor_tics[where ((minor_tics >= xmin) and (minor_tics <= xmax))];
+	axis.minor_tics = minor_tics;
+	return;
+     }
+
    variable islog = axis.islog;
-   variable major_tics;
    variable num_minor;
    if (islog)
      {
 	(xmin, xmax) = check_xmin_xmax_for_log (xmin, xmax);
      }
-   
+
    (major_tics, num_minor) = get_major_tics (xmin, xmax, islog, axis.maxtics);
 
    if (islog)
@@ -625,7 +633,7 @@ private define make_major_minor_tic_positions (axis) %{{{
       }
    else minor_tic_interval = major_tic_interval/(num_minor+1.0);
 
-   variable minor_tics = Double_Type[num_minor*length(major_tics)];
+   minor_tics = Double_Type[num_minor*length(major_tics)];
 
    foreach (major_tics)
      {
@@ -786,10 +794,10 @@ private define add_axis_label (p, axis, label)
    position_axis_label (axis);
 }
 
-private define add_axis (p, axis, wcs_type) %{{{
+private define add_axis (p, axis, wcs_type, major_tics, minor_tics) %{{{
 {
    setup_axis_wcs (axis, wcs_type);
-   make_major_minor_tic_positions (axis);
+   make_major_minor_tic_positions (axis, major_tics, minor_tics);
 
    setup_axis_tics (p, axis);
    
@@ -1000,6 +1008,27 @@ private define allocate_axis_type (len, maxtics, has_tic_labels, xpos, ypos, dir
 
 %}}}
 
+
+private define get_log_qualifier (name)
+{
+   if (0 == qualifier_exists (name))
+     return 0;
+   variable q = qualifier (name);
+   if (q == NULL) return 1;
+   return q;
+}
+
+private define get_log_qualifiers ()
+{
+   return (get_log_qualifier ("xlog" ;; __qualifiers)
+	   || get_log_qualifier ("logx" ;; __qualifiers)
+	   || qualifier_exists ("loglog")
+	   ,
+	   get_log_qualifier ("ylog" ;; __qualifiers)
+	   || get_log_qualifier ("logy" ;; __qualifiers)
+	   || qualifier_exists ("loglog"));
+}
+
 private define do_axis_method (name, grid_axis)
 {
    variable p;
@@ -1028,15 +1057,20 @@ private define do_axis_method (name, grid_axis)
    axis.draw_minor_tics = q;
    axis.draw_tic_labels = q;
 
-   % FIXME: allow major/Minor = Array_Type to specify custom tic
-   % positions
+   variable minor_tics = NULL;
    q = qualifier ("minor");
    if (typeof (q) == Int_Type)
      axis.draw_minor_tics = q;
+   else
+     minor_tics = q;
+
+   variable major_tics = NULL;
    q = qualifier ("major");
    if (typeof (q) == Int_Type)
      axis.draw_major_tics = q;
-   
+   else
+     major_tics = q;
+
    q = qualifier ("color");
    if (q != NULL)
      {
@@ -1082,9 +1116,9 @@ private define do_axis_method (name, grid_axis)
    % .islog already has a default value.  Don't muck with it unless
    % requested.
    if (qualifier_exists ("linear")) axis.islog = 0;
-   if (qualifier_exists ("log")) axis.islog = qualifier ("log");
+   if (qualifier_exists ("log")) axis.islog = get_log_qualifier ("log";;__qualifiers);
 
-   % Ditto
+   % FIXME: Allow ticlabels to be an array of strings
    q = qualifier ("ticlabels");
    if (typeof (q) == Int_Type)
      axis.draw_tic_labels = q;
@@ -1118,7 +1152,7 @@ private define do_axis_method (name, grid_axis)
 	if (axis.islog)
 	  wcs = "log";
      }
-   add_axis (p, axis, wcs);
+   add_axis (p, axis, wcs, major_tics, minor_tics);
 }
 
 private define xaxis_method ()
@@ -1192,6 +1226,9 @@ private define get_world_min_max (x0, x1, islog, pad) %{{{
    if (pad == 0.0)
      return x0, x1;
    
+   variable save_x0 = x0;
+   variable save_x1 = x1;
+
    if (islog)
      {
 	x0 = log10 (x0);
@@ -1204,30 +1241,15 @@ private define get_world_min_max (x0, x1, islog, pad) %{{{
      {
 	x0 = 10^x0;
 	x1 = 10^x1;
+	if (x0 == 0)
+	  x0 = save_x0;
+	if (isinf(x1))
+	  x1 = save_x1;
      }
    return x0, x1;
 }
 
 %}}}
-
-private define get_log_qualifier (name)
-{
-   if (0 == qualifier_exists (name))
-     return 0;
-   variable q = qualifier (name);
-   if (q == NULL) return 1;
-   return q;
-}
-private define get_log_qualifiers ()
-{
-   return (get_log_qualifier ("xlog" ;; __qualifiers)
-	   || get_log_qualifier ("logx" ;; __qualifiers)
-	   || qualifier_exists ("loglog")
-	   ,
-	   get_log_qualifier ("ylog" ;; __qualifiers)
-	   || get_log_qualifier ("logy" ;; __qualifiers)
-	   || qualifier_exists ("loglog"));
-}
 
 private define do_world_method (nth, nargs) %{{{
 {
@@ -1818,7 +1840,7 @@ private define check_axis (p, axis, init_fun, ticlabels, has_log_qualifier)
      }
 
    if (has_log_qualifier && (axis.islog == 0))
-     add_axis (p.plot_data, axis, "log");
+     add_axis (p.plot_data, axis, "log", NULL, NULL);
 }
 
 private define initialize_plot (p, x, y)

@@ -234,73 +234,151 @@ xfig_set_output_driver("gif", "fig2dev -L gif %I %O");
 % Colors
 private variable Color_Type = struct
 {
-   name, rgb, xfigid
+   name, id, rgb, xfigid
 };
-private variable Next_XFig_Color_Id = -1;
 private variable Color_Table = Assoc_Type[Struct_Type];
-define xfig_new_color (name, rgb)
+private variable Color_List = {};
+
+private variable LAST_XFIG_COLOR_ID = 31;
+private variable Next_Color_Id;
+private variable Next_XFig_Color_Id = LAST_XFIG_COLOR_ID+1;
+
+private define new_color (name, rgb, xfigid, id)
 {
    variable s = @Color_Type;
    name = strlow (name);
    s.name = name;
    s.rgb = rgb;
-   s.xfigid = Next_XFig_Color_Id;
+   s.xfigid = xfigid;
+   s.id = id;
    Color_Table[name] = s;
-   Next_XFig_Color_Id++;
+
+   if (id >= 0)
+     list_append (Color_List, s);
 }
 
-xfig_new_color ("default",	0xFFFFFF);
-xfig_new_color ("black",	0x000000);
-xfig_new_color ("blue",		0x0000FF);
-xfig_new_color ("green",	0x00FF00);
-xfig_new_color ("cyan",		0x00FFFF);
-xfig_new_color ("red",		0xFF0000);
-xfig_new_color ("magenta",	0xFF00FF);
-xfig_new_color ("yellow",	0xFFFF00);
-xfig_new_color ("white",	0xFFFFFF);
-xfig_new_color ("blue4",	0x000090);
-xfig_new_color ("blue2",	0x0000b0);
-xfig_new_color ("blue3",	0x0000d0);
-xfig_new_color ("blue1",	0x87ceff);
-xfig_new_color ("green4",	0x009000);
-xfig_new_color ("green3",	0x00b000);
-xfig_new_color ("green2",	0x00d000);
-xfig_new_color ("cyan4",	0x009090);
-xfig_new_color ("cyan3",	0x00b0b0);
-xfig_new_color ("cyan2",	0x00d0d0);
-xfig_new_color ("red4",		0x900000);
-xfig_new_color ("red3",		0xb00000);
-xfig_new_color ("red2",		0xd00000);
-xfig_new_color ("magenta4",	0x900090);
-xfig_new_color ("magenta3",	0xb000b0);
-xfig_new_color ("magenta2",	0xd000d0);
-xfig_new_color ("brown4",	0x803000);
-xfig_new_color ("brown3",	0xa04000);
-xfig_new_color ("brown2",	0xc06000);
-xfig_new_color ("pink4",	0xff8080);
-xfig_new_color ("pink3",	0xffa0a0);
-xfig_new_color ("pink2",	0xffc0c0);
-xfig_new_color ("pink",		0xffe0e0);
-xfig_new_color ("gold",		0xffd700);
+private define add_color (name, rgb, xfigid)
+{
+   new_color (name, rgb, xfigid, Next_Color_Id);
+   Next_Color_Id++;
+}
 
+% These are the built-in xfig colors.
+% They are ordered for the purpose of plotting via a color index.
+Next_Color_Id = -2;
+add_color ("default",	0xFFFFFF,	-1);
+add_color ("white",	0xFFFFFF,	7);
+
+add_color ("black",	0x000000,	0);
+add_color ("red",	0xFF0000,	4);
+add_color ("green",	0x00FF00,	2);
+add_color ("blue",	0x0000FF,	1);
+add_color ("magenta",	0xFF00FF,	5);
+add_color ("cyan",	0x00FFFF,	3);
+
+add_color ("brown4",	0x803000,	24);
+add_color ("red4",	0x900000,	18);
+add_color ("green4",	0x009000,	12);
+add_color ("blue4",	0x000090,	8);
+add_color ("magenta4",	0x900090,	21);
+add_color ("cyan4",	0x009090,	15);
+
+add_color ("brown3",	0xa04000,	25);
+add_color ("red3",	0xb00000,	19);
+add_color ("green3",	0x00b000,	13);
+add_color ("blue3",	0x0000d0,	10);
+add_color ("magenta3",	0xb000b0,	22);
+add_color ("cyan3",	0x00b0b0,	16);
+
+add_color ("brown2",	0xc06000,	26);
+add_color ("red2",	0xd00000,	20);
+add_color ("green2",	0x00d000,	14);
+add_color ("blue2",	0x0000b0,	9);
+add_color ("magenta2",	0xd000d0,	23);
+add_color ("cyan2",	0x00d0d0,	17);
+
+add_color ("gold",	0xffd700,	31);
+add_color ("pink4",	0xff8080,	27);
+add_color ("yellow",	0xFFFF00,	6);
+add_color ("blue1",	0x87ceff,	11);
+add_color ("pink3",	0xffa0a0,	28);
+add_color ("pink2",	0xffc0c0,	29);
+add_color ("pink",	0xffe0e0,	30);
+
+private define find_color (color)
+{
+   if (typeof (color) == String_Type)
+     {
+	color = strlow (color);
+	if (assoc_key_exists (Color_Table, color))
+	  return Color_Table[color];
+     }
+   else
+     {
+	if (0 <= color < length(Color_List))
+	  return Color_List[color];
+     }
+
+   return NULL;
+}
+
+   
 define xfig_lookup_color (color)
 {
-   color = strlow (color);
-   if (assoc_key_exists (Color_Table, color))
-     return Color_Table[color].xfigid;
-   
-   () = fprintf (stderr, "color %s is unknown\n", color);
+   variable s = find_color (color);
+   if (s != NULL)
+     return s.xfigid;
+
+   () = fprintf (stderr, "color %S is unknown\n", color);
    return -1;
 }
 
 define xfig_lookup_color_rgb (color)
 {
-   color = strlow (color);
-   if (assoc_key_exists (Color_Table, color))
-     return Color_Table[color].rgb;
-   
-   () = fprintf (stderr, "color %s is unknown\n", color);
+   variable s = find_color (color);
+   if (s != NULL)
+     return s.rgb;
+
+   () = fprintf (stderr, "color %S is unknown\n", color);
    return 0;
+}
+
+
+%!%+
+%\function{xfig_new_color}
+%\synopsis{Add a new color definition}
+%\usage{xfig_new_color (name, RGB [,&id]}
+%\description
+% This function may be used to add a new color called \exmp{name}
+% with the specified RGB (24 bit integer) value.  If the optional
+% third parameter is provided, it must be a reference to a variable
+% whose value upon return will be set to the integer index of the color.
+%\seealso{xfig_lookup_color_rgb, xfig_lookup_color}
+%!%-
+define xfig_new_color ()
+{
+   variable name, rgb, id, idp = &id;
+   
+   if (_NARGS == 3)
+     idp = ();
+   (name, rgb) = ();
+   if (assoc_key_exists (Color_Table, name))
+     {
+	variable s = Color_Table[name];
+	if (rgb != s.rgb)
+	  {
+	     s.rgb = rgb;
+	     if (s.xfigid <= LAST_XFIG_COLOR_ID)
+	       s.xfigid = Next_XFig_Color_Id;
+	  }
+	@idp = s.id;
+	return;
+     }
+   
+   new_color (name, rgb, Next_XFig_Color_Id, Next_Color_Id);
+   @idp = Next_Color_Id;
+   Next_Color_Id++;
+   Next_XFig_Color_Id++;
 }
 
 private define write_colors (fp)
