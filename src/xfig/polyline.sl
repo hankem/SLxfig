@@ -550,10 +550,9 @@ private define pict_get_bbox (p)
 
 private define pict_scale (p, sx, sy, sz)
 {
-   variable pict = p.polyline_list;
-   pict.bbox_x *= sx;
-   pict.bbox_y *= sy;
-   polyline_list_scale (p, sx, sy, sz);
+   p.bbox_x *= sx;
+   p.bbox_y *= sy;
+   %polyline_list_scale (p, sx, sy, sz);
 }
 
 private define pict_rotate (p, axis, theta)

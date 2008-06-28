@@ -1,4 +1,9 @@
 dnl# -*- mode: sh; mode: fold -*-
+dnl# 0.2.3-2: X was missing in a "test" statement (Joerg Sommer)
+dnl# 0.2.3-1: AC_AIX needs to be called before running the compiler (Miroslav Lichvar)
+dnl# 0.2.3: rewrote JD_CHECK_FOR_LIBRARY to loop over include/lib pairs
+dnl# 0.2.2-1: JD_WITH_LIBRARY bug-fix
+dnl# 0.2.2:  Use ncurses5-config to search for terminfo dirs.
 dnl# 0.2.1:  Add .dll.a to list of extensions to when searching for libs (cygwin)
 dnl# 0.2.0:  Added install target name and more fixes for cygwin
 dnl# 0.1.12: Improved support for cygwin
@@ -9,7 +14,6 @@ dnl# Version 0.1.8: Add rpath support for OpenBSD
 dnl# Version 0.1.7: removed "-K pic" from IRIX compiler lines
 dnl# Version 0.1.6: Added cygwin module support
 dnl# Version 0.1.5: Added gcc version-script support.
-dnl#
 
 AC_DEFUN(JD_INIT,     dnl#{{{
 [
@@ -458,19 +462,23 @@ dnl#}}}
 
 AC_DEFUN(JD_TERMCAP, dnl#{{{
 [
-AC_MSG_CHECKING(for Terminfo)
-MISC_TERMINFO_DIRS="$FINKPREFIX/share/terminfo"
-if test ! -d $MISC_TERMINFO_DIRS
+AC_PATH_PROG(nc5config, ncurses5-config, no)
+if test "$nc5config" = "no"
 then
+  AC_PATH_PROG(nc5config, ncurses5w-config, no)
+fi
+AC_MSG_CHECKING(for terminfo)
+if test "$nc5config" != "no"
+then
+   MISC_TERMINFO_DIRS=`$nc5config --terminfo`
+else
    MISC_TERMINFO_DIRS=""
 fi
-
-JD_Terminfo_Dirs="/usr/lib/terminfo \
-                 /usr/share/terminfo \
-                 /usr/share/lib/terminfo \
-		 /usr/local/lib/terminfo \
-		 $MISC_TERMINFO_DIRS"
-
+JD_Terminfo_Dirs="$MISC_TERMINFO_DIRS \
+                  /usr/lib/terminfo \
+                  /usr/share/terminfo \
+                  /usr/share/lib/terminfo \
+		  /usr/local/lib/terminfo"
 TERMCAP=-ltermcap
 
 for terminfo_dir in $JD_Terminfo_Dirs
@@ -495,11 +503,11 @@ dnl#}}}
 
 AC_DEFUN(JD_ANSI_CC, dnl#{{{
 [
+AC_AIX
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_GCC_TRADITIONAL
 AC_ISC_POSIX
-AC_AIX
 
 dnl #This stuff came from Yorick config script
 dnl
@@ -747,7 +755,10 @@ AC_DEFUN(JD_WITH_LIBRARY_PATHS, dnl#{{{
  JD_UPPERCASE($1,JD_ARG1)
  jd_$1_include_dir=""
  jd_$1_library_dir=""
- jd_with_$1_library=""
+ if test X"$jd_with_$1_library" = X
+ then 
+   jd_with_$1_library=""
+ fi
 
  AC_ARG_WITH($1,
   [  --with-$1=DIR      Use DIR/lib and DIR/include for $1],
@@ -758,13 +769,16 @@ AC_DEFUN(JD_WITH_LIBRARY_PATHS, dnl#{{{
      jd_with_$1_library="no"
     ;;
    x)
-    AC_MSG_ERROR(--with-$1 requires a value-- try yes or no)
+    dnl# AC_MSG_ERROR(--with-$1 requires a value-- try yes or no)
+    jd_with_$1_library="yes"
     ;;
    xunspecified)
     ;;
    xyes)
+    jd_with_$1_library="yes"
     ;;
    *)
+    jd_with_$1_library="yes"
     jd_$1_include_dir="$jd_with_$1_arg"/include
     jd_$1_library_dir="$jd_with_$1_arg"/lib
     ;;
@@ -782,6 +796,7 @@ AC_DEFUN(JD_WITH_LIBRARY_PATHS, dnl#{{{
     AC_MSG_ERROR(--with-$1lib requres a value)
     ;;
    *)
+    jd_with_$1_library="yes"
     jd_$1_library_dir="$jd_with_$1lib_arg"
     ;;
  esac
@@ -798,6 +813,7 @@ AC_DEFUN(JD_WITH_LIBRARY_PATHS, dnl#{{{
    xno)
      ;;
    *)
+    jd_with_$1_library="yes"
     jd_$1_include_dir="$jd_with_$1inc_arg"
    ;;
  esac
@@ -814,61 +830,34 @@ dnl#  jd_$1_library_dir
 AC_DEFUN(JD_CHECK_FOR_LIBRARY, dnl#{{{
 [
   AC_REQUIRE([JD_EXPAND_PREFIX])dnl
-  AC_MSG_CHECKING(for the $1 library and header files $2)
   dnl JD_UPPERCASE($1,JD_ARG1)
   JD_WITH_LIBRARY_PATHS($1)
-  if test X"$jd_with_$1_library" = X
+  AC_MSG_CHECKING(for the $1 library and header files $2)
+  if test X"$jd_with_$1_library" != Xno
   then
     jd_$1_inc_file=$2
-    jd_with_$1_library="yes"
+    dnl# jd_with_$1_library="yes"
 
     if test "X$jd_$1_inc_file" = "X"
     then
        jd_$1_inc_file=$1.h
     fi
+
     if test X"$jd_$1_include_dir" = X
     then
-       lib_include_dirs="\
-            $jd_prefix_incdir \
-            /usr/local/$1/include \
-            /usr/local/include/$1 \
-  	  /usr/local/include \
-  	  /usr/include/$1 \
-  	  /usr/$1/include \
-  	  /usr/include \
-  	  /opt/include/$1 \
-  	  /opt/$1/include \
-  	  /opt/include"
+      inc_and_lib_dirs="\
+         $jd_prefix_incdir,$jd_prefix_libdir \
+	 /usr/local/$1/include,/usr/local/$1/lib \
+	 /usr/local/include/$1,/usr/local/lib \
+	 /usr/local/include,/usr/local/lib \
+	 /usr/include/$1,/usr/lib \
+	 /usr/$1/include,/usr/$1/lib \
+	 /usr/include,/usr/lib \
+	 /opt/include/$1,/opt/lib \
+	 /opt/$1/include,/opt/$1/lib \
+	 /opt/include,/opt/lib"
   
-       for X in $lib_include_dirs
-       do
-          if test -r "$X/$jd_$1_inc_file"
-	  then
-  	  jd_$1_include_dir="$X"
-            break
-          fi
-       done
-       if test X"$jd_$1_include_dir" = X
-       then
-         jd_with_$1_library="no"
-       fi
-    fi
-   
-    if test X"$jd_$1_library_dir" = X
-    then
-       lib_library_dirs="\
-            $jd_prefix_libdir \
-            /usr/local/lib \
-            /usr/local/lib/$1 \
-            /usr/local/$1/lib \
-  	  /usr/lib \
-  	  /usr/lib/$1 \
-  	  /usr/$1/lib \
-  	  /opt/lib \
-  	  /opt/lib/$1 \
-  	  /opt/$1/lib"
-
-       case "$host_os" in
+      case "$host_os" in
          *darwin* )
 	   exts="dylib so a"
 	   ;;
@@ -877,35 +866,44 @@ AC_DEFUN(JD_CHECK_FOR_LIBRARY, dnl#{{{
 	   ;;
 	 * )
 	   exts="so a"
-       esac
+      esac
    
-       found=0
-       for X in $lib_library_dirs
-       do
-         for E in $exts
-	 do
-           if test -r "$X/lib$1.$E"
-	   then
-  	     jd_$1_library_dir="$X"
-	     found=1
-	     break
-           fi
-         done
-	 if test $found -eq 1
-	 then
-	   break
-	 fi
-       done
-       if test X"$jd_$1_library_dir" = X
-       then
-         jd_with_$1_library="no"
-       fi
+      xincfile="$jd_$1_inc_file"
+      xlibfile="lib$1"
+      jd_with_$1_library="no"
+
+      for include_and_lib in $inc_and_lib_dirs
+      do
+        # Yuk.  Is there a better way to set these variables??
+        xincdir=`echo $include_and_lib | tr ',' ' ' | awk '{print [$]1}'`
+	xlibdir=`echo $include_and_lib | tr ',' ' ' | awk '{print [$]2}'`
+	found=0
+	if test -r $xincdir/$xincfile
+	then 
+	  for E in $exts
+	  do
+	    if test -r "$xlibdir/$xlibfile.$E"
+	    then
+	      jd_$1_include_dir="$xincdir"
+	      jd_$1_library_dir="$xlibdir"
+	      jd_with_$1_library="yes"
+	      found=1
+	      break
+	    fi
+	  done
+	fi
+	if test $found -eq 1
+	then
+	  break
+	fi	
+      done
     fi
   fi
 
-  if test "$jd_with_$1_library" = "yes"
+  if test X"$jd_$1_include_dir" != X -a X"$jd_$1_library_dir" != X
   then
     AC_MSG_RESULT(yes: $jd_$1_library_dir and $jd_$1_include_dir)
+    jd_with_$1_library="yes"
     dnl#  Avoid using /usr/lib and /usr/include because of problems with
     dnl#  gcc on some solaris systems.
     JD_ARG1[]_LIB=-L$jd_$1_library_dir
@@ -923,6 +921,7 @@ AC_DEFUN(JD_CHECK_FOR_LIBRARY, dnl#{{{
     fi
   else
     AC_MSG_RESULT(no)
+    jd_with_$1_library="no"
     JD_ARG1[]_INC=""
     JD_ARG1[]_LIB=""
   fi

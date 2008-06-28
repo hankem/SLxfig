@@ -512,7 +512,8 @@ private define construct_tic_label_strings (axis, tics) %{{{
 	if (format == NULL)
 	  {
 	     format = "\\bf %.5g";
-	     alt_fmt = "\\bf %g$\\bf\\bm\\cdot 10^{%d}$";
+	     %alt_fmt = "\\bf %g$\\bf\\bm\\cdot 10^{%d}$";
+	     alt_fmt = "\\bf %g$\\bf\\bm\\times 10^{%d}$";
 	  }
 	tic_labels = array_map (String_Type, &sprintf, format, tics);
 	if (alt_fmt != NULL)
@@ -528,7 +529,12 @@ private define construct_tic_label_strings (axis, tics) %{{{
 		  (b,a) = (int(a), a-int(a));
 		  a[j]++;
 		  b[j]--;
+		  j = where(feqs(a, 1));
+		  a[j]--;
+		  b[j]++;
+
 		  a = 10.0^a;
+
 		  a[where(tics[i]<0)] *= -1;
 		  tic_labels[i] = array_map (String_Type, &sprintf, alt_fmt, 
 					     a, b);
@@ -944,6 +950,17 @@ private define plot_get_bbox (p) %{{{
      {
 	variable axis = ();
 	(x0, x1, y0, y1, z0, z1) = get_axis_bbox (axis);
+	if (x0 < xmin) xmin = x0;
+	if (x1 > xmax) xmax = x1;
+	if (y0 < ymin) ymin = y0;
+	if (y1 > ymax) ymax = y1;
+	if (z0 < zmin) zmin = z0;
+	if (z1 > zmax) zmax = z1;
+     }
+   foreach (p.object_list)
+     {
+	variable obj = ();
+	(x0, x1, y0, y1, z0, z1) = obj.get_bbox ();
 	if (x0 < xmin) xmin = x0;
 	if (x1 > xmax) xmax = x1;
 	if (y0 < ymin) ymin = y0;
@@ -1400,7 +1417,7 @@ private define pop_plot_err_parms (nargs)
      {	
 	x = x[i];
 	y = y[i];
-	if (dy == Array_Type)
+	if (typeof(dy) == Array_Type)
 	  dy = dy[i];
 	else if (isnan (dy)) dy = dy[i];
      }
@@ -1886,8 +1903,8 @@ private define plot_method () %{{{
    switch (_NARGS)
      {
       case 2:
-	x = ();
-	y = [1:length(x)];
+	y = ();
+	x = [1:length(y)];
      }
      {
       case 3:
@@ -1911,10 +1928,12 @@ private define plot_method () %{{{
    p = ();
    initialize_plot (p, x, y ;;__qualifiers);
 
-   variable line = qualifier ("line", 1);
+   % If a symbol is specified, then do not draw lines unless line is
+   % also specified.
+   variable line = qualifier ("line");
    variable sym = qualifier ("sym");
 
-   if ((line != NULL) && (line != 0))
+   if ((line != NULL) || (sym == NULL))
      {
 	plot_lines (p, x, y ;; __qualifiers);
      }
@@ -1956,6 +1975,7 @@ define xfig_plot_histogram (w, xpts, ypts)
 #else
    y[-1] = 0;
 #endif
+   initialize_plot (w, x, y ;;__qualifiers);
    plot_lines (w, x, y ;; __qualifiers);
 }
 
@@ -1992,6 +2012,39 @@ define xfig_plot_shaded_histogram (p, x, y, color, area_fill)
    list.set_fill_color (color);
    list.set_area_fill (area_fill);
    p.object_list.insert (list);
+}
+
+private define hplot_method () %{{{
+{
+   variable x, y, dy = NULL, p;
+
+   switch (_NARGS)
+     {
+      case 2:
+	y = ();
+	x = [1:length(y)];
+     }
+     {
+      case 3:
+	(x,y) = ();
+     }
+     {
+      case 4:
+	(x,y,dy) = ();
+     }
+     {
+	_pop_n (_NARGS);
+	usage (".hplot (x [, y [, dy ]] ; qualifiers\n" +
+	       "Common qualifiers:\n" +
+	       " color=val, line=val, linewidth=val, width=val\n"
+	      );
+     }
+   p = ();
+   xfig_plot_histogram (p, x, y;; __qualifiers);
+   if (dy != NULL)
+     {
+	plot_erry (p, x, y, dy ;; __qualifiers);
+     }
 }
 
 define xfig_plot_set_line_color (p, color)
@@ -2033,15 +2086,15 @@ define xfig_plot_inc_point_depth (p, depth)
 {
    p.plot_data.point_depth += depth;
 }
-define xfig_plot_get_line_depth (p, depth)
+define xfig_plot_get_line_depth (p)
 {
    return p.plot_data.line_depth;
 }
-define xfig_plot_get_axis_depth (p, depth)
+define xfig_plot_get_axis_depth (p)
 {
    return p.plot_data.axis_depth;
 }
-define xfig_plot_get_point_depth (p, depth)
+define xfig_plot_get_point_depth (p)
 {
    return p.plot_data.point_depth;
 }
@@ -2050,7 +2103,7 @@ define xfig_plot_inc_image_depth (p, depth)
 {
    p.plot_data.image_depth += depth;
 }
-define xfig_plot_get_image_depth (p, depth)
+define xfig_plot_get_image_depth (p)
 {
    return p.plot_data.image_depth;
 }
@@ -2265,6 +2318,7 @@ private variable XFig_Plot_Type = struct
    world1 = &world1_method,
    world2 = &world2_method,
    plot = &plot_method,
+   hplot = &hplot_method,
    xlabel = &xlabel_method,
    ylabel = &ylabel_method,
    x2label = &x2label_method,

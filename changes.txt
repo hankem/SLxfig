@@ -7,3 +7,9 @@ Changes since 0.1.0
 3. src/xfig/plot.sl: Allow major/minor tic positions to be specified.
 4. src/xfig/core.sl: Changed the way the colors are indexed to allow
    and allow colors to be specified by index.
+5. src/xfig/polyline.sl: pict_scale was using the wrong object.
+6. src/plot.sl: Use \times instead of \cdot for labels in the alt format
+7. src/plot.sl: If a sym qualifier is given, do not draw lines unless
+   line is also specified.
+8. src/plot.sl: hplot method added for plotting histograms.
+9. src/plot.sl: get_*_depth functions included a depth argument
