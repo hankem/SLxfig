@@ -14,7 +14,7 @@ define xfig_new_grid (nx, ny, dx, dy)
    leny = ny * dy;
    lenx = nx * dx;
 
-   %variable border = xfig_new_rectangle (lenx, leny);
+   variable border = xfig_new_rectangle (lenx, leny);
    variable list = xfig_new_polyline_list ();
 
    nx++;
@@ -40,8 +40,8 @@ define xfig_new_grid (nx, ny, dx, dy)
 	y += dy;
      }
    
-   return list;
-   %return xfig_new_compound (border, list);
+   %return list;
+   return xfig_new_compound (border, list);
 }
 
 %}}}
@@ -132,26 +132,29 @@ define xfig_new_photon (dX, amp, period)
    return xfig_new_compound (photon, a);
 }
 
+% Neither of these functions work too well  --- avoid them
 define xfig_new_labeled_arrow (dX, label)
 {
    variable height = 0.1, width = 0.05;
 
-   variable p = xfig_new_polyline (vector([0,dX.x], [0,dX.y], [0,dX.z]));
-   variable a = xfig_new_arrow_head (width, height, dX);
-   a.translate (vector_mul (1.0-height, dX));
+   variable p = xfig_new_polyline (vector([0,dX.x], [0,dX.y], [0,dX.z])
+				   ;; __qualifiers);
+   variable a = xfig_new_arrow_head (width, height, dX;; __qualifiers);
+   a.translate ((1.0-height)*dX);
    if (label != NULL)
      {
-	label = xfig_new_text ("default", label);
-	label.translate (vector_mul (1.05, dX));
+	label = xfig_new_text (label ;;__qualifiers);
+	variable dx, dy;
+	(dx, dy) = label.get_pict_bbox ();
+	label.translate (1.05*dX + vector (dX.x*dx, dy, 0));
      }
    return xfig_new_compound (p, a, label);
 }
-
 define xfig_new_3d_axis (xlabel, ylabel, zlabel)
 {
-   variable e1 = xfig_new_labeled_arrow (vector(1,0,0), xlabel);
-   variable e2 = xfig_new_labeled_arrow (vector(0,1,0), ylabel);
-   variable e3 = xfig_new_labeled_arrow (vector(0,0,1), zlabel);
+   variable e1 = xfig_new_labeled_arrow (vector(1,0,0), xlabel;; __qualifiers);
+   variable e2 = xfig_new_labeled_arrow (vector(0,1,0), ylabel;; __qualifiers);
+   variable e3 = xfig_new_labeled_arrow (vector(0,0,1), zlabel;; __qualifiers);
    return xfig_new_compound (e1, e2, e3);
 }
 

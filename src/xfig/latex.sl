@@ -457,13 +457,13 @@ define xfig_new_eps (file)
    (x0, y0, x1, y1) = xfig_get_eps_bbox (file);
    variable dx = xfig_scale_from_inches ((x1 - x0)/72.0);
    variable dy = xfig_scale_from_inches ((y1 - y0)/72.0);
-   return xfig_new_pict (file, dx, dy);
+   return xfig_new_pict (file, dx, dy;; __qualifiers);
 }
 
 private define do_xfig_new_xxx (fun, text, fontstruct)
 {
-   variable eps = (@fun) (text, fontstruct);
-   return xfig_new_eps (eps);
+   variable eps = (@fun) (text, fontstruct;; __qualifiers);
+   return xfig_new_eps (eps;; __qualifiers);
 }
 
 define xfig_new_eq (eq)
@@ -473,7 +473,7 @@ define xfig_new_eq (eq)
      fontstruct = ();
    if (fontstruct == NULL)
      fontstruct = make_font_struct (;;__qualifiers);
-   do_xfig_new_xxx (&xfig_eq2eps, eq, fontstruct);
+   do_xfig_new_xxx (&xfig_eq2eps, eq, fontstruct;; __qualifiers);
 }
 
 
@@ -497,7 +497,7 @@ define xfig_new_text ()
    if (fontstruct == NULL)
      fontstruct = make_font_struct (;;__qualifiers);
    variable text = ();
-   do_xfig_new_xxx (&xfig_text2eps, text, fontstruct);
+   do_xfig_new_xxx (&xfig_text2eps, text, fontstruct;; __qualifiers);
 }
 
 define xfig_set_font_style (style)

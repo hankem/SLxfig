@@ -8,8 +8,19 @@ Changes since 0.1.0
 4. src/xfig/core.sl: Changed the way the colors are indexed to allow
    and allow colors to be specified by index.
 5. src/xfig/polyline.sl: pict_scale was using the wrong object.
-6. src/plot.sl: Use \times instead of \cdot for labels in the alt format
-7. src/plot.sl: If a sym qualifier is given, do not draw lines unless
+6. src/xfig/plot.sl: Use \times instead of \cdot for labels in the alt format
+7. src/xfig/plot.sl: If a sym qualifier is given, do not draw lines unless
    line is also specified.
-8. src/plot.sl: hplot method added for plotting histograms.
-9. src/plot.sl: get_*_depth functions included a depth argument
+8. src/xfig/plot.sl: hplot method added for plotting histograms.
+9. src/xfig/plot.sl: get_*_depth functions included a depth argument
+10. src/xfig/plot.sl: Avoid the use of (@Array_Type) to create an array.
+11. src/xfig/core.sl: Added orange, orange2-4 colors.
+12. src/xfig/core.sl: All objects get set_pen_color, set_area_fill,
+    set_thickness, set_lines_style, and set_fill_color methods.
+13. src/xfig/objects.sl: Added qualifier support to a few functions.
+14. src/xfig/polyline.sl: Added "just" qualifier to the xfig_new_pict
+    function to specify its local coordinate system origin.
+15. src/xfig/ellipse.sl: Fixed some bugs that surfaced when porting
+    old code to use this version of xfig.
+16. src/xfig/latex.sl: Added qualifier support to allow the "just"
+    qualifier to propagate into the xfig_new_pict function.

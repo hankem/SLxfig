@@ -345,6 +345,7 @@ define xfig_new_polyline_list ()
    p.translate = &polyline_list_translate;
    p.scale = &polyline_list_scale;
    p.get_bbox = &polyline_list_get_bbox;
+
    return p;
 }
 
@@ -656,9 +657,34 @@ private define pict_center_pict (pict, X, dx, dy)
    pict_translate (pict, vector_sum(X, vector (xoff, yoff, 0)));
 }
 
+
+%!%+
+%\function{xfig_new_pict}
+%\synopsis{Create an object that encapsulates an image file}
+%\usage{obj = xfig_new_pict(filename, width, height [; qualifiers])}
+%\description
+% This function creates an object containing the specified image file
+% and scales it to the specified width an height.  The resulting
+% object containing the image will be centered at (0,0,0).
+% 
+%\qualifiers
+% The \exmp{just} qualifier may be used to indicate how the object is
+% to be justified with respect to the origin.  Its value must be a 2d
+% numeric array [dx,dy] that gives the offset of the center of the
+% image scaled with respect to the bounding box.  Examples include:
+%#v+
+%    just=[0,0]           Center object upon the origin (default)
+%    just=[-0.5,-0.5]     Put the lower-left corner at the origin
+%    just=[0.5,-0.5]      Put the lower-right corner at the origin
+%    just=[0.5,0.5]       Put the upper-right corner at the origin
+%    just=[-0.5,-0.5]     Put the upper-left corner at the origin
+%#v-
+%\seealso{xfig_new_text, xfig_justify_object}
+%!%-
 define xfig_new_pict (file, dx, dy)
 {
-   variable p = xfig_new_polyline (vector (0,0,0));
+   variable X = vector(0,0,0);
+   variable p = xfig_new_polyline (X);
    p.sub_type = SUBTYPE_IMPPICT;
 
    p = struct_combine (p, "pict_file", "flipped", "bbox_x", 
@@ -684,6 +710,15 @@ define xfig_new_pict (file, dx, dy)
    p.scale = &pict_scale;
    p.rotate = &pict_rotate;
    p.get_bbox = &pict_get_bbox;
+   
+   variable just = qualifier ("just");
+   if (just != NULL)
+     {
+	if (length (just) == 2)
+	  just = [just, 0];
+
+	xfig_justify_object (p, X, vector(just[0], just[1], just[2]));
+     }
    return p;
 }
 

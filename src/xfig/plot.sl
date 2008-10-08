@@ -14,7 +14,7 @@ private define convert_to_array (s, n)
    if (type == Array_Type)
      return s;
    
-   variable a = (@Array_Type)(type, [n]);
+   variable a = type[n];
    a[*] = s;
    return a;
 }

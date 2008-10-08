@@ -381,6 +381,18 @@ define xfig_new_color ()
    Next_XFig_Color_Id++;
 }
 
+% Some additional colors
+private define to_rgb (r, g, b)
+{
+   return (r << 16) | (g << 8) | b;
+}
+
+xfig_new_color ("orange", to_rgb(255,165,0));
+xfig_new_color ("orange2",to_rgb(238,154,0));
+xfig_new_color ("orange3",to_rgb(205,133,0));
+xfig_new_color ("orange4",to_rgb(139,90,0));
+
+
 private define write_colors (fp)
 {
    foreach (assoc_get_values (Color_Table))
@@ -519,21 +531,9 @@ private define default_render (obj, dev)
      xfig_close_file (dev);
 }
 
-private define default_rotate (object, axis, theta)
-{
-}
-
-private define default_translate (object, X0)
-{
-}
-
-private define default_scale (object, sx, sy, sz)
-{
-}
-
-private define default_set_depth (object, depth)
-{
-}
+private define default_method1 (obj, arg1);
+private define default_method2 (obj, arg1, arg2);
+private define default_method3 (obj, arg1, arg2, arg3);
 
 private define default_get_bbox (object)
 {
@@ -548,24 +548,22 @@ private define default_count_objects (object)
 
 private variable XFig_Object = struct
 {
-   render_to_fp,		       %  define this one
-     rotate, translate, scale,
-     get_bbox,
-     set_depth,
-     flags,
-     render, 			       %  do not override
-     count_objects
+   render_to_fp = &default_render_to_fp,%  define this one  
+   rotate = &default_method2, 
+   translate = &default_method1, 
+   scale = &default_method3,
+   get_bbox = &default_get_bbox,
+   set_depth = &default_method1,
+   set_pen_color = &default_method1,
+   set_thickness = &default_method1,
+   set_line_style = &default_method1,
+   set_area_fill = &default_method1,
+   set_fill_color = &default_method1,
+   render = &default_render, 			       %  do not override
+   flags = 0,
+   count_objects = &default_count_objects,
      % Private below
 };
-XFig_Object.render_to_fp = &default_render_to_fp;
-XFig_Object.rotate = &default_rotate;
-XFig_Object.translate = &default_translate;
-XFig_Object.scale = &default_scale;
-XFig_Object.get_bbox = &default_get_bbox;
-XFig_Object.set_depth = &default_set_depth;
-XFig_Object.render = &default_render;
-XFig_Object.count_objects = &default_count_objects;
-XFig_Object.flags = 0;
 
 define xfig_new_object ()
 {
@@ -661,6 +659,53 @@ private define set_depth_compound (c, depth)
      }
 }
 
+private define set_thickness_compound (c, thick)
+{
+   foreach (c.list)
+     {
+	variable obj = ();
+	obj.set_thickness (thick);
+     }
+}
+
+private define set_line_style_compound (c, ls)
+{
+   foreach (c.list)
+     {
+	variable obj = ();
+	obj.set_line_style (ls);
+     }
+}
+
+private define set_pen_color_compound (c, pc)
+{
+   pc = xfig_lookup_color (pc);
+   foreach (c.list)
+     {
+	variable obj = ();
+	obj.set_pen_color (pc);
+     }
+}
+
+private define set_area_fill_compound (c, x)
+{
+   foreach (c.list)
+     {
+	variable obj = ();
+	obj.set_area_fill (x);
+     }
+}
+
+private define set_fill_color_compound (c, x)
+{
+   x = xfig_lookup_color (x);
+   foreach (c.list)
+     {
+	variable obj = ();
+	obj.set_fill_color (x);
+     }
+}
+
 private variable Infinity = 1e38;
 private define get_bbox_compound (c)
 {
@@ -705,6 +750,12 @@ define xfig_new_compound_list ()
    obj.scale = &scale_compound;
    obj.set_depth = &set_depth_compound;
    obj.get_bbox = &get_bbox_compound;
+   obj.set_thickness = &set_thickness_compound;
+   obj.set_line_style = &set_line_style_compound;
+   obj.set_pen_color = &set_pen_color_compound;
+   obj.set_area_fill = &set_area_fill_compound;
+   obj.set_fill_color = &set_fill_color_compound;
+
    obj.flags |= XFIG_RENDER_AS_COMPOUND;
 
    obj.insert = &compound_insert;
