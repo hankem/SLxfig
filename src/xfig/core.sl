@@ -53,7 +53,7 @@ define xfig_convert_cm (x)
 
 define xfig_convert_units (x)
 {
-   return int (Scale_Factor * x + 0.5);
+   return nint (Scale_Factor * x + 0.5);
 }
 
 define xfig_use_inches ()
@@ -71,6 +71,11 @@ define xfig_use_cm ()
 define xfig_scale_from_inches (x)
 {
    return x*(PIX_PER_INCH/Scale_Factor);
+}
+
+define xfig_scale_to_inches (x)
+{
+   return (x * Scale_Factor)/PIX_PER_INCH;
 }
 
 
@@ -226,6 +231,179 @@ xfig_set_output_driver("ps", "fig2dev -L ps -c -z %P %I %O");
 xfig_set_output_driver("png", "fig2dev -L png %I %O");
 xfig_set_output_driver("gif", "fig2dev -L gif %I %O");
 
+% Colors
+private variable Color_Type = struct
+{
+   name, id, rgb, xfigid
+};
+private variable Color_Table = Assoc_Type[Struct_Type];
+private variable Color_List = {};
+
+private variable LAST_XFIG_COLOR_ID = 31;
+private variable Next_Color_Id;
+private variable Next_XFig_Color_Id = LAST_XFIG_COLOR_ID+1;
+
+private define new_color (name, rgb, xfigid, id)
+{
+   variable s = @Color_Type;
+   name = strlow (name);
+   s.name = name;
+   s.rgb = rgb;
+   s.xfigid = xfigid;
+   s.id = id;
+   Color_Table[name] = s;
+
+   if (id >= 0)
+     list_append (Color_List, s);
+}
+
+private define add_color (name, rgb, xfigid)
+{
+   new_color (name, rgb, xfigid, Next_Color_Id);
+   Next_Color_Id++;
+}
+
+% These are the built-in xfig colors.
+% They are ordered for the purpose of plotting via a color index.
+Next_Color_Id = -2;
+add_color ("default",	0xFFFFFF,	-1);
+add_color ("white",	0xFFFFFF,	7);
+
+add_color ("black",	0x000000,	0);
+add_color ("red",	0xFF0000,	4);
+add_color ("green",	0x00FF00,	2);
+add_color ("blue",	0x0000FF,	1);
+add_color ("magenta",	0xFF00FF,	5);
+add_color ("cyan",	0x00FFFF,	3);
+
+add_color ("brown4",	0x803000,	24);
+add_color ("red4",	0x900000,	18);
+add_color ("green4",	0x009000,	12);
+add_color ("blue4",	0x000090,	8);
+add_color ("magenta4",	0x900090,	21);
+add_color ("cyan4",	0x009090,	15);
+
+add_color ("brown3",	0xa04000,	25);
+add_color ("red3",	0xb00000,	19);
+add_color ("green3",	0x00b000,	13);
+add_color ("blue3",	0x0000d0,	10);
+add_color ("magenta3",	0xb000b0,	22);
+add_color ("cyan3",	0x00b0b0,	16);
+
+add_color ("brown2",	0xc06000,	26);
+add_color ("red2",	0xd00000,	20);
+add_color ("green2",	0x00d000,	14);
+add_color ("blue2",	0x0000b0,	9);
+add_color ("magenta2",	0xd000d0,	23);
+add_color ("cyan2",	0x00d0d0,	17);
+
+add_color ("gold",	0xffd700,	31);
+add_color ("pink4",	0xff8080,	27);
+add_color ("yellow",	0xFFFF00,	6);
+add_color ("blue1",	0x87ceff,	11);
+add_color ("pink3",	0xffa0a0,	28);
+add_color ("pink2",	0xffc0c0,	29);
+add_color ("pink",	0xffe0e0,	30);
+
+private define find_color (color)
+{
+   if (typeof (color) == String_Type)
+     {
+	color = strlow (color);
+	if (assoc_key_exists (Color_Table, color))
+	  return Color_Table[color];
+     }
+   else
+     {
+	if (0 <= color < length(Color_List))
+	  return Color_List[color];
+     }
+
+   return NULL;
+}
+
+   
+define xfig_lookup_color (color)
+{
+   variable s = find_color (color);
+   if (s != NULL)
+     return s.xfigid;
+
+   () = fprintf (stderr, "color %S is unknown\n", color);
+   return -1;
+}
+
+define xfig_lookup_color_rgb (color)
+{
+   variable s = find_color (color);
+   if (s != NULL)
+     return s.rgb;
+
+   () = fprintf (stderr, "color %S is unknown\n", color);
+   return 0;
+}
+
+
+%!%+
+%\function{xfig_new_color}
+%\synopsis{Add a new color definition}
+%\usage{xfig_new_color (name, RGB [,&id]}
+%\description
+% This function may be used to add a new color called \exmp{name}
+% with the specified RGB (24 bit integer) value.  If the optional
+% third parameter is provided, it must be a reference to a variable
+% whose value upon return will be set to the integer index of the color.
+%\seealso{xfig_lookup_color_rgb, xfig_lookup_color}
+%!%-
+define xfig_new_color ()
+{
+   variable name, rgb, id, idp = &id;
+   
+   if (_NARGS == 3)
+     idp = ();
+   (name, rgb) = ();
+   if (assoc_key_exists (Color_Table, name))
+     {
+	variable s = Color_Table[name];
+	if (rgb != s.rgb)
+	  {
+	     s.rgb = rgb;
+	     if (s.xfigid <= LAST_XFIG_COLOR_ID)
+	       s.xfigid = Next_XFig_Color_Id;
+	  }
+	@idp = s.id;
+	return;
+     }
+   
+   new_color (name, rgb, Next_XFig_Color_Id, Next_Color_Id);
+   @idp = Next_Color_Id;
+   Next_Color_Id++;
+   Next_XFig_Color_Id++;
+}
+
+% Some additional colors
+private define to_rgb (r, g, b)
+{
+   return (r << 16) | (g << 8) | b;
+}
+
+xfig_new_color ("orange", to_rgb(255,165,0));
+xfig_new_color ("orange2",to_rgb(238,154,0));
+xfig_new_color ("orange3",to_rgb(205,133,0));
+xfig_new_color ("orange4",to_rgb(139,90,0));
+
+
+private define write_colors (fp)
+{
+   foreach (assoc_get_values (Color_Table))
+     {
+	variable s = ();
+	if (s.xfigid < 32)
+	  continue;
+	if (-1 == fprintf (fp, "0 %d #%06X\n", s.xfigid, s.rgb))
+	  throw IOError, "Write to .fig file failed";
+     }
+}
 
 private define get_fig2dev_cmd (ext)
 {
@@ -264,6 +442,7 @@ define xfig_create_file (file)
    dev.fp = fp;
    dev.papersize = XFig_Header.papersize;	
    xfig_write_header (fp, NULL);
+   write_colors (fp);
    return dev;
 }
 
@@ -285,62 +464,7 @@ define xfig_close_file (dev)
 }
 
 
-% Colors
-private variable Color_Table = Assoc_Type[Int_Type];
-Color_Table["default"]	= -1;
-Color_Table["black"]	= 0;
-Color_Table["blue"]	= 1;
-Color_Table["green"]	= 2;
-Color_Table["cyan"]	= 3;
-Color_Table["red"]	= 4;
-Color_Table["magenta"]	= 5;
-Color_Table["yellow"]	= 6;
-Color_Table["white"]	= 7;
-Color_Table["blue1"]	= 8;
-Color_Table["blue2"]	= 9;
-Color_Table["blue3"]	= 10;
-Color_Table["blue4"]	= 11;
-Color_Table["green1"]	= 12;
-Color_Table["green2"]	= 13;
-Color_Table["green3"]	= 14;
-Color_Table["cyan1"]	= 15;
-Color_Table["cyan2"]	= 16;
-Color_Table["cyan3"]	= 17;
-Color_Table["red1"]	= 18;
-Color_Table["red2"]	= 19;
-Color_Table["red3"]	= 20;
-Color_Table["magenta1"]	= 21;
-Color_Table["magenta2"]	= 22;
-Color_Table["magenta3"]	= 23;
-Color_Table["brown1"]	= 24;
-Color_Table["brown2"]	= 25;
-Color_Table["brown3"]	= 26;
-Color_Table["pink1"]	= 27;
-Color_Table["pink2"]	= 28;
-Color_Table["pink3"]	= 29;
-Color_Table["pink4"]	= 30;
-Color_Table["gold"]	= 31;
-
-define xfig_lookup_color (color)
-{
-   color = strlow (color);
-   if (assoc_key_exists (Color_Table, color))
-     return Color_Table[color];
-   
-   () = fprintf (stderr, "color %s is unknown\n", color);
-   return -1;
-}
-
-private variable XFig_Object = struct
-{
-   object, render_fun, rotate_fun, translate_fun, scale_fun,
-     set_attr_fun, get_bbox_fun,
-     flags,
-     next
-};
-% Bitmapped values for flags parameter
-variable XFIG_RENDER_AS_COMPOUND = 1;
-
+#iffalse
 define xfig_primative_set_attr (p, attr, val)
 {
    variable names = get_struct_field_names (p);
@@ -348,48 +472,107 @@ define xfig_primative_set_attr (p, attr, val)
      return;
    set_struct_field (p, attr, val);
 }
+#endif
 
-private define default_render (object, fp)
+private define default_render_to_fp (object, fp)
 {
 }
 
-private define default_rotate (object, axis, theta)
+private define begin_render_as_compound (obj, fp)
 {
+   variable x0, x1, y0, y1, z0, z1, x, y;
+
+   (x0, x1, y0, y1, z0, z1) = obj.get_bbox ();
+   (x, y) = xfig_project_to_xfig_plane (vector ([x0,x0,x0,x0,x1,x1,x1,x1],
+						[y0,y0,y1,y1,y0,y0,y1,y1],
+						[z0,z1,z0,z1,z0,z1,z0,z1]));
+   x = xfig_convert_units (x);
+   y = xfig_convert_units (y);
+   xfig_write (fp, sprintf ("6 %d %d %d %d\n", min(x), min(y), max(x), max(y)));
 }
 
-private define default_translate (object, X0)
+private define end_render_as_compound (obj, fp)
 {
+   xfig_write (fp, "-6\n");
 }
 
-private define default_scale (object, sx, sy, sz)
+
+% Bitmapped values for flags parameter
+variable XFIG_RENDER_AS_COMPOUND = 1;
+
+private define default_render (obj, dev)
 {
+   variable rac;
+   variable do_close = 0;
+   if (obj == NULL)
+     return;
+   if (typeof (dev) == String_Type)
+     {
+	do_close = 1;
+	dev = xfig_create_file (dev);
+     }
+   variable fp = dev;
+   if (typeof (dev) == Struct_Type)
+     fp = dev.fp;
+   
+   rac = (obj.flags & XFIG_RENDER_AS_COMPOUND);
+   if (rac)
+     {
+	rac = obj.count_objects ();
+	if (rac)
+	  begin_render_as_compound (obj, fp);
+     }
+
+   obj.render_to_fp (fp);
+   
+   if (rac) 
+     end_render_as_compound (obj, fp);
+   if (do_close) 
+     xfig_close_file (dev);
 }
 
-private define default_set_attr (object, attr, val)
-{
-   xfig_primative_set_attr (object, attr, val);
-}
+private define default_method1 (obj, arg1);
+private define default_method2 (obj, arg1, arg2);
+private define default_method3 (obj, arg1, arg2, arg3);
 
 private define default_get_bbox (object)
 {
-   verror ("*** Warning: %S has no get_bbox_fun method", object);
+   verror ("*** Warning: %S has no get_bbox method", object);
    return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 }
 
-define xfig_new_object (object)
+private define default_count_objects (object)
 {
-   variable obj = @XFig_Object;
-   obj.object = object;
-   obj.render_fun = &default_render;
-   obj.rotate_fun = &default_rotate;
-   obj.translate_fun = &default_translate;
-   obj.scale_fun = &default_scale;
-   obj.set_attr_fun = &default_set_attr;
-   obj.get_bbox_fun = &default_get_bbox;
-   obj.flags = 0;
-   return obj;
+   return 1;
 }
 
+private variable XFig_Object = struct
+{
+   render_to_fp = &default_render_to_fp,%  define this one  
+   rotate = &default_method2, 
+   translate = &default_method1, 
+   scale = &default_method3,
+   get_bbox = &default_get_bbox,
+   set_depth = &default_method1,
+   set_pen_color = &default_method1,
+   set_thickness = &default_method1,
+   set_line_style = &default_method1,
+   set_area_fill = &default_method1,
+   set_fill_color = &default_method1,
+   render = &default_render, 			       %  do not override
+   flags = 0,
+   count_objects = &default_count_objects,
+     % Private below
+};
+
+define xfig_new_object ()
+{
+   variable args = __pop_args (_NARGS);
+   variable root = @XFig_Object;
+   return struct_combine (root, __push_args (args));
+}
+
+#iffalse
 define xfig_translate_object ()
 {
    variable obj, dX;
@@ -409,123 +592,117 @@ define xfig_translate_object ()
      {
 	(obj, dX) = ();
      }
-
-   if (obj == NULL)
-     return;
-   (@obj.translate_fun)(obj.object, dX);
+   return obj.translate (dX);
 }
 
 define xfig_rotate_object (obj, axis, theta)
 {
-   if (obj == NULL)
-     return;
-   (@obj.rotate_fun)(obj.object, axis, theta);
+   return obj.rotate (axis, theta);
 }
 
 define xfig_scale_object (obj, sx, sy, sz)
 {
-   if (obj == NULL)
-     return;
-   (@obj.scale_fun)(obj.object, sx, sy, sz);
+   return obj.scale(sx, sy, sz);
 }
 
 define xfig_get_object_bbox (obj)
 {
-   return (@obj.get_bbox_fun)(obj.object);
+   return obj.get_bbox ();
 }
+#endif
 
-private define begin_render_as_compound (obj, fp)
-{
-   variable x0, x1, y0, y1, z0, z1, x, y;
-
-   (x0, x1, y0, y1, z0, z1) = xfig_get_object_bbox (obj);
-   (x, y) = xfig_project_to_xfig_plane (vector ([x0,x0,x0,x0,x1,x1,x1,x1],
-						[y0,y0,y1,y1,y0,y0,y1,y1],
-						[z0,z1,z0,z1,z0,z1,z0,z1]));
-   x = xfig_convert_units (x);
-   y = xfig_convert_units (y);
-   xfig_write (fp, sprintf ("6 %d %d %d %d\n", min(x), min(y), max(x), max(y)));
-}
-
-private define end_render_as_compound (obj, fp)
-{
-   xfig_write (fp, "-6\n");
-}
-
-
-%!%+
-%\function{xfig_render_object}
-%\synopsis{Render an object to a device}
-%\usage{xfig_render_object (obj, device)}
-%\description
-%  This function renders the specified object to a specified device.
-%  If the device parameter is a string, then a device will be opened with 
-%  the specified name.
-%\seealso{xfig_create_file, xfig_close_file}
-%!%-
-define xfig_render_object (obj, dev)
-{
-   variable rac;
-   variable do_close = 0;
-   if (obj == NULL)
-     return;
-   if (typeof (dev) == String_Type)
-     {
-	do_close = 1;
-	dev = xfig_create_file (dev);
-     }
-   variable fp = dev;
-   if (typeof (dev) == Struct_Type)
-     fp = dev.fp;
-   
-   rac = ((obj.flags & XFIG_RENDER_AS_COMPOUND)
-	  and (obj.object != NULL) 
-	  and (length (obj.object) != 0));   %  FIXME: add a count objects method
-
-   if (rac)
-     begin_render_as_compound (obj, fp);
-
-   (@obj.render_fun) (obj.object, fp);
-   
-   if (rac) 
-     end_render_as_compound (obj, fp);
-   if (do_close) 
-     xfig_close_file (dev);
-}
 
 private define translate_compound (c, dX)
 {
-   foreach (c)
+   foreach (c.list)
      {
 	variable obj = ();
-	(@obj.translate_fun)(obj.object, dX);
+	obj.translate (dX);
      }
 }
 
 private define rotate_compound (c, axis, theta)
 {
-   foreach (c)
+   foreach (c.list)
      {
 	variable obj = ();
-	(@obj.rotate_fun)(obj.object, axis, theta);
+	obj.rotate (axis, theta);
      }
+}
+
+private define count_objects_compound (c)
+{
+   variable count = 0;
+   foreach (c.list)
+     {
+	variable obj = ();
+	count += obj.count_objects ();
+     }
+   return count;
 }
 
 private define scale_compound (c, sx, sy, sz)
 {
-   foreach (c)
+   foreach (c.list)
      {
 	variable obj = ();
-	(@obj.scale_fun)(obj.object, sx, sy, sz);
+	obj.scale (sx, sy, sz);
      }
 }
 
-private define set_attr_compound (c, attr, value)
+private define set_depth_compound (c, depth)
 {
-   foreach (c)
+   foreach (c.list)
      {
 	variable obj = ();
-	(@obj.set_attr_fun)(obj.object, attr, value);
+	obj.set_depth (depth);
+     }
+}
+
+private define set_thickness_compound (c, thick)
+{
+   foreach (c.list)
+     {
+	variable obj = ();
+	obj.set_thickness (thick);
+     }
+}
+
+private define set_line_style_compound (c, ls)
+{
+   foreach (c.list)
+     {
+	variable obj = ();
+	obj.set_line_style (ls);
+     }
+}
+
+private define set_pen_color_compound (c, pc)
+{
+   pc = xfig_lookup_color (pc);
+   foreach (c.list)
+     {
+	variable obj = ();
+	obj.set_pen_color (pc);
+     }
+}
+
+private define set_area_fill_compound (c, x)
+{
+   foreach (c.list)
+     {
+	variable obj = ();
+	obj.set_area_fill (x);
+     }
+}
+
+private define set_fill_color_compound (c, x)
+{
+   x = xfig_lookup_color (x);
+   foreach (c.list)
+     {
+	variable obj = ();
+	obj.set_fill_color (x);
      }
 }
 
@@ -536,10 +713,10 @@ private define get_bbox_compound (c)
    variable xmin = Infinity, ymin = Infinity, zmin = Infinity;
    variable xmax = -Infinity, ymax = -Infinity, zmax = -Infinity;
 
-   foreach (c)
+   foreach (c.list)
      {
 	variable obj = ();
-	(x0, x1, y0, y1, z0, z1) = (@obj.get_bbox_fun)(obj.object);
+	(x0, x1, y0, y1, z0, z1) = obj.get_bbox ();
 	if (x0 < xmin) xmin = x0;
 	if (x1 > xmax) xmax = x1;
 	if (y0 < ymin) ymin = y0;
@@ -550,45 +727,54 @@ private define get_bbox_compound (c)
    return xmin, xmax, ymin, ymax, zmin, zmax;
 }
 
-private define render_compound (c, fp)
+private define render_compound_to_fp (c, fp)
 {
-   foreach (c)
+   foreach (c.list)
      {
 	variable obj = ();
-	xfig_render_object (obj, fp);
-	% (@obj.render_fun)(obj.object, fp);
+	obj.render_to_fp (fp);
      }
+}
+
+private define compound_insert (obj, item)
+{
+   list_insert (obj.list, item);
 }
 
 define xfig_new_compound_list ()
 {
-   variable obj = xfig_new_object ({});
-   obj.render_fun = &render_compound;
-   obj.rotate_fun = &rotate_compound;
-   obj.translate_fun = &translate_compound;
-   obj.scale_fun = &scale_compound;
-   obj.set_attr_fun = &set_attr_compound;
-   obj.get_bbox_fun = &get_bbox_compound;
+   variable obj = xfig_new_object ("insert", "list");
+   obj.render_to_fp = &render_compound_to_fp;
+   obj.rotate = &rotate_compound;
+   obj.translate = &translate_compound;
+   obj.scale = &scale_compound;
+   obj.set_depth = &set_depth_compound;
+   obj.get_bbox = &get_bbox_compound;
+   obj.set_thickness = &set_thickness_compound;
+   obj.set_line_style = &set_line_style_compound;
+   obj.set_pen_color = &set_pen_color_compound;
+   obj.set_area_fill = &set_area_fill_compound;
+   obj.set_fill_color = &set_fill_color_compound;
+
    obj.flags |= XFIG_RENDER_AS_COMPOUND;
+
+   obj.insert = &compound_insert;
+   obj.count_objects = &count_objects_compound;
+   obj.list = {};
    return obj;
 }
 
-define xfig_compound_list_insert (obj, item)
-{
-   list_insert (obj.object, item);
-}
 
 % Usage: c = xfig_new_compound (obj, ...);
 define xfig_new_compound ()
 {
    variable c = xfig_new_compound_list ();
 
-   %_stk_reverse (_NARGS);
    loop (_NARGS)
      {
 	variable obj = ();
 	if (obj != NULL)
-	  xfig_compound_list_insert (c, obj);
+	  c.insert (obj);
      }
    return c;
 }
@@ -609,11 +795,11 @@ define xfig_new_compound ()
 define xfig_justify_object (obj, X, dX)
 {
    variable x0, x1, y0, y1, z0, z1;
-   (x0, x1, y0, y1, z0, z1) = xfig_get_object_bbox (obj);
+   (x0, x1, y0, y1, z0, z1) = obj.get_bbox ();
    
-   xfig_translate_object (obj, vector (X.x - 0.5*(x0+x1) - dX.x*(x1-x0),
-				       X.y - 0.5*(y0+y1) - dX.y*(y1-y0),
-				       X.z - 0.5*(z0+z1) - dX.z*(z1-z0)));
+   obj.translate (vector (X.x - 0.5*(x0+x1) - dX.x*(x1-x0),
+			  X.y - 0.5*(y0+y1) - dX.y*(y1-y0),
+			  X.z - 0.5*(z0+z1) - dX.z*(z1-z0)));
 }
 
 % Usage: xfig_new_vbox_compound (o1, o2, ,,, [optional-space]);
@@ -634,16 +820,16 @@ define xfig_new_vbox_compound ()
 
    if (num > 1)
      {
-	(,,ymin,,,) = xfig_get_object_bbox (objs[0].value);
+	(,,ymin,,,) = objs[0].value.get_bbox ();
 	variable v0 = vector (0, ymin, 0);
 	foreach (objs[[1:]])
 	  {
 	     variable obj = ();
 	     obj = obj.value;
-	     (,,y0,y1,,) = xfig_get_object_bbox (obj);
+	     (,,y0,y1,,) = obj.get_bbox ();
 	     variable v = vector (0, y1+space, 0);
 	     variable dv = vector_diff (v0, v);
-	     xfig_translate_object (obj, dv);
+	     obj.translate (dv);
 	     v0 = vector_sum (vector (0, y0, 0), dv);
 	  }
      }
@@ -668,16 +854,16 @@ define xfig_new_hbox_compound ()
 
    if (num > 1)
      {
-	(,xmax,,,,) = xfig_get_object_bbox (objs[0].value);
+	(,xmax,,,,) = objs[0].value.get_bbox ();
 	variable v0 = vector (xmax, 0, 0);
 	foreach (objs[[1:]])
 	  {
 	     variable obj = ();
 	     obj = obj.value;
-	     (x0,x1,,,,) = xfig_get_object_bbox (obj);
+	     (x0,x1,,,,) = obj.get_bbox ();
 	     variable v = vector (x0-space, 0, 0);
 	     variable dv = vector_diff (v0, v);
-	     xfig_translate_object (obj, dv);
+	     obj.translate (dv);
 	     v0 = vector_sum (vector (x1, 0, 0), dv);
 	  }
      }
@@ -685,9 +871,10 @@ define xfig_new_hbox_compound ()
 }
 
 
+#iffalse
 define xfig_object_set_attr (obj, attr, val)
 {
-   (@obj.set_attr_fun)(obj.object, attr, val);
+   (@obj.set_attr)(obj.object, attr, val);
 }
 
 define xfig_set_depth (p, val)
@@ -756,6 +943,24 @@ define xfig_set_font (p, val)
 define xfig_set_font_size (p, val)
 {
    xfig_object_set_attr (p, "font_size", val);
+}
+#endif
+
+%!%+
+%\function{xfig_render_object}
+%\synopsis{Render an object to a device}
+%\usage{xfig_render_object (obj, device)}
+%\description
+%  This function renders the specified object to a specified device.
+%  If the device parameter is a string, then a device will be opened with 
+%  the specified name.
+%\seealso{xfig_create_file, xfig_close_file}
+%!%-
+define xfig_render_object (obj, fp)
+{
+   if (obj == NULL)
+     return;
+   return obj.render (fp);
 }
 
 %Letter (8.5" x 11"),

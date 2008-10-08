@@ -1,9 +1,10 @@
 require ("xfig");
 require ("png");
+require ("maplib");
 
 static define func (x, y)
 {
-   (x, y) = xfig_meshgrid (x, y);
+   (x, y) = maplib_meshgrid (x, y);
    return 3*(1-x)^2*exp(-x^2 - (y+1)^2) - 10*(x/5 - x^3 - y^5)*exp(-x^2-y^2)
      -0.5*exp(-(x+1)^2 - y^2);
 }
@@ -21,18 +22,21 @@ define slsh_main ()
 
    variable width = 14, height = 14;
    variable w1 = xfig_plot_new (width, height);
-   xfig_plot_png (w1, "tmp1.png");
-   xfig_plot_define_world (w1, x, y);
-   xfig_plot_add_x_axis (w1, 0, "$x$");
-   xfig_plot_add_y_axis (w1, 0, "$y$");
-   xfig_plot_title (w1, "\Large $f(x,y)=3(1-x)^2 e^{-x^2-(y+1)^2} +\ldots$"R);
+   w1.world(x, y);
+   w1.plot_png ("tmp1.png");
+   w1.xlabel ("$x$"; size="Large");
+   w1.ylabel ("$y$"; size="Large");
+   w1.title ("$f(x,y)=3(1-x)^2 e^{-x^2-(y+1)^2} +\ldots$"R; size="Large",color="blue");
 
    variable w2 = xfig_plot_new (1, height);
-   xfig_plot_define_world (w2, 0, 1, min(z), max(z));
-   xfig_plot_add_y2_axis (w2, 0, "$f(x,y)$");
-   xfig_plot_png (w2, "tmp2.png");
+   w2.world (0, 1, min(z), max(z));
+   w2.xaxis (;off);
+   w2.y1axis (;off);
+   w2.y2axis (;on);
+   w2.y2label ("$f(x,y)$");
+   w2.plot_png ("tmp2.png");
 
-   xfig_render_object (xfig_new_hbox_compound (w1, w2, 2), "image.png");
+   xfig_new_hbox_compound (w1, w2, 2).render ("image.png");
    () = remove ("tmp1.png"); () = remove ("tmp2.png");
 }
 

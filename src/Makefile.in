@@ -13,6 +13,7 @@ MODULE_VERSION	= `./mkversion.sh`
 #---------------------------------------------------------------------------
 prefix = @prefix@
 exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
 MODULE_INSTALL_DIR = @MODULE_INSTALL_DIR@
 SL_FILES_INSTALL_DIR = @SL_FILES_INSTALL_DIR@
 

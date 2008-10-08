@@ -1,13 +1,13 @@
 require ("xfig");
 public define slsh_main ()
 {
-   variable t = [0:5:0.1];
-   variable y = cos (2*PI*t)*exp(-t);
+   variable x = 10^[-1:1.5:#200];
+   variable y = sin (1/x)*exp(-x);
+
    variable w = xfig_plot_new ();
-   xfig_plot_define_world (w, t, y);
-   xfig_plot_add_x_axis (w, 0, "Time [s]"R);
-   xfig_plot_add_y_axis (w, 0, "Voltage [mV]"R);
-   xfig_plot_lines (w, t, y);
-   xfig_plot_title (w, "Simple Example");
-   xfig_render_object (w, "simple.png");
+   w.plot (x, y;logx);
+   w.xlabel ("Time[s]"R);
+   w.ylabel ("Voltage [mV]"R);
+   w.title ("Simple Example");
+   w.render("simple.png");
 }

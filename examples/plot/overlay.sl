@@ -6,12 +6,12 @@ require ("histogram");
 private define make_hist_image (x, h, xmin, xmax, ymin, ymax, color)
 {
    variable w = xfig_plot_new ();
-   xfig_plot_define_world (w, xmin, xmax, ymin, ymax);
+   w.world (xmin, xmax, ymin, ymax);
    xfig_plot_set_line_color (w, color);
    xfig_plot_shaded_histogram (w, x, h, color, 20);
-   xfig_plot_points (w, [xmin, xmax], [ymin, ymax]);
+   w.plot ([xmin, xmax], [ymin, ymax]; line=0, sym="point");
    variable tmp = "tmp.png";
-   xfig_render_object (w, tmp);
+   w.render (tmp);
    variable img = png_read (tmp);
    ()=remove (tmp);
    return img;
@@ -55,10 +55,10 @@ public define slsh_main ()
    png_write (png, img12);
 
    variable w = xfig_plot_new ();
-   xfig_plot_define_world (w, xmin, ymin, xmax, ymax);
+   w.world (xmin, ymin, xmax, ymax);
    xfig_plot_png (w, png);
-   xfig_plot_add_x_axis (w, 0, "IQ");
-   xfig_plot_add_y_axis (w, 0, "Probability [bin$^{-1}$]");
-   xfig_plot_title (w, "IQ; $\sigma=100;\mu=15$"R);
-   xfig_render_object (w, "overlay.ps");
+   w.xlabel ("IQ");
+   w.ylabel ("Probability [bin$^{-1}$]");
+   w.title ("IQ; $\sigma=100;\mu=15$"R);
+   w.render("overlay.png");
 }

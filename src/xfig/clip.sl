@@ -1,5 +1,4 @@
 % clipping routines
-_debug_info = 1;
 
 private define intersect (x0, dx, y0, dy, a, da, b, db)
 {
@@ -58,8 +57,7 @@ define xfig_clip_polyline2d (x, y, xmin, xmax, ymin, ymax)
 	if (i - i0 >= 2)
 	  {
 	     j = [i0:i-1];
-	     line = xfig_make_polyline (vector (x[j],y[j],0.0*j));
-	     xfig_polyline_list_insert (list, line);
+	     list.insert (vector (x[j],y[j],0.0*j));
 	  }
 	i0 = i + 1;
      }
@@ -69,8 +67,7 @@ define xfig_clip_polyline2d (x, y, xmin, xmax, ymin, ymax)
 	if (i0 != len-1)
 	  {
 	     j = [i0:len-1];
-	     line = xfig_make_polyline (vector(x[j],y[j],0.0*j));
-	     xfig_polyline_list_insert (list, line);
+	     list.insert (vector(x[j],y[j],0.0*j));
 	  }
      }
    
@@ -177,8 +174,7 @@ define xfig_clip_polyline2d (x, y, xmin, xmax, ymin, ymax)
 	  }
 
 
-	line = xfig_make_polyline (vector ([x0_i, x1_i], [y0_i, y1_i], [0,0]));
-	xfig_polyline_list_insert (list, line);
+	list.insert (vector ([x0_i, x1_i], [y0_i, y1_i], [0,0]));
      }
    
    return list;

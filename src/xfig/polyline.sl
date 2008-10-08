@@ -1,7 +1,31 @@
-_debug_info =1;
-
+% -*- mode:slang; mode:fold -*-
+% FIXME:
+% It would be better to put the polyline stuff in a separate structure to
+% produce something like:
+%    { basic methods...
+%      attribute_methods
+%       { attributes }
+%    }
+% Then the polyline list would look like:
+% 
+%    { basic methods
+%      attribute_methods
+%      { attributes }
+%      list ...
+%    }
+%  Polygon List would look like:
+%  
+%    { basic methods
+%      }
+%      
+%
 private variable Polyline_Type = struct
 {
+   X,				       %  vertices
+   % Methods
+   set_line_style, set_thickness, set_pen_color, set_fill_color, set_depth,
+   set_area_fill, set_join_style, set_cap_style,
+
    object_code,  % int (always 2)
      sub_type, % (1: polyline, 2: box, 3: polygon, 4: arc-box, 5: imported-picture bounding-box)
      line_style, % int (enumeration type)
@@ -16,20 +40,69 @@ private variable Polyline_Type = struct
      cap_style, % int (enumeration type, only used for POLYLINE)
      radius, % int (1/80 inch, radius of arc-boxes)
      forward_arrow, % 
-     backward_arrow, % int (0: off, 1: on)
-     X,				       %  vector
-     n,				       %  outward normal, used for sorting
-     pict_file, flipped, bbox_x, bbox_y,
-     next			       %  next in list
+     backward_arrow % int (0: off, 1: on)
 };
 
 private variable SUBTYPE_POLYLINE	= 1;
 private variable SUBTYPE_BOX		= 2;
-private variable SUBTYPE_POLYGON		= 3;
+private variable SUBTYPE_POLYGON	= 3;
 private variable SUBTYPE_ARCBOX		= 4;
-private variable SUBTYPE_IMPPICT		= 5;
+private variable SUBTYPE_IMPPICT	= 5;
 
-Polyline_Type.object_code = SUBTYPE_POLYLINE;
+private define set_line_style (obj, val)
+{
+   obj.line_style = val;
+}
+
+private define set_thickness (obj, val)
+{
+   obj.thickness = val;
+}
+
+private define set_pen_color (obj, val)
+{
+   if (typeof (val) == String_Type)
+     val = xfig_lookup_color (val);
+   obj.pen_color = val;
+}
+
+private define set_fill_color (obj, val)
+{
+   if (typeof (val) == String_Type)
+     val = xfig_lookup_color (val);
+   obj.fill_color = val;
+}
+
+private define set_depth (obj, val)
+{
+   obj.depth = val;
+}
+
+private define set_area_fill (obj, val)
+{
+   obj.area_fill = val;
+}
+
+private define set_join_style (obj, val)
+{
+   obj.join_style = val;
+}
+
+private define set_cap_style (obj, val)
+{
+   obj.cap_style = val;
+}
+
+
+Polyline_Type.set_line_style = &set_line_style;
+Polyline_Type.set_thickness = &set_thickness;
+Polyline_Type.set_pen_color = &set_pen_color;
+Polyline_Type.set_fill_color = &set_fill_color;
+Polyline_Type.set_depth = &set_depth;
+Polyline_Type.set_area_fill = &set_area_fill;
+Polyline_Type.set_join_style = &set_join_style;
+Polyline_Type.set_cap_style = &set_cap_style;
+  
 Polyline_Type.sub_type = 1;
 Polyline_Type.line_style = 0;
 Polyline_Type.thickness = 1;
@@ -103,10 +176,10 @@ private define prune(x,y)
      return x[i], y[i];
    return x, y;
 }
-private define write_one_polygon (fp, p)
+
+private define write_one_polyline (fp, p, X)
 {
    variable x, y;
-   variable X = p.X;
    variable n;
 
    (x,y) = xfig_project_to_xfig_plane (X);
@@ -134,6 +207,193 @@ private define write_one_polygon (fp, p)
    write_polyline_data (fp, x, y);
 }
 
+private define polyline_render_to_fp (p, fp)
+{
+   write_one_polyline (fp, p, p.X);
+}
+
+private define polyline_rotate (obj, axis, theta)
+{
+   obj.X = vector_rotate (obj.X, axis, theta);
+}
+
+private define polyline_translate (obj, dX)
+{
+   obj.X = vector_sum (obj.X, dX);
+}
+
+private define polyline_scale (obj, sx, sy, sz)
+{
+   variable X = obj.X;
+   X.x *= sx;
+   X.y *= sy;
+   X.z *= sz;
+   obj.X = X;
+}
+
+private define polyline_get_bbox (obj)
+{
+   variable X = obj.X;
+   return min(X.x), max(X.x), min(X.y), max(X.y), min(X.z), max(X.z);
+}
+
+define xfig_new_polyline (X)
+{
+   variable p = @Polyline_Type;
+   p.object_code = SUBTYPE_POLYLINE;
+   p.X = X;
+
+   variable obj = xfig_new_object (p);
+   obj.render_to_fp = &polyline_render_to_fp;
+   obj.rotate = &polyline_rotate;
+   obj.translate = &polyline_translate;
+   obj.scale = &polyline_scale;
+   obj.get_bbox = &polyline_get_bbox;
+   return obj;
+}
+
+%------------------------------------------------------------------------
+% Polyline_List
+% 
+% All objects in the polyline list have the same attributes.
+%------------------------------------------------------------------------
+%{{{
+
+private define polyline_list_render_to_fp (p, fp)
+{
+   foreach (p.list)
+     {
+	variable X = ();
+	write_one_polyline (fp, p, X);
+     }
+}
+
+private define polyline_list_rotate (obj, axis, theta)
+{
+   variable list = obj.list;
+   _for (0, length(list)-1, 1)
+     {
+	variable i = ();
+	list[i] = vector_rotate (list[i], axis, theta);
+     }
+}
+
+private define polyline_list_translate (obj, dX)
+{
+   variable list = obj.list;
+   _for (0, length(list)-1, 1)
+     {
+	variable i = ();
+	list[i] = vector_sum (list[i], dX);
+     }
+}
+
+private define polyline_list_scale (obj, sx, sy, sz)
+{
+   variable list = obj.list;
+   _for (0, length(list)-1, 1)
+     {
+	variable i = ();
+	variable X = list[i];
+	X.x *= sx;
+	X.y *= sy;
+	X.z *= sz;
+	list[i] = X;
+     }
+}
+
+private define polyline_list_get_bbox (obj)
+{
+   variable x0, x1, y0, y1, z0, z1;
+   variable xmin = _Inf, ymin = _Inf, zmin = _Inf;
+   variable xmax = -_Inf, ymax = -_Inf, zmax = -_Inf;
+   foreach (obj.list)
+     {
+	variable X = ();
+	x0 = min (X.x);
+	if (x0 < xmin) xmin = x0;
+	x1 = max (X.x);
+	if (x1 > xmax) xmax = x1;
+	y0 = min (X.y);
+	if (y0 < ymin) ymin = y0;
+	y1 = max (X.y);
+	if (y1 > ymax) ymax = y1;
+	z0 = min (X.z);
+	if (z0 < zmin) zmin = z0;
+	z1 = max (X.z);
+	if (z1 > zmax) zmax = z1;
+     }
+   
+   return xmin, xmax, ymin, ymax, zmin, zmax;
+}
+
+private define polyline_list_insert (p, X)
+{
+   list_insert (p.list, X);
+}
+
+define xfig_new_polyline_list ()
+{
+   variable p = xfig_new_polyline (vector(0,0,0));
+   
+   p = struct_combine (p, "insert", "list");
+   p.list = {};
+   p.insert = &polyline_list_insert;
+
+   p.render_to_fp = &polyline_list_render_to_fp;
+   p.rotate = &polyline_list_rotate;
+   p.translate = &polyline_list_translate;
+   p.scale = &polyline_list_scale;
+   p.get_bbox = &polyline_list_get_bbox;
+
+   return p;
+}
+
+%}}}
+
+%------------------------------------------------------------------------
+% Polygon_Type
+%
+%------------------------------------------------------------------------
+%{{{
+private define polygon_render_to_fp (obj, fp)
+{
+   variable eye = xfig_get_eye ();
+   variable n = obj.n;
+   variable X = obj.X;
+   variable dX = vector_diff (eye, vector(X.x[0],X.y[0],X.z[0]));
+   if (dotprod (dX, n) < 0)
+     return;
+   write_one_polyline (fp, obj, X);
+}
+
+define xfig_new_polygon (X)
+{
+   variable p = xfig_new_polyline (X);
+   p = struct_combine (p, "n");
+   p.object_code = SUBTYPE_POLYGON;
+   variable x = X.x, y = X.y, z = X.z;
+   variable x0 = vector (x[0], y[0], z[0]);
+   variable x1 = vector (x[1], y[1], z[1]);
+   variable x2 = vector (x[2], y[2], z[2]);
+   p.n = crossprod (vector_diff (x1, x0), vector_diff (x2, x1));
+   normalize_vector (p.n);
+   return p;
+}
+
+
+%}}}
+
+%------------------------------------------------------------------------
+% Polygon_List 
+% 
+% A Polygon_List_Type consists of a linked list of (closed) polygons.
+% When rendered, it properly takes into account the position of the polygons 
+% with respect to the viewer.
+%
+% If drawing 3d objects, then use polygons and not polylines.
+%------------------------------------------------------------------------
+%{{{
 private define poly_sort (a, b)
 {
    variable za, zb;
@@ -156,205 +416,108 @@ private define poly_sort (a, b)
    return (length (a.X) < length (b.X));
 }
 
-private define sort_polylines (p)
+private define sort_polygons (list)
 {
-   variable count = 0;
-   variable q = p;
-   
-   while (q != NULL)
-     {
-	count++;
-	q = q.next;
-     }
+   variable count = length (list);
    variable ps = Struct_Type[count];
-   count = 0;
-   q = p;
-   while (q != NULL)
+   variable i;
+   _for (0, count-1, 1)
      {
-	ps[count] = q;
-	count++;
-	q = q.next;
+	i = ();
+	ps[i] = list[i];
      }
-   
-   variable i = array_sort (ps, &poly_sort);
-   ps = ps[i];
-   return ps;
+   return ps[array_sort (ps, &poly_sort)];
 }
 
-define xfig_make_polygon (X)
+private define polygon_list_render_to_fp (obj, fp)
 {
-   variable p = @Polyline_Type;
-   p.sub_type = SUBTYPE_POLYGON;
-   p.X = X;
-   variable x = X.x, y = X.y, z = X.z;
-   variable x0 = vector (x[0], y[0], z[0]);
-   variable x1 = vector (x[1], y[1], z[1]);
-   variable x2 = vector (x[2], y[2], z[2]);
-   p.n = crossprod (vector_diff (x1, x0), vector_diff (x2, x1));
-   normalize_vector (p.n);
-   return p;
-}
-
-define xfig_make_polyline (X)
-{
-   variable p = @Polyline_Type;
-   p.sub_type = SUBTYPE_POLYLINE;
-   p.X = X;
-   p.n = NULL;
-   return p;
-}
-
-
-  
-define xfig_polyline_add_forward_arrow (p, a)
-{
-   p.forward_arrow = a;
-}
-
-define xfig_polyline_add_backward_arrow (p, a)
-{
-   p.backward_arrow = a;
-}
-
-% A Polyline_List is a compound object consisting only of polylines.  When
-% rendered, it properly takes into account the position of the polygons with
-% respect to the viewer.
-private variable Polyline_List_Type = struct
-{
-   polyline_list,
-};
-
-define xfig_polyline_list_insert (obj, p)
-{
-   variable list = obj.object;
-   p.next = list.polyline_list;
-   list.polyline_list = p;
-}
- 
-private define render_polyline_list (list, fp)
-{
-   variable ps = sort_polylines (list.polyline_list);
+   variable ps = sort_polygons (obj.list);
    variable eye = xfig_get_eye ();
    foreach (ps)
      {
 	variable p = ();
 	variable n = p.n;
 	variable X = p.X;
-	if (n != NULL)
-	  {
-	     variable dX = vector_diff (eye, vector(X.x[0],X.y[0],X.z[0]));
-	     if (dotprod (dX, n) < 0)
-	       continue;
-	  }
-	write_one_polygon (fp, p);
-     }
-}
-
-private define polyline_list_rotate (list, axis, theta)
-{
-   foreach (list.polyline_list) using ("next")
-     {
-	variable p = ();
-	p.X = vector_rotate (p.X, axis, theta);
-	if (p.n != NULL)
-	  p.n = vector_rotate (p.n, axis, theta);
-     }
-}
-
-private define polyline_list_translate (list, dX)
-{
-   foreach (list.polyline_list) using ("next")
-     {
-	variable p = ();
-	p.X = vector_sum (p.X, dX);
-     }
-}
-
-private define polyline_list_scale (list, sx, sy, sz)
-{
-   foreach (list.polyline_list) using ("next")
-     {
-	variable p = ();
-	variable X = p.X;
-	X.x *= sx;
-	X.y *= sy;
-	X.z *= sz;
-     }
-}
-
-private define polyline_set_attr (list, attr, val)
-{
-   foreach (list.polyline_list) using ("next")
-     {
-	variable p = ();
-	xfig_primative_set_attr (p, attr, val);
-     }   
-}
-
-private variable Infinity = 1e38;
-private define polyline_list_get_bbox (list)
-{
-   variable x0, x1, y0, y1, z0, z1;
-   variable xmin = Infinity, ymin = Infinity, zmin = Infinity;
-   variable xmax = -Infinity, ymax = -Infinity, zmax = -Infinity;
-   foreach (list.polyline_list) using ("next")
-     {
-	variable p = ();
-	variable X = p.X;
-	if (length (X.x) == 0)
+	variable dX = vector_diff (eye, vector(X.x[0],X.y[0],X.z[0]));
+	if (dotprod (dX, n) < 0)
 	  continue;
-	x0 = min (X.x);
-	if (x0 < xmin) xmin = x0;
-	x1 = max (X.x);
-	if (x1 > xmax) xmax = x1;
-	y0 = min (X.y);
-	if (y0 < ymin) ymin = y0;
-	y1 = max (X.y);
-	if (y1 > ymax) ymax = y1;
-	z0 = min (X.z);
-	if (z0 < zmin) zmin = z0;
-	z1 = max (X.z);
-	if (z1 > zmax) zmax = z1;
+	write_one_polyline (fp, p, p.X);
      }
-   
-   return xmin, xmax, ymin, ymax, zmin, zmax;
 }
 
-define xfig_new_polyline_list ()
+private define polygon_list_set_line_style (obj, val)
 {
-   variable p = @Polyline_List_Type;
-   variable obj = xfig_new_object (p);
-   obj.render_fun = &render_polyline_list;
-   obj.rotate_fun = &polyline_list_rotate;
-   obj.translate_fun = &polyline_list_translate;
-   obj.scale_fun = &polyline_list_scale;
-   obj.set_attr_fun = &polyline_set_attr;
-   obj.get_bbox_fun = &polyline_list_get_bbox;
-   return obj;
+   foreach (obj.list)
+     {
+	obj = ();
+	obj.line_style = val;
+     }
+}
+
+private define polygon_list_set_thickness (obj, val)
+{
+   foreach (obj.list)
+     {
+	obj = ();
+	obj.thickness = val;
+     }
+}
+
+private define polygon_list_set_pen_color (obj, val)
+{
+   if (typeof (val) == String_Type)
+     val = xfig_lookup_color (val);
+   foreach (obj.list)
+     {
+	obj = ();
+	obj.pen_color = val;
+     }
+}
+
+private define polygon_list_set_fill_color (obj, val)
+{
+   if (typeof (val) == String_Type)
+     val = xfig_lookup_color (val);
+   foreach (obj.list)
+     {
+	obj = ();
+	obj.fill_color = val;
+     }
+}
+
+private define polygon_list_set_area_fill (obj, val)
+{
+   foreach (obj.list)
+     {
+	obj = ();
+	obj.area_fill = val;
+     }
+}
+
+define xfig_new_polygon_list ()
+{
+   variable list = xfig_new_compound_list ();
+   list = struct_combine (list, 
+			  "set_line_style", "set_thickness", "set_pen_color",
+			  "set_fill_color", "set_area_fill");
+   list.set_line_style = &polygon_list_set_line_style;
+   list.set_thickness = &polygon_list_set_thickness;
+   list.set_pen_color = &polygon_list_set_pen_color;
+   list.set_fill_color = &polygon_list_set_fill_color;
+   list.set_area_fill = &polygon_list_set_area_fill;
+   list.render_to_fp = &polygon_list_render_to_fp;
+   return list;
 }
 
 
-private variable XFig_Arrow_Type = struct
-{
-   arrow_type, % int (enumeration type)
-     arrow_style, % int (enumeration type)
-     arrow_thickness, % float (1/80 inch)
-     arrow_width, % float (Fig units)
-     arrow_height, % float (Fig units)
-};
+%}}}
 
-define xfig_create_arrow ()
-{
-   variable a = @XFig_Arrow_Type;
-   a.arrow_type = 2;
-   a.arrow_style = 3;
-   a.arrow_thickness = 1;
-   a.arrow_width = (1.0/80.0)*4 * 2.54;
-   a.arrow_height = (1.0/80.0)*8 * 2.54;
-   return a;
-}
-
-private define pict_render (p, fp)
+%-----------------------------------------------------------------------
+% Pict_Type
+%
+%-----------------------------------------------------------------------
+%{{{
+private define pict_render_to_fp (p, fp)
 {
    variable flipped = 0;
    variable x0, y0, x1, y1, x, y;
@@ -388,10 +551,9 @@ private define pict_get_bbox (p)
 
 private define pict_scale (p, sx, sy, sz)
 {
-   variable pict = p.polyline_list;
-   pict.bbox_x *= sx;
-   pict.bbox_y *= sy;
-   polyline_list_scale (p, sx, sy, sz);
+   p.bbox_x *= sx;
+   p.bbox_y *= sy;
+   %polyline_list_scale (p, sx, sy, sz);
 }
 
 private define pict_rotate (p, axis, theta)
@@ -404,40 +566,7 @@ private define pict_translate (p, dX)
    p.X += dX;
 }
 
-define xfig_new_pict (file, dx, dy)
-{
-   variable p = @Polyline_Type;
-   variable obj = xfig_new_object (p);
-   p.sub_type = SUBTYPE_IMPPICT;
-
-   % Use the corners for the polyline
-   p.flipped = 0;
-   if (dy < 0)
-     {
-	p.flipped = 1;
-	dy = -dy;
-     }
-   p.bbox_x = [0, dx, dx, 0, 0];
-   p.bbox_y = [0, 0, dy, dy, 0];
-
-   p.X = vector (0, 0, 0);
-   p.pict_file = file;
-
-   obj.render_fun = &pict_render;
-   obj.scale_fun = &pict_scale;
-   obj.rotate_fun = &pict_rotate;
-   obj.translate_fun = &pict_translate;
-   %obj.set_attr_fun = &pict_set_attr;
-   obj.get_bbox_fun = &pict_get_bbox;
-   return obj;
-}
-
-private define pict_from_object (pict)
-{
-   return pict.object;
-}
-
-define xfig_rotate_pict (obj, theta_degrees)
+define pict_rotate_pict (pict, theta_degrees)
 {
    % The convention adopted here is that the location of the picture is
    % specified by the lower left corner of the box, rotated or
@@ -455,7 +584,6 @@ define xfig_rotate_pict (obj, theta_degrees)
    %    90 degrees:  LR UR UL LL LR   (dx<0, dy>0)
    %   180 degrees:  UR UL LL LR UR   (dx<0, dy<0)
    %   270 degrees:  UL LL LR UR UL   (dx>0, dy<0)
-   variable pict = pict_from_object (obj);
    variable bbox_x = pict.bbox_x;
    variable bbox_y = pict.bbox_y;
    theta_degrees = theta_degrees mod 360.0;
@@ -472,13 +600,16 @@ define xfig_rotate_pict (obj, theta_degrees)
    pict.bbox_y = bbox_y;
 }
 
-
 %!%+
 %\function{xfig_scale_pict}
-%\synopsis{Scale a pict object}
+%\synopsis{}
 %\usage{xfig_scale_pict (pict, sx [,sy])}
+%\description
+%\example
+%\notes
+%\seealso{}
 %!%-
-define xfig_scale_pict ()
+private define pict_scale_pict ()
 {
    variable pict, sx, sy;
    if (_NARGS == 2)
@@ -491,15 +622,13 @@ define xfig_scale_pict ()
 	(pict, sx, sy) = ();
      }
    
-   pict = pict_from_object (pict);
    pict.bbox_x *= sx;
    pict.bbox_y *= sy;
 }
 
 % FIXME: This does not look right
-define xfig_get_pict_bbox (pict)
+define pict_get_pict_bbox (pict)
 {
-   pict = pict_from_object (pict);
    return max(abs(pict.bbox_x)), max(abs(pict.bbox_y));
 }
 
@@ -515,60 +644,89 @@ define xfig_get_pict_bbox (pict)
 % lower-left corner of the box.
 %\seealso{xfig_translate_object}
 %!%-
-define xfig_center_pict_in_box (label, X, dx, dy)
+private define pict_center_pict (pict, X, dx, dy)
 {
    variable w, h;
-   (w, h) = xfig_get_pict_bbox (label);
+   (w, h) = pict_get_pict_bbox (pict);
    variable yoff = 0.5*(dy - h);
    if (yoff < 0)
      yoff = 0.0*dy;
    variable xoff = 0.5*(dx - w);
    if (xoff < 0)
      xoff = 0.0*dx;		       %  used to be 0.1*dx
-   xfig_translate_object (label, vector_sum(X, vector (xoff, yoff, 0)));
+   pict_translate (pict, vector_sum(X, vector (xoff, yoff, 0)));
 }
 
-private define create_pyramid (width, height)
+
+%!%+
+%\function{xfig_new_pict}
+%\synopsis{Create an object that encapsulates an image file}
+%\usage{obj = xfig_new_pict(filename, width, height [; qualifiers])}
+%\description
+% This function creates an object containing the specified image file
+% and scales it to the specified width an height.  The resulting
+% object containing the image will be centered at (0,0,0).
+% 
+%\qualifiers
+% The \exmp{just} qualifier may be used to indicate how the object is
+% to be justified with respect to the origin.  Its value must be a 2d
+% numeric array [dx,dy] that gives the offset of the center of the
+% image scaled with respect to the bounding box.  Examples include:
+%#v+
+%    just=[0,0]           Center object upon the origin (default)
+%    just=[-0.5,-0.5]     Put the lower-left corner at the origin
+%    just=[0.5,-0.5]      Put the lower-right corner at the origin
+%    just=[0.5,0.5]       Put the upper-right corner at the origin
+%    just=[-0.5,-0.5]     Put the upper-left corner at the origin
+%#v-
+%\seealso{xfig_new_text, xfig_justify_object}
+%!%-
+define xfig_new_pict (file, dx, dy)
 {
-   variable a = xfig_new_polyline_list ();
-   width *= 0.5;
-   
-   % bottom
-   variable X = vector ([-width, -width, width, width, -width],
-			[-width, width, width, -width, -width],
-			[0, 0, 0, 0, 0]);
-   xfig_polyline_list_insert (a, xfig_make_polygon (X));
-   
-   %left
-   X = vector([-width, width, 0, width],
-	      [-width, -width, 0, -width],
-	      [0, 0, height, 0]);
-   xfig_polyline_list_insert (a, xfig_make_polygon (X));
-   
-   %front 
-   X = vector([width, width, 0, width],
-	      [-width, width, 0, -width],
-	      [0, 0, height, 0]);
-   xfig_polyline_list_insert (a, xfig_make_polygon (X));
-   
-   % right
-   X = vector([-width, 0, width, -width],
-	      [width, 0, width, width],
-	      [0, height, 0, 0]);
-   xfig_polyline_list_insert (a, xfig_make_polygon (X));
-   
-   % back
-   X = vector([-width, 0, -width, -width],
-	      [-width, 0, width, -width],
-	      [0, height, 0, 0]);
-   xfig_polyline_list_insert (a, xfig_make_polygon (X));
+   variable X = vector(0,0,0);
+   variable p = xfig_new_polyline (X);
+   p.sub_type = SUBTYPE_IMPPICT;
 
-   return a;
+   p = struct_combine (p, "pict_file", "flipped", "bbox_x", 
+		       "bbox_y", "rotate_pict", "scale_pict", "get_pict_bbox",
+		       "center_pict");
+
+   % Use the corners for the polyline
+   p.flipped = 0;
+   if (dy < 0)
+     {
+	p.flipped = 1;
+	dy = -dy;
+     }
+   p.bbox_x = [0, dx, dx, 0, 0];
+   p.bbox_y = [0, 0, dy, dy, 0];
+   p.pict_file = file;
+   p.rotate_pict = &pict_rotate_pict;
+   p.scale_pict = &pict_scale_pict;
+   p.get_pict_bbox = &pict_get_pict_bbox;
+   p.center_pict = &pict_center_pict;
+
+   p.render_to_fp = &pict_render_to_fp;
+   p.scale = &pict_scale;
+   p.rotate = &pict_rotate;
+   p.get_bbox = &pict_get_bbox;
+   
+   variable just = qualifier ("just");
+   if (just != NULL)
+     {
+	if (length (just) == 2)
+	  just = [just, 0];
+
+	xfig_justify_object (p, X, vector(just[0], just[1], just[2]));
+     }
+   return p;
 }
+
+%}}}
 
 define xfig_new_pyramid (n, radius, height)
 {
-   variable a = xfig_new_polyline_list ();
+   variable a = xfig_new_polygon_list ();
    
    variable thetas = [n:0:-1]*(2*PI)/n;
 
@@ -577,7 +735,7 @@ define xfig_new_pyramid (n, radius, height)
 
    % base
    variable X = vector (xs, ys, Double_Type[n+1]);
-   xfig_polyline_list_insert (a, xfig_make_polygon (X));
+   a.insert (xfig_new_polygon (X));
    
    _for (0, n-1, 1)
      {
@@ -586,7 +744,7 @@ define xfig_new_pyramid (n, radius, height)
 	X = vector ([xs[i], 0, xs[j], xs[i]],
 		    [ys[i], 0, ys[j], ys[i]],
 		    [0, height, 0, 0]);
-	xfig_polyline_list_insert (a, xfig_make_polygon (X));
+	a.insert (xfig_new_polygon (X));
      }
    return a;
 }
@@ -600,23 +758,29 @@ define xfig_new_arrow_head (w, h, dX)
    if (theta != 0.0)
      {
 	variable axis = unit_vector (crossprod (vector (0,0,1), dX));
-	xfig_rotate_object (a, axis, theta);
+	a.rotate (axis, theta);
      }
-   xfig_set_area_fill (a, 20);
-   xfig_set_fill_color (a, "default");
+   a.set_area_fill (20);
+   a.set_fill_color ("default");
    return a;
 }
 
-define xfig_new_polygon (X)
+private variable XFig_Arrow_Type = struct
 {
-   variable obj = xfig_new_polyline_list ();
-   xfig_polyline_list_insert (obj, xfig_make_polygon (X));
-   return obj;
-}
+   arrow_type, % int (enumeration type)
+     arrow_style, % int (enumeration type)
+     arrow_thickness, % float (1/80 inch)
+     arrow_width, % float (Fig units)
+     arrow_height, % float (Fig units)
+};
 
-define xfig_new_polyline (X)
+define xfig_create_arrow ()
 {
-   variable obj = xfig_new_polyline_list ();
-   xfig_polyline_list_insert (obj, xfig_make_polyline (X));
-   return obj;
+   variable a = @XFig_Arrow_Type;
+   a.arrow_type = 2;
+   a.arrow_style = 3;
+   a.arrow_thickness = 1;
+   a.arrow_width = (1.0/80.0)*4 * 2.54;
+   a.arrow_height = (1.0/80.0)*8 * 2.54;
+   return a;
 }

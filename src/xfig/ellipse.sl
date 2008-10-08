@@ -35,7 +35,7 @@ private define make_ellipse (a, b)
    return e;
 }
 
-private define render_ellipse (e, fp)
+private define render_ellipse_to_fp (e, fp)
 {
    variable x, y;
    (x,y) = xfig_project_to_xfig_plane (e.X);
@@ -104,16 +104,33 @@ private define get_bbox_ellipse (e)
    return min(X.x), max(X.x), min(X.y), max(X.y), min(X.z), max(X.z);
 }
 
+private define set_depth (obj, depth)
+{
+   obj.depth = depth;
+}
+
+private define set_pen_color (obj, pc)
+{
+   obj.pen_color = xfig_lookup_color (pc);
+}
+
+private define set_thickness (obj, th)
+{
+   obj.thickness = th;
+}
+
 
 define xfig_new_ellipse (a, b)
 {
    variable obj = xfig_new_object (make_ellipse (a,b));
-   obj.render_fun = &render_ellipse;
-   obj.set_attr_fun = &xfig_primative_set_attr;
-   obj.rotate_fun = &rotate_ellipse;
-   obj.translate_fun = &translate_ellipse;
-   obj.scale_fun = &scale_ellipse;
-   obj.get_bbox_fun = &get_bbox_ellipse;
+   obj.render_to_fp = &render_ellipse_to_fp;
+   obj.set_depth = &set_depth;
+   obj.rotate = &rotate_ellipse;
+   obj.translate = &translate_ellipse;
+   obj.scale = &scale_ellipse;
+   obj.get_bbox = &get_bbox_ellipse;
+   obj.set_thickness = &set_thickness;
+   obj.set_pen_color = &set_pen_color;
    return obj;
 }
    

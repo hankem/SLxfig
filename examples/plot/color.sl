@@ -2,20 +2,29 @@ require ("xfig");
 
 public define slsh_main ()
 {
-   variable t = [0:50:0.1];
+   variable t = 10^[-1:1:#20];
    variable y = cos (2*PI*t)*exp(-t);
-   variable w = xfig_plot_new ();
-   xfig_plot_define_world (w, 0.05, 50, -1.0, 1.0);
-   xfig_plot_add_x_axis (w, 1, "Time [s]"R);
-   xfig_plot_add_y_axis (w, 0, "Voltage [mV]"R);
-   xfig_plot_set_point_color (w, "blue");
-   xfig_plot_set_point_size (w, 10);
-   xfig_plot_points (w, t, y);
+   variable dy = 0.2 + 0.1*abs(y);
 
-   variable font = xfig_make_font ("\\sc", "\\Huge", 0xFF0000);
-   variable text = xfig_new_text ("Equation: $e^{-t}\cos(2\pi t)$"R, font);
-   xfig_plot_add_object (w, text, 2.5, 0.6, -0.5, 0);
-   xfig_render_object (w, "color.png");
+   variable w = xfig_plot_new (14, 10);
+   w.world (0.09, 12, -1.0, 1.0; xlog);
+   w.axis (;grid=1, major_line=1, minor_line=2);
+   w.xaxis (;color="magenta4",major_color="green2");
+   w.yaxis (;color="magenta4");
+   w.x1axis (;ticlabel_color="blue2");
+   w.y1axis (;ticlabel_color="green2");
+   w.plot (t, y, dy; line=2, color="red3",
+	   sym="triangle", symcolor="blue", symsize=2, fill=20, eb_color="green4");
+   w.xlabel ("Time [s]"R; color="cyan4", size="large");
+   w.ylabel ("Voltage [mV]"; color="red");
+   xfig_new_color ("aquamarine3", (102 shl 16)|(205 shl 8)|170);
+
+   variable text = xfig_new_text ("Equation: $e^{-t}\cos(2\pi t)$"R;
+				  color="black", size="Huge", style="sc");
+   text.set_depth(1);
+   w.add_object (text, 10, 0.75, 0.5, 0);
+   w.title("Example with colors and fonts"; color="red4", size="Large");
+   w.render ("color.png");
 }
    
    
