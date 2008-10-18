@@ -19,7 +19,7 @@ public define slsh_main ()
    w.ylabel ("Voltage [mV]"; color="red");
    xfig_new_color ("aquamarine3", (102 shl 16)|(205 shl 8)|170);
 
-   variable text = xfig_new_text ("Equation: $e^{-t}\cos(2\pi t)$"R;
+   variable text = xfig_new_text ("Equation: \bf $e^{-t}\cos(2\pi t)$"R;
 				  color="black", size="Huge", style="sc");
    text.set_depth(1);
    w.add_object (text, 10, 0.75, 0.5, 0);

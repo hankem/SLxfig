@@ -24,3 +24,4 @@ Changes since 0.1.0
     old code to use this version of xfig.
 16. src/xfig/latex.sl: Added qualifier support to allow the "just"
     qualifier to propagate into the xfig_new_pict function.
+17. examples/plot.sl: Tweaked some of the examples

@@ -1,5 +1,7 @@
 %-*- slang -*-
-
+% This file should be copied to $HOME/.slxfigrc.  It gets loaded each
+% time slxfig is loaded.
+% 
 % slxfig autogenerates eps files by running latex.  The xfig_set_autoeps_dir
 % function specifies the directory where these files are to be placed.
 xfig_set_autoeps_dir ("$HOME/.slxfig/autoeps"$);

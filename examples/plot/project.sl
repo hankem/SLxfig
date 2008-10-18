@@ -1,4 +1,8 @@
 #!/usr/bin/env slsh
+
+() = fprintf (stderr, "This example is a work-in-progress\n");
+exit (1);
+
 require ("xfig");
 
 private define project_image (img, X, xhat, yhat, pixel_size)
