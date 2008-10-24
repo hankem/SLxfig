@@ -1572,12 +1572,24 @@ private variable Make_Symbol_Funs = {};
 % scale size of the symbol in fig units.  The function must return two arrays 
 % representing the X and Y coordinates of the polygons that represent
 % the symbol.  The center of the object is taken to be (0,0).  If more than one
-% polygon is require to represent the object, an array of arrays may be
+% polygon is required to represent the object, an array of arrays may be
 % returned.
 %!%-
 define xfig_plot_add_symbol (name, fun)
 {
    list_append (Make_Symbol_Funs, struct{name=name, fun=fun});
+}
+
+define xfig_plot_get_symbol_names ()
+{
+   variable num = length (Make_Symbol_Funs);
+   variable names = String_Type[num];
+   _for (0, num-1, 1)
+     {
+	variable i = ();
+	names[i] = Make_Symbol_Funs[i].name;
+     }
+   return names;
 }
 
 private define find_symbol (symp)
@@ -1698,6 +1710,49 @@ private define make_triangle_right (radius)
 xfig_plot_add_symbol ("triangle3", &make_triangle_right);
 
 
+private define make_arrow_internal (size, a, b, c)
+{
+   variable xs = Array_Type[2];
+   variable ys = Array_Type[2];
+   xs[0] = [0, 0]; ys[0] = [0,b]*size;
+   xs[1] = [0, a, -a, 0]*size;
+   ys[1] = [c, b, b, c]*size;
+   return xs, ys;
+}
+   
+private define make_darrow (size)
+{
+   return make_arrow_internal (size, 0.3, -1.4, -2);
+}
+
+private define make_uarrow (size)
+{
+   return make_arrow_internal (size, 0.3, 1.4, 2);
+}
+private define make_larrow (size)
+{
+   return exch (make_arrow_internal (size, 0.3, -1.4, -2));
+}
+private define make_rarrow (size)
+{
+   return exch (make_arrow_internal (size, 0.3, 1.4, 2));
+}
+xfig_plot_add_symbol ("darr", &make_darrow);
+xfig_plot_add_symbol ("uarr", &make_uarrow);
+xfig_plot_add_symbol ("larr", &make_larrow);
+xfig_plot_add_symbol ("rarr", &make_rarrow);
+
+private define make_star (size)
+{
+   variable thetas = PI/10.0*(1+2*[0:10]);
+   variable y0 = sin(thetas[0]);
+   variable small_r = hypot (y0, y0*tan(thetas[2]-thetas[1]));
+   variable xs = cos(thetas), ys = sin(thetas);
+   xs[[1::2]] *= small_r; ys[[1::2]] *= small_r;
+   return size*xs, size*ys;
+}
+xfig_plot_add_symbol ("star", &make_star);
+
 
 %}}}
 
@@ -1745,50 +1800,50 @@ private define plot_symbols (p, x, y) %{{{
    variable size = qualifier ("width", p.thickness);
    size = qualifier ("symwidth",size);
    variable linestyle = qualifier ("symlinestyle", p.line_style);
+
+   variable list = xfig_new_polyline_list ();
+   variable x0 = p.X.x;
+   variable y0 = p.X.y;
+   variable z0 = p.X.z;
+   variable sym_xs, sym_ys;
+   (sym_xs, sym_ys) = (@fun)(radius);
+   variable is_array = (_typeof(sym_xs) == Array_Type);
+
    foreach (where (bad == 0))
      {
 	variable i = ();
-	variable xx, yy, lines;
-	(xx,yy) = (@fun)(radius);
-	if (_typeof (xx) == Array_Type)
+	variable lines;
+	if (is_array)
 	  {
-	     _for (0, length (xx)-1, 1)
+	     _for (0, length (sym_xs)-1, 1)
 	       {
 		  variable j = ();
-		  variable xx_j = xx[j];
-		  variable yy_j = yy[j];
+		  variable xx_j = sym_xs[j];
+		  variable yy_j = sym_ys[j];
 		  xx_j += x[i];
 		  yy_j += y[i];
 		  (xx_j, yy_j) = _xfig_clip_polygon2d (__tmp(xx_j), __tmp(yy_j), 0, w, 0, h);
 		  if (length(xx_j) == 0)
 		    continue;
-		  lines = xfig_new_polyline (vector(xx_j,yy_j,0*xx_j));
-		  lines.set_pen_color (color);
-		  lines.set_fill_color (fill_color);
-		  lines.set_depth (depth);
-		  lines.set_thickness (size);
-		  lines.translate (p.X);
-		  lines.set_line_style (linestyle);
-		  p.object_list.insert(lines);
+		  list.insert (vector(xx_j+x0,yy_j+y0,0*xx_j+z0));
 	       }
 	     continue;
 	  }
-	xx += x[i];
-	yy += y[i];
+	variable xx = sym_xs + x[i];
+	variable yy = sym_ys + y[i];
 	(xx, yy) = _xfig_clip_polygon2d (__tmp(xx), __tmp(yy), 0, w, 0, h);
 	if (length (xx) == 0)
 	  continue;
 
-	lines = xfig_new_polyline (vector(xx,yy,0*xx));
-	lines.set_pen_color (color);
-	lines.set_fill_color (fill_color);
-	lines.set_line_style (linestyle);
-	lines.set_area_fill (area_fill);
-	lines.set_thickness (size);
-	lines.set_depth(depth);
-	lines.translate (p.X);
-	p.object_list.insert(lines);
+	list.insert (vector(xx+x0,yy+y0,0*xx+z0));
      }
+   list.set_pen_color (color);
+   list.set_fill_color (fill_color);
+   list.set_line_style (linestyle);
+   list.set_area_fill (area_fill);
+   list.set_thickness (size);
+   list.set_depth(depth);
+   p.object_list.insert(list);
 }
 
 %}}}

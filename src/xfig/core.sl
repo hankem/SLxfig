@@ -312,14 +312,16 @@ private define find_color (color)
 	color = strlow (color);
 	if (assoc_key_exists (Color_Table, color))
 	  return Color_Table[color];
+	return NULL;
      }
    else
      {
-	if (0 <= color < length(Color_List))
-	  return Color_List[color];
+	if (color > 0)
+	  return Color_List[2 + (color mod (length (Color_List)-2))];
+	if (color)
+	  return Color_List[0];
+	return Color_List[1];
      }
-
-   return NULL;
 }
 
    
@@ -329,18 +331,19 @@ define xfig_lookup_color (color)
    if (s != NULL)
      return s.xfigid;
 
-   () = fprintf (stderr, "color %S is unknown\n", color);
+   () = fprintf (stderr, "color %S is unknown-- using default\n", color);
    return -1;
 }
 
 define xfig_lookup_color_rgb (color)
 {
    variable s = find_color (color);
-   if (s != NULL)
-     return s.rgb;
-
-   () = fprintf (stderr, "color %S is unknown\n", color);
-   return 0;
+   if (s == NULL)
+     {
+	() = fprintf (stderr, "color %S is unknown-- using black\n", color);
+	return 0;
+     }
+   return s.rgb;
 }
 
 

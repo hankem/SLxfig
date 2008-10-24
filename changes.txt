@@ -25,3 +25,12 @@ Changes since 0.1.0
 16. src/xfig/latex.sl: Added qualifier support to allow the "just"
     qualifier to propagate into the xfig_new_pict function.
 17. examples/plot.sl: Tweaked some of the examples
+18. src/xfig/plot.sl: plot_symbols now uses a polyline_list instead of
+    individual polylines.  This makes it run faster when many points
+    are involved.
+19. src/xfig/core.sl: If an integer is passed to xfig_lookup_color,
+    the value returned will be modulo num_colors.
+20. src/xfig/polyline.sl: Use xfig_lookup_color in set_color methods.
+21. src/xfig/plot.sl: Added "star", "larr", "rarr", "uarr", and "darr"
+    symbols.  Also added xfig_plot_get_symbol_names functions.
+22. examples/plot/symbol.sl: Rewrote this example.

@@ -61,16 +61,12 @@ private define set_thickness (obj, val)
 
 private define set_pen_color (obj, val)
 {
-   if (typeof (val) == String_Type)
-     val = xfig_lookup_color (val);
-   obj.pen_color = val;
+   obj.pen_color = xfig_lookup_color (val);
 }
 
 private define set_fill_color (obj, val)
 {
-   if (typeof (val) == String_Type)
-     val = xfig_lookup_color (val);
-   obj.fill_color = val;
+   obj.fill_color = xfig_lookup_color (val);
 }
 
 private define set_depth (obj, val)
@@ -465,8 +461,7 @@ private define polygon_list_set_thickness (obj, val)
 
 private define polygon_list_set_pen_color (obj, val)
 {
-   if (typeof (val) == String_Type)
-     val = xfig_lookup_color (val);
+   val = xfig_lookup_color (val);
    foreach (obj.list)
      {
 	obj = ();
@@ -476,8 +471,7 @@ private define polygon_list_set_pen_color (obj, val)
 
 private define polygon_list_set_fill_color (obj, val)
 {
-   if (typeof (val) == String_Type)
-     val = xfig_lookup_color (val);
+   val = xfig_lookup_color (val);
    foreach (obj.list)
      {
 	obj = ();
