@@ -306,17 +306,24 @@ private define polyline_list_get_bbox (obj)
    foreach (obj.list)
      {
 	variable X = ();
-	x0 = min (X.x);
+	variable tmp;
+	
+	tmp = X.x;
+	x0 = min (tmp);
 	if (x0 < xmin) xmin = x0;
-	x1 = max (X.x);
+	x1 = max (tmp);
 	if (x1 > xmax) xmax = x1;
-	y0 = min (X.y);
+	
+	tmp = X.y;
+	y0 = min (tmp);
 	if (y0 < ymin) ymin = y0;
-	y1 = max (X.y);
+	y1 = max (tmp);
 	if (y1 > ymax) ymax = y1;
-	z0 = min (X.z);
+
+	tmp = X.z;
+	z0 = min (tmp);
 	if (z0 < zmin) zmin = z0;
-	z1 = max (X.z);
+	z1 = max (tmp);
 	if (z1 > zmax) zmax = z1;
      }
    

@@ -1,5 +1,5 @@
 % This routine implements some 3-vector operations.
-% Copyright (c) 2004-2006 John E. Davis
+% Copyright (c) 2004-2008 John E. Davis
 % You may distribute this file under the terms the GNU General Public
 % License.  See the file COPYING for more information.
 % 
@@ -11,19 +11,20 @@ if (0 == is_defined ("Vector_Type")) typedef struct
 } 
 Vector_Type;
 
-private define convert_to_floating (x)
-{
-   if (_typeof (x) == Float_Type)
-     return x;
-   return typecast (x, Double_Type);
-}
-
 define vector (x,y,z)
 {
    variable v = @Vector_Type;
-   v.x = convert_to_floating (x);
-   v.y = convert_to_floating (y);
-   v.z = convert_to_floating (z);
+
+   if (__is_numeric (x) != 2)
+     x = typecast (x, Double_Type);
+   if (__is_numeric (y) != 2)
+     y = typecast (y, Double_Type);
+   if (__is_numeric (z) != 2)
+     z = typecast (z, Double_Type);
+   
+   v.x = x;
+   v.y = y;
+   v.z = z;
    return v;
 }
 

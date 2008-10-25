@@ -34,3 +34,7 @@ Changes since 0.1.0
 21. src/xfig/plot.sl: Added "star", "larr", "rarr", "uarr", and "darr"
     symbols.  Also added xfig_plot_get_symbol_names functions.
 22. examples/plot/symbol.sl: Rewrote this example.
+23. src/vector.c: Modified the "vector" function to avoid an extra
+    function when converting numeric value to a double.
+24. src/xfig/polyline.sl: Tweaked the polyline_list_bbox method to
+    improve performance.
