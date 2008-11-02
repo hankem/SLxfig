@@ -65,6 +65,10 @@ define xfig_new_legend (labels, colors, linestyles,
    variable border = (0.5 * (y1-y0))/num;
    legend.translate (vector (border-x0, border-y0, 0));
    variable box = xfig_new_rectangle ((x1-x0)+2*border, (y1-y0)+2*border);
+
+   box.set_area_fill (qualifier("areafill", 20));
+   box.set_fill_color (qualifier("fillcolor", "white"));
+
    legend.insert (box);
    return legend;
 }
@@ -1154,10 +1158,10 @@ private define do_axis_method (name, grid_axis)
 	     axis.major_tic_len = len;
 	     axis.minor_tic_len = len;
 	  }
-	q = qualifier ("major_grid");
+	q = qualifier ("major_grid", qualifier("majorgrid"));
 	if (q == 1)
 	  axis.major_tic_len = len;
-	q = qualifier ("minor_grid");
+	q = qualifier ("minor_grid", qualifier("minorgrid"));
 	if (q == 1)
 	  axis.minor_tic_len = len;
      }

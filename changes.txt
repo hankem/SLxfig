@@ -38,3 +38,5 @@ Changes since 0.1.0
     function when converting numeric value to a double.
 24. src/xfig/polyline.sl: Tweaked the polyline_list_bbox method to
     improve performance.
+25. src/xfig/plot.sl: added areafill and fillcolor qualifiers to the
+    xfig_new_legend function.

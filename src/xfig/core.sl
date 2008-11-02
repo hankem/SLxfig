@@ -411,6 +411,12 @@ private define write_colors (fp)
 private define get_fig2dev_cmd (ext)
 {
    ext = ext[[1:]];
+   ifnot (assoc_key_exists (Fig2dev_Formats, ext))
+     {
+	() = fprintf (stderr, "Unsupported device: %s\n", ext);
+	return NULL;
+     }
+
    variable fmt = Fig2dev_Formats[ext];
    if (fmt == NULL)
      {
