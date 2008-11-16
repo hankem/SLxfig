@@ -1331,9 +1331,16 @@ private define world1_method () %{{{
 
 %}}}
 
+% This function is not to be called implictly.  Use do_world_method
+% instead.
 private define world2_method () %{{{
 {
-   return do_world_method (2, _NARGS ;; __qualifiers);
+   variable w, args;
+   args = __pop_args (_NARGS-1);
+   w = ();
+   w.plot_data.x2axis.draw_tic_labels = 1;
+   w.plot_data.y2axis.draw_tic_labels = 1;
+   return do_world_method (w, __push_args(args), 2, _NARGS ;; __qualifiers);
 }
 
 %}}}
@@ -1341,17 +1348,44 @@ private define world2_method () %{{{
 private define world_method () %{{{
 {
    variable args = __pop_args (_NARGS);
-   world1_method (__push_args (args) ;; __qualifiers);
-   world2_method (__push_args (args) ;; __qualifiers);
+   do_world_method (__push_args (args), 1, _NARGS ;; __qualifiers);
+   do_world_method (__push_args (args), 2, _NARGS ;; __qualifiers);
 }
 
 %}}}
 
+private define get_world_axes (p)
+{
+   variable world = qualifier ("world");
+   variable x_axes = [NULL, p.x1axis, p.x2axis];
+   variable y_axes = [NULL, p.y1axis, p.y2axis];
+   variable a = 0;
+   loop (3)
+     {
+	variable b = 0;
+	loop (3)
+	  {
+	     if (qualifier_exists ("world${a}${b}"$))
+	       return x_axes[a], y_axes[b];
+	     b++;
+	  }
+
+	if (qualifier_exists ("world${a}"$))
+	  return x_axes[a], y_axes[a];
+
+	a++;
+     }
+   return p.x1axis, p.y1axis;
+}
 
 private define scale_coords_for_axis (axis, axis_len, x)
 {
-   variable x0 = axis.xmin;
-   variable x1 = axis.xmax;
+   if (axis == NULL)
+     {
+	%  device coordinate, x runs from 0 to 1
+	return double(x*axis_len);
+     }
+   variable x0 = axis.xmin, x1 = axis.xmax;
    return axis_len * (@axis.wcs_transform.world_to_normalized) (double(x), x0, x1);
 }
 
@@ -1366,12 +1400,8 @@ private define make_nsided_polygon (n, x0, y0, radius)
 private define plot_lines (p, x, y)
 {
    p = p.plot_data;
-   variable ax = p.x1axis, ay = p.y1axis;
-   if (qualifier_exists ("world2"))
-     {
-	ax = p.x2axis;
-	ay = p.y2axis;
-     }
+   variable ax, ay;
+   (ax, ay) = get_world_axes (p ;; __qualifiers);
    variable w = p.plot_width, h = p.plot_height;
    
    if (length (x) < 2)
@@ -1389,8 +1419,8 @@ private define plot_lines (p, x, y)
    variable thickness = qualifier ("width", p.thickness);
    variable color = qualifier ("color", p.line_color);
    variable linestyle = qualifier ("line", p.line_style);
-
    variable i0 = 0;
+   variable list = xfig_new_polyline_list ();
    foreach (where (bad))
      {
 	i = ();
@@ -1449,12 +1479,8 @@ private define plot_erry ()
 {
    variable p, x, y, dy, term_factor;
    (p, x, y, dy, term_factor) = pop_plot_err_parms (_NARGS);
-   variable ax = p.x1axis, ay = p.y1axis;
-   if (qualifier_exists ("world2"))
-     {
-	ax = p.x2axis;
-	ay = p.y2axis;
-     }
+   variable ax, ay;
+   (ax, ay) = get_world_axes (p ;; __qualifiers);
    variable w = p.plot_width, h = p.plot_height;
 
    x = scale_coords_for_axis (ax, w, x);
@@ -1507,12 +1533,8 @@ private define plot_errx ()
 {
    variable p, x, y, dx, term_factor;
    (p, x, y, dx, term_factor) = pop_plot_err_parms (_NARGS);
-   variable ax = p.x1axis, ay = p.y1axis;
-   if (qualifier_exists ("world2"))
-     {
-	ax = p.x2axis;
-	ay = p.y2axis;
-     }
+   variable ax, ay;
+   (ax, ay) = get_world_axes (p ;; __qualifiers);
    variable w = p.plot_width, h = p.plot_height;
    
    y = scale_coords_for_axis (ay, h, y);
@@ -1763,12 +1785,8 @@ xfig_plot_add_symbol ("star", &make_star);
 private define plot_symbols (p, x, y) %{{{
 {
    p = p.plot_data;
-   variable ax = p.x1axis, ay = p.y1axis;
-   if (qualifier_exists ("world2"))
-     {
-	ax = p.x2axis;
-	ay = p.y2axis;
-     }
+   variable ax, ay;
+   (ax, ay) = get_world_axes (p ;; __qualifiers);
    
    variable bad = Int_Type [length(x)+1];
    bad[-1] = 1;
@@ -1855,12 +1873,8 @@ private define plot_symbols (p, x, y) %{{{
 define plot_points (p, x, y) %{{{
 {
    p = p.plot_data;
-   variable ax = p.x1axis, ay = p.y1axis;
-   if (qualifier_exists ("world2"))
-     {
-	ax = p.x2axis;
-	ay = p.y2axis;
-     }
+   variable ax, ay;
+   (ax, ay) = get_world_axes (p ;; __qualifiers);
    variable w = p.plot_width, h = p.plot_height;
 
    variable bad = isnan (x) or isnan(y);
@@ -1909,9 +1923,9 @@ private define check_axis (p, axis, init_fun, ticlabels, has_log_qualifier)
    ifnot (axis.inited)
      {
 	if (has_log_qualifier)
-	  (@init_fun)(p; log, ticlabels=ticlabels);
+	  (@init_fun)(p; log, ticlabels=axis.draw_tic_labels);
 	else
-	  (@init_fun)(p; ticlabels=ticlabels);
+	  (@init_fun)(p; ticlabels=axis.draw_tic_labels);
 	return;
      }
 
@@ -1941,12 +1955,12 @@ private define initialize_plot (p, x, y)
 	if (not d.world1_inited
 	    || (logx && ((x1axis.xmin <= 0) || (x1axis.xmax <= 0)))
 	    || (logy && ((y1axis.xmin <= 0) || (y1axis.xmax <= 0))))
-	  p.world1 (x,y ;; __qualifiers);
+	  do_world_method (p, x, y, 1, 3;; __qualifiers);
 
 	if (not d.world2_inited
 	    || (logx && ((x2axis.xmin <= 0) || (x2axis.xmax <= 0)))
 	    || (logy && ((y2axis.xmin <= 0) || (y2axis.xmax <= 0))))
-	  p.world2 (x,y ;; __qualifiers);
+	  do_world_method (p, x, y, 2, 3;; __qualifiers);
      }
 
    check_axis (p, d.x1axis, &x1axis_method, 1, logx);
@@ -1981,7 +1995,7 @@ private define plot_method () %{{{
 	_pop_n (_NARGS);
 	usage (".plot (x [, y [, dy | dx, dy]] ; qualifiers\n" +
 	       "Common qualifiers:\n" +
-	       " color=val, line=val, linewidth=val, width=val, sym=val, symcolor=val\n"
+	       " color=val, line=val, width=val, sym=val, symcolor=val\n"
 	      );
      }
    p = ();
@@ -2039,17 +2053,37 @@ define xfig_plot_histogram (w, xpts, ypts)
 }
 
 
-define xfig_plot_shaded_histogram (p, x, y, color, area_fill)
+define xfig_plot_shaded_histogram (p, x, y)
 {
+   initialize_plot (p, x, y ;;__qualifiers);
+
    p = p.plot_data;
-   variable ax = p.x1axis, ay = p.y1axis;
+   variable ax, ay;
+   (ax, ay) = get_world_axes (p ;; __qualifiers);
    variable w = p.plot_width, h = p.plot_height;
    x = scale_coords_for_axis (ax, w, x);
    y = scale_coords_for_axis (ay, h, y);
 
+   variable depth = qualifier ("depth", p.line_depth);
+   variable thickness = qualifier ("width", p.thickness);
+   variable color = qualifier ("color", p.line_color);
+   variable linestyle = qualifier ("line", p.line_style);
+   variable area_fill = qualifier ("fill", 20);
+   variable fillcolor = qualifier ("fillcolor", color);
+
    variable y0 = scale_coords_for_axis (ay, h, 0.0);
-   variable i = where ((x>= 0) and (x <= w));
+   if (y0 < 0.0) y0 = 0.0;
+
+   x = @x;
+   variable i0 = wherelast (x <= 0);
+   if (i0 == NULL) i0 = 0;
+   variable i1 = wherefirst (x >= w);
+   if (i1 == NULL) i1 = length(x);
+   variable i = [i0:i1];
+   %variable i = where ((x>= 0) and (x <= w));
    x = x[i]; y = y[i];
+   x[where(x<0)] = 0;
+   x[where(x>w)] = w;
    y[where(isnan(y))] = y0;
    y[where (y < y0)] = y0; 
    y[where (y > h)] = h;
@@ -2061,14 +2095,14 @@ define xfig_plot_shaded_histogram (p, x, y, color, area_fill)
 	variable x0 = x[i];
 	variable x1 = x[i+1];
 	variable y1 = y[i];
-	
+
 	list.insert (vector([x0, x0, x1, x1], [y0,y1,y1,y0], [0.0,0.0,0.0,0.0]));
      }
    list.translate (p.X);
-   list.set_depth (p.line_depth-1);
-   list.set_pen_color (p.line_color);
-   list.set_line_style (p.line_style);
-   list.set_fill_color (color);
+   list.set_depth (p.line_depth+1);
+   list.set_pen_color (color);
+   list.set_line_style (linestyle);
+   list.set_fill_color (fillcolor);
    list.set_area_fill (area_fill);
    p.object_list.insert (list);
 }
@@ -2095,16 +2129,22 @@ private define hplot_method () %{{{
 	_pop_n (_NARGS);
 	usage (".hplot (x [, y [, dy ]] ; qualifiers\n" +
 	       "Common qualifiers:\n" +
-	       " color=val, line=val, linewidth=val, width=val\n"
+	       " color=val, line=val, width=val\n"
 	      );
      }
    p = ();
-   xfig_plot_histogram (p, x, y;; __qualifiers);
+   
+   if (NULL != qualifier ("fill"))
+     xfig_plot_shaded_histogram (p, x, y;; __qualifiers);
+   else
+     xfig_plot_histogram (p, x, y;; __qualifiers);
+
    if (dy != NULL)
      {
 	plot_erry (p, x, y, dy ;; __qualifiers);
      }
 }
+%}}}
 
 define xfig_plot_set_line_color (p, color)
 {
@@ -2219,8 +2259,10 @@ private define add_object_method ()
 
    if ((x != NULL) and (y != NULL))
      {
-	x = scale_coords_for_axis (p.x1axis, p.plot_width, x);
-	y = scale_coords_for_axis (p.y1axis, p.plot_height, y);
+	variable ax, ay;
+	(ax, ay) = get_world_axes (p ;; __qualifiers);
+	x = scale_coords_for_axis (ax, p.plot_width, x);
+	y = scale_coords_for_axis (ay, p.plot_height, y);
 	
 	xfig_justify_object (obj, p.X + vector (x,y,0), vector(dx, dy, 0));
      }
@@ -2261,7 +2303,7 @@ define xfig_plot_text ()
    (w, text, x, y) = ();
    
    text = xfig_new_text (text);
-   add_object_method (w, text, x, y, dx, dy);
+   add_object_method (w, text, x, y, dx, dy ;; __qualifiers);
 }
 
 

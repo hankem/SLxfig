@@ -552,6 +552,10 @@ private define pict_get_bbox (p)
 
 private define pict_scale (p, sx, sy, sz)
 {
+   variable X = p.X;
+   X.x *= sx;
+   X.y *= sy;
+   X.z *= sz;
    p.bbox_x *= sx;
    p.bbox_y *= sy;
    %polyline_list_scale (p, sx, sy, sz);

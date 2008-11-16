@@ -40,3 +40,12 @@ Changes since 0.1.0
     improve performance.
 25. src/xfig/plot.sl: added areafill and fillcolor qualifiers to the
     xfig_new_legend function.
+26. src/xfig/polyline.sl: pict_scale was not accounting for the
+    absolute position of the pict.
+27. src/xfig/plot.sl: Added support for plotting via mixed world
+    systems, e.g., world12, world21, etc.  Also, world0 may be used to
+    refer to device coordinates, which run from 0 to 1.
+28. src/xfig/plot.sl: The hplot method will call the shaded histogram
+    routine if a fill qualifier is given.
+29. examples/plot/world.sl: A new example.  Also some other examples
+    were updated.
