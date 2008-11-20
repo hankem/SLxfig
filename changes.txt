@@ -49,3 +49,5 @@ Changes since 0.1.0
     routine if a fill qualifier is given.
 29. examples/plot/world.sl: A new example.  Also some other examples
     were updated.
+30. src/xfig/plot.sl: Added shade_region method and updated the
+    world.sl example to illustrate its use.

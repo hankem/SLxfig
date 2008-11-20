@@ -28,5 +28,7 @@ define slsh_main ()
    w.plot (lengths, f2c(temps), sigma_l, 5.0/9.0*sigma_t; 
 	   world12, sym="x", color="blue");
    
+   w.shade_region (6, 8, 0, 1; world10, fillcolor="black", fill=5);
+   
    w.render ("world.png");
 }

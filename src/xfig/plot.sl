@@ -2408,6 +2408,61 @@ define plot_png_method ()
    add_pict_to_plot (w, png);
 }
 
+private define shade_region_method ()
+{
+   variable p, w, xs, ys, xmin, xmax, ymin, ymax;
+
+   switch (_NARGS)
+     {
+      case 3:
+	(w, xs, ys) = ();
+     }
+     {
+      case 5:
+	(w, xmin, xmax, ymin, ymax) = ();
+	xs = [xmin, xmax, xmax, xmin, xmin];
+	ys = [ymin, ymin, ymax, ymax, ymin];
+     }
+     {
+	usage ("Usage forms:\n"
+	       + " .shade_region (xs, ys; qualifiers);\n"
+	       + " .shade_region (xmin, ymin, xmax, ymax; qualifiers);\n"
+	       + "Qualifiers\n"
+	       + " world[012][012], fill=value, color=value, fillcolor=value");
+     }
+
+   if (length (xs) < 3)
+     return;
+   
+   initialize_plot (w, xs, ys ;;__qualifiers);
+
+   p = w.plot_data;
+   variable ax, ay;
+   (ax, ay) = get_world_axes (p ;; __qualifiers);
+   variable width = p.plot_width, height = p.plot_height;
+   xs = scale_coords_for_axis (ax, width, xs);
+   ys = scale_coords_for_axis (ay, height, ys);
+   
+   xs[where(xs>width)]=width; xs[where(xs<0)] = 0;
+   ys[where(ys>height)]=height; ys[where(ys<0)] = 0;
+
+   xs[where(isnan(xs))] = 0;
+   ys[where(isnan(ys))] = 0;
+   
+   variable obj = xfig_new_polyline (vector (xs, ys, 0*xs));
+   obj.translate (p.X);
+   
+   obj.set_depth (qualifier ("depth", p.image_depth));
+   obj.set_thickness (qualifier ("width", p.thickness));
+   variable color = qualifier ("color", p.line_color);
+   obj.set_pen_color (color);
+   obj.set_line_style (qualifier ("line", p.line_style));
+   obj.set_area_fill(qualifier ("fill", 20));
+   obj.set_fill_color (qualifier ("fillcolor", color));
+   
+   w.add_object (obj);
+}
+
 private variable XFig_Plot_Type = struct
 {
    plot_data,
@@ -2433,6 +2488,7 @@ private variable XFig_Plot_Type = struct
    axis = &axis_method,
    axes = &axis_method,
    plot_png = &plot_png_method,
+   shade_region= &shade_region_method,
 };
 
 %!%+
