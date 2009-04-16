@@ -51,3 +51,5 @@ Changes since 0.1.0
     were updated.
 30. src/xfig/plot.sl: Added shade_region method and updated the
     world.sl example to illustrate its use.
+31. src/xfig/plot.sl: When placing the title, account for the x2label.
+32. src/xfig/plot.sl: Ignore tic_linestyle qualifier unless gridding.

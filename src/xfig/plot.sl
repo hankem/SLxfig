@@ -122,7 +122,8 @@ private variable Plot_Axis_Type = struct
    axis_label, axis_label_rotated = 0,
 
    draw_line=1, draw_major_tics=1, draw_minor_tics=1, draw_tic_labels=1,
-   inited = 0,
+   inited = 0, 
+   needs_setup = 1,
    axis_depth = DEFAULT_FRAME_DEPTH,
    tic_depth = DEFAULT_TIC_DEPTH,
 };
@@ -141,7 +142,8 @@ private variable XFig_Plot_Data_Type = struct
    world1_inited = 0, world2_inited = 0,
    line_color, line_style, thickness, 
    point_color, point_size,
-   object_list, 
+   object_list,
+   title_object,
    num_plots = 0,
 
    % methods
@@ -517,12 +519,15 @@ private define construct_tic_label_strings (axis, tics) %{{{
 	  {
 	     format = "\\bf %.5g";
 	     %alt_fmt = "\\bf %g$\\bf\\bm\\cdot 10^{%d}$";
-	     alt_fmt = "\\bf %g$\\bf\\bm\\times 10^{%d}$";
+	     alt_fmt = "\\bf %g$\\bf\\bm\\times{}10^{%d}$";
 	  }
 	tic_labels = array_map (String_Type, &sprintf, format, tics);
 	if (alt_fmt != NULL)
 	  {
 	     variable abs_tics = abs(tics);
+	     % 1.5e-4 = 0.00015
+	     %        = 1.5*10-4
+	     %        > 0.00001
 	     i = where (((abs_tics > 0) and (abs_tics < 1e-4))
 			or (abs_tics >= 99999.5));
 	     if (length(i))
@@ -553,15 +558,33 @@ private define construct_tic_label_strings (axis, tics) %{{{
 
 private define make_tic_label_objects (axis, tic_labels_just, tweakx, tweaky) %{{{
 {
-   variable tics = axis.major_tics;
+   variable major_tics = axis.major_tics;
+   variable tics = major_tics;
    variable max_tic_h = 0, max_tic_w = 0;
+   variable num_tics = length (tics);
 
-   if ((tics == NULL) || (length(tics) == 0) || (axis.draw_tic_labels == 0))
+   if ((tics == NULL) || (num_tics == 0) || (axis.draw_tic_labels == 0))
      {
 	axis.tic_label_objects = NULL;
 	return;
      }
 
+#iffalse
+   % Something like this might be useful for adding minor tic labels
+   % on the log plot.  Changes will also need to be made elsewhere.
+   if (axis.islog && (1 <= num_tics <= 2))
+     {
+	variable major_tic = major_tics[0];
+	variable new_tics = [major_tic/2.0, major_tic/5.0, major_tic*2, major_tic*5];
+	if (num_tics == 2)
+	  {
+	     major_tic = major_tics[1];
+	     new_tics = [new_tics, major_tic*2, major_tic*5];
+	  }
+	new_tics = new_tics[where (axis.xmin <= new_tics <= axis.xmax)];
+	tics = [tics, new_tics];
+     }
+#endif
    variable tic_label_strings = construct_tic_label_strings (axis, tics);
 
    variable tic_label_objects
@@ -620,8 +643,7 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
      {
 	if (length (where (log10(xmin) <= major_tics <= log10(xmax))) < 2)
 	  {
-	     % Do not allow as many major tics to avoid "bunching" on
-	     % the log scale
+	     % 0 or 1 major tic.  Format as non-log.
 	     variable maxtics = (2*axis.maxtics)/3;
 	     (major_tics, num_minor) = get_major_tics (xmin, xmax, 0, maxtics);
 	     axis.islog = -1;
@@ -812,7 +834,7 @@ private define add_axis (p, axis, wcs_type, major_tics, minor_tics) %{{{
    setup_axis_tics (p, axis);
    
    position_axis_label (axis);
-   axis.inited = 1;
+   axis.needs_setup = 0;
 }
 
 %}}}
@@ -889,6 +911,8 @@ private define plot_translate (p, X) %{{{
    translate_axis (p.y1axis, X);
    translate_axis (p.y2axis, X);
    p.object_list.translate(X);
+   if (p.title_object != NULL)
+     p.title_object.translate(X);
 }
 
 private define rotate_axis (axis, normal, theta)
@@ -911,6 +935,8 @@ private define plot_rotate (p, normal, theta) %{{{
    rotate_axis (p.y1axis, normal, theta);
    rotate_axis (p.y2axis, normal, theta);
    p.object_list.rotate(normal, theta);
+   if (p.title_object != NULL)
+     p.title_object.rotate(normal, theta);
 }
 
 
@@ -944,7 +970,7 @@ private define get_axis_bbox (axis)
 
 private define plot_get_bbox (p) %{{{
 {
-   vmessage ("Warning: plot bounding box not fully supported");
+   if (0) vmessage ("Warning: plot bounding box not fully supported");
    p = p.plot_data;
    variable xmin, xmax, ymin, ymax, zmin, zmax;
    variable x0, x1, y0, y1, z0, z1;
@@ -972,6 +998,19 @@ private define plot_get_bbox (p) %{{{
 	if (z0 < zmin) zmin = z0;
 	if (z1 > zmax) zmax = z1;
      }
+
+   obj = p.title_object;
+   if (obj != NULL)
+     {
+	(x0, x1, y0, y1, z0, z1) = obj.get_bbox ();
+	if (x0 < xmin) xmin = x0;
+	if (x1 > xmax) xmax = x1;
+	if (y0 < ymin) ymin = y0;
+	if (y1 > ymax) ymax = y1;
+	if (z0 < zmin) zmin = z0;
+	if (z1 > zmax) zmax = z1;
+     }
+
    return xmin, xmax, ymin, ymax, zmin, zmax;
 }
 
@@ -981,10 +1020,14 @@ private define plot_get_bbox (p) %{{{
 private define plot_render (p, fp) %{{{
 {
    p = p.plot_data;
-   variable plot_width = p.plot_width;
-   variable plot_height= p.plot_height;
+   %variable plot_width = p.plot_width;
+   %variable plot_height= p.plot_height;
 
    p.object_list.render (fp);
+
+   if (p.title_object != NULL)
+     p.title_object.render (fp);
+
    % It looks better when the axes are rendered after the plot object
    render_plot_axes (p, fp);
 }
@@ -1119,9 +1162,12 @@ private define do_axis_method (name, grid_axis)
 	axis.major_tic_linestyle = q;
 	axis.minor_tic_linestyle = q;
      }
-   axis.major_tic_linestyle = qualifier ("major_line", axis.major_tic_linestyle);
-   axis.minor_tic_linestyle = qualifier ("minor_line", axis.minor_tic_linestyle);
 
+   if (grid_axis)
+     {
+	axis.major_tic_linestyle = qualifier ("major_line", axis.major_tic_linestyle);
+	axis.minor_tic_linestyle = qualifier ("minor_line", axis.minor_tic_linestyle);
+     }
    axis.major_tic_len = qualifier ("major_len", axis.major_tic_len);
    axis.minor_tic_len = qualifier ("minor_len", axis.minor_tic_len);
 
@@ -1173,6 +1219,7 @@ private define do_axis_method (name, grid_axis)
 	if (axis.islog)
 	  wcs = "log";
      }
+   axis.inited = 1;
    add_axis (p, axis, wcs, major_tics, minor_tics);
 }
 
@@ -1316,9 +1363,9 @@ private define do_world_method (nth, nargs) %{{{
    
    xaxis.xmin = double(x0); xaxis.xmax = double(x1); xaxis.islog = xlog;
    yaxis.xmin = double(y0); yaxis.xmax = double(y1); yaxis.islog = ylog;
-   xaxis.inited = 0;
-   yaxis.inited = 0;
-
+   
+   yaxis.needs_setup = 1;
+   xaxis.needs_setup = 1;
    set_struct_field (p, "world${nth}_inited"$, 1);
 }
 
@@ -2337,17 +2384,21 @@ private define x2label_method ()
      {
 	usage (".x2label (label [; qualifiers])");
      }
-   variable p, label;
-   (p, label) = ();
-   p = p.plot_data;
+   variable w, p, label;
+   (w, label) = ();
+   p = w.plot_data;
    add_axis_label (p, p.x2axis, label ;; __qualifiers);
+
+   % re-adjust the title position
+   if (p.title_object != NULL)
+     w.title (p.title_object);
 }
 
 private define y2label_method ()
 {
    if (_NARGS != 2)
      {
-	usage (".x2label (label [; qualifiers])");
+	usage (".y2label (label [; qualifiers])");
      }
    variable p, label;
    (p, label) = ();
@@ -2365,16 +2416,22 @@ private define y2label_method ()
 private define title_method (w, title)
 {
    variable x0, x1, y, z;
-   (,,,y,,z) = w.get_bbox ();
 
    variable p = w.plot_data;
+
+   % remove the existing title
+   p.title_object = NULL;
+
+   (,,,y,,z) = w.get_bbox ();
+
    x0 = p.X.x;
    x1 = x0 + p.plot_width;
 
    if (typeof (title) == String_Type)
      title = xfig_new_text (title ;; __qualifiers);
-   xfig_justify_object (title, vector(0.5*(x0+x1), y, z), vector(0,-1,0));
-   w.add_object (title);
+
+   xfig_justify_object (title, vector(0.5*(x0+x1), y, z), vector(0,-1.0,0));
+   p.title_object = title;
 }
 
 private define add_pict_to_plot (w, png)
@@ -2534,9 +2591,8 @@ define xfig_plot_new ()
    p.image_depth = DEFAULT_IMAGE_DEPTH;
 
    p.X = vector(0,0,0);
-   p.object_list = xfig_new_compound_list ();
+   p.object_list = xfig_new_compound_list ();   
 
-   
    variable obj = xfig_new_object (@XFig_Plot_Type);
    obj.plot_data = p;
 
