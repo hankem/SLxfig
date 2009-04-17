@@ -2,6 +2,7 @@
 
 prepend_to_slang_load_path (path_concat (getcwd (), "../../src"));
 require ("xfig");
+%sldb ("xfig");
 _traceback = 1;
 
 private define main ()

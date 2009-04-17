@@ -53,3 +53,5 @@ Changes since 0.1.0
     world.sl example to illustrate its use.
 31. src/xfig/plot.sl: When placing the title, account for the x2label.
 32. src/xfig/plot.sl: Ignore tic_linestyle qualifier unless gridding.
+33. src/xfig/plot.sl: Cleaned up the tic labeling code and added some
+    minor tic labels when using log scaling.

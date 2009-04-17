@@ -372,7 +372,7 @@ private define get_major_tics (xmin, xmax, islog, maxtics) %{{{
 
 %}}}
 
-private define make_tic_objects (axis, tics, X, xmin, xmax, dX, dY, ticlen, add_tic_labels) %{{{
+private define make_tic_objects (axis, tics, X, xmin, xmax, dX, dY, ticlen) %{{{
 {
    xmin = double(xmin);
    xmax = double(xmax);
@@ -382,12 +382,6 @@ private define make_tic_objects (axis, tics, X, xmin, xmax, dX, dY, ticlen, add_
 
    dY = vector_mul (ticlen, dY);
    variable Xmax = vector_sum (X, dX);
-
-   variable tic_label_objects = NULL;
-   if (add_tic_labels)
-     {
-	tic_label_objects = axis.tic_label_objects;
-     }
 
    _for (0, length(tics)-1, 1)
      {
@@ -402,29 +396,12 @@ private define make_tic_objects (axis, tics, X, xmin, xmax, dX, dY, ticlen, add_
 	list.insert (vector ([X0.x, X1.x],
 			     [X0.y, X1.y],
 			     [X0.z, X1.z]));
-	if (tic_label_objects != NULL)
-	  {
-	     xfig_justify_object (tic_label_objects[i], X0 + axis.tic_labels_tweak, axis.tic_labels_just);
-	     if (dX.y != 0)
-	       {
-		  % y tic
-		  variable y0, y1, dy = 0;
-		  (,,y0,y1,,) = tic_label_objects[i].get_bbox();
-		  if (y1 > Xmax.y)
-		    dy = Xmax.y - y1;
-		  if (y0 < X.y)
-		    dy = X.y - y0;
-		  if (dy != 0)
-		    tic_label_objects[i].translate (vector (0,dy,0));
-	       }
-	  }
      }
    return list;
 }
 %}}}
 
-% Create the xfig objects for the tics and tic-labels
-private define make_tic_marks_and_tic_labels (axis) %{{{
+private define make_tic_marks (axis) %{{{
 {
    if (axis == NULL)
      return;
@@ -456,7 +433,7 @@ private define make_tic_marks_and_tic_labels (axis) %{{{
    if ((tics != NULL) && axis.draw_major_tics)
      {
 	tics = make_tic_objects (axis, tics, X, xmin, xmax, dX, dY, 
-				 axis.major_tic_len, 1);
+				 axis.major_tic_len);
 	tics.set_pen_color (axis.major_tic_color);
 	tics.set_line_style (axis.major_tic_linestyle);
 	tics.set_thickness (axis.major_tic_thickness);
@@ -468,36 +445,36 @@ private define make_tic_marks_and_tic_labels (axis) %{{{
    if ((tics != NULL) && (axis.draw_minor_tics))
      {
 	tics = make_tic_objects (axis, tics, X, xmin, xmax, dX, dY, 
-				 axis.minor_tic_len, 0);
+				 axis.minor_tic_len);
 	tics.set_pen_color (axis.minor_tic_color);
 	tics.set_line_style (axis.minor_tic_linestyle);
 	tics.set_thickness (axis.minor_tic_thickness);
 	tics.set_depth (axis.tic_depth);
 	axis.minor_tic_marks = tics;
      }
-
-   if (axis.draw_tic_labels)
-     {
-	% Convert the tic labels to a compound object for ease of manipulation
-	variable compound = xfig_new_compound_list ();
-	foreach (axis.tic_label_objects)
-	  {
-	     variable label = ();
-	     compound.insert(label);
-	  }
-	axis.tic_label_objects = compound;
-     }
 }
 
-
-%}}}
+private define format_labels_using_scientific_notation (tics)
+{
+   variable log10_tics = log10 (abs(tics));
+   % x = a*10^b ==> log10(x) = log10(a) + b;
+   %                         = log10(10a) + (b-1)
+   variable b = int (log10_tics);
+   variable a = log10_tics - b;
+   variable j = where (a < 0.0); a[j] += 1; b[j] -= 1;
+   a = nint(10^a);
+   j = where (a == 10); a[j] = 1; b[j] += 1;
+   a[where(tics<0)] *= -1;
+   return array_map (String_Type, &sprintf, "$\bm%g{\times}10^{%d}$"R, a, b);
+}
 
 private define construct_tic_label_strings (axis, tics) %{{{
 {
    variable format = axis.tic_label_format;
-   variable i, alt_fmt = NULL;
+   variable fixed_format = (format != NULL);
+   variable i, j, alt_fmt = NULL;
    variable tic_labels;
-
+   variable a, b;
    if (axis.islog > 0)
      {
 	if (format == NULL)
@@ -505,49 +482,50 @@ private define construct_tic_label_strings (axis, tics) %{{{
 	     format = "\\bf 10$\\bm^{%g}$";
 	     alt_fmt = "\\bf %.5g";
 	  }
-	tic_labels = array_map (String_Type, &sprintf, format, log10(tics));
-	if (alt_fmt != NULL)
+	variable log10_tics = log10 (tics);
+	variable frac, whole;
+	variable is_frac = fneqs (log10_tics, nint(log10_tics));
+	frac = where (is_frac, &whole);
+	tic_labels = String_Type[length(tics)];
+	tic_labels[whole] = array_map (String_Type, &sprintf, format, log10_tics[whole]);
+
+	variable is_small = (0.01 <= tics < 99999.5);
+	ifnot (fixed_format)
 	  {
-	     i = where ((tics >= 0.01) and (tics < 99999.5));
-	     if (length (i))
-	       tic_labels[i] = array_map (String_Type, &sprintf, alt_fmt, tics[i]);
+	     if (all(is_small))
+	       tic_labels = array_map (String_Type, &sprintf, alt_fmt, tics);
+	     else
+	       {
+		  i = where (is_small and not is_frac);
+		  tic_labels[i] = array_map (String_Type, &sprintf, alt_fmt, tics[i]);
+
+		  if ((length(whole) <= 1) && any(is_frac))
+		    {
+		       i = where (is_small and is_frac);
+		       tic_labels[i] = array_map (String_Type, &sprintf, alt_fmt, tics[i]);
+
+		       i = where (is_frac and (not is_small));
+		       tic_labels[i] = format_labels_using_scientific_notation (tics[i]);
+		    }
+	       }
 	  }
      }
    else 
      {
 	if (format == NULL)
-	  {
-	     format = "\\bf %.5g";
-	     %alt_fmt = "\\bf %g$\\bf\\bm\\cdot 10^{%d}$";
-	     alt_fmt = "\\bf %g$\\bf\\bm\\times{}10^{%d}$";
-	  }
+	  format = "\\bf %.5g";
+
 	tic_labels = array_map (String_Type, &sprintf, format, tics);
-	if (alt_fmt != NULL)
+	ifnot (fixed_format)
 	  {
 	     variable abs_tics = abs(tics);
 	     % 1.5e-4 = 0.00015
 	     %        = 1.5*10-4
 	     %        > 0.00001
 	     i = where (((abs_tics > 0) and (abs_tics < 1e-4))
-			or (abs_tics >= 99999.5));
+		   or (abs_tics >= 99999.5));
 	     if (length(i))
-	       {
-		  variable a, b;  % x = a*10^b; log10(x)=log10(a)+b;
-		  a = log10(abs_tics[i]);
-		  variable j = where (a < 0);
-		  (b,a) = (int(a), a-int(a));
-		  a[j]++;
-		  b[j]--;
-		  j = where(feqs(a, 1));
-		  a[j]--;
-		  b[j]++;
-
-		  a = 10.0^a;
-
-		  a[where(tics[i]<0)] *= -1;
-		  tic_labels[i] = array_map (String_Type, &sprintf, alt_fmt, 
-					     a, b);
-	       }
+	       tic_labels[i] = format_labels_using_scientific_notation (tics[i]);
 	  }
      }
    return tic_labels;
@@ -555,6 +533,54 @@ private define construct_tic_label_strings (axis, tics) %{{{
 
 
 %}}}
+
+private define position_tic_label_objects (axis, tic_pos, tic_label_objects)
+{
+   ifnot (axis.draw_tic_labels)
+     return;
+
+   variable X = axis.X, dX = axis.dX;
+   variable xmin = double(axis.xmin);
+   variable xmax = double(axis.xmax);
+
+   variable world_to_normalized = axis.wcs_transform.world_to_normalized;
+
+   variable Xmax = vector_sum (X, dX);
+
+   _for (0, length(tic_label_objects)-1, 1)
+     {
+	variable i = ();
+	variable x = tic_pos[i];
+	
+	x = (@world_to_normalized)(double (x), xmin, xmax);
+
+	variable X0 = vector_sum (X, vector_mul(x, dX));
+
+	xfig_justify_object (tic_label_objects[i], X0 + axis.tic_labels_tweak, axis.tic_labels_just);
+	if (dX.y != 0)
+	  {
+	     % y tic
+	     variable y0, y1, dy = 0;
+	     (,,y0,y1,,) = tic_label_objects[i].get_bbox();
+	     if (y1 > Xmax.y)
+	       dy = Xmax.y - y1;
+	     if (y0 < X.y)
+	       dy = X.y - y0;
+	     if (dy != 0)
+	       tic_label_objects[i].translate (vector (0,dy,0));
+	  }
+     }
+   
+   % Convert the tic labels to a compound object for ease of manipulation
+   variable compound = xfig_new_compound_list ();
+   foreach (axis.tic_label_objects)
+     {
+	variable label = ();
+	compound.insert(label);
+     }
+   axis.tic_label_objects = compound;
+}
+
 
 private define make_tic_label_objects (axis, tic_labels_just, tweakx, tweaky) %{{{
 {
@@ -569,23 +595,22 @@ private define make_tic_label_objects (axis, tic_labels_just, tweakx, tweaky) %{
 	return;
      }
 
-#iffalse
-   % Something like this might be useful for adding minor tic labels
-   % on the log plot.  Changes will also need to be made elsewhere.
    if (axis.islog && (1 <= num_tics <= 2))
      {
 	variable major_tic = major_tics[0];
-	variable new_tics = [major_tic/2.0, major_tic/5.0, major_tic*2, major_tic*5];
+	variable new_tics = [major_tic/5.0,major_tic/2.0, major_tic*2.0,major_tic*5.0];
 	if (num_tics == 2)
 	  {
 	     major_tic = major_tics[1];
-	     new_tics = [new_tics, major_tic*2, major_tic*5];
+	     new_tics = [new_tics, major_tic*2,major_tic*5];
 	  }
 	new_tics = new_tics[where (axis.xmin <= new_tics <= axis.xmax)];
 	tics = [tics, new_tics];
      }
-#endif
    variable tic_label_strings = construct_tic_label_strings (axis, tics);
+   variable i = wherenot (_isnull (tic_label_strings));
+   tic_label_strings = tic_label_strings[i];
+   tics = tics[i];
 
    variable tic_label_objects
      = array_map (Struct_Type, &xfig_new_text, tic_label_strings, axis.tic_labels_font_struct);
@@ -608,8 +633,9 @@ private define make_tic_label_objects (axis, tic_labels_just, tweakx, tweaky) %{
    axis.tic_labels_just = tic_labels_just;
    axis.tic_label_objects = tic_label_objects;
    axis.tic_label_strings = tic_label_strings;
-}
 
+   position_tic_label_objects (axis, tics, tic_label_objects);
+}
 
 %}}}
 
@@ -631,7 +657,7 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
      }
 
    variable islog = axis.islog;
-   variable num_minor;
+   variable num_minor, num_major;
    if (islog)
      {
 	(xmin, xmax) = check_xmin_xmax_for_log (xmin, xmax);
@@ -641,14 +667,19 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
 
    if (islog)
      {
-	if (length (where (log10(xmin) <= major_tics <= log10(xmax))) < 2)
+	num_major = length (where (log10(xmin) <= major_tics <= log10(xmax)));
+#ifnfalse
+	if ((num_major < 1)
+	    %&& (0.001 <= xmin <= xmax <= 100.0)
+	    )
 	  {
-	     % 0 or 1 major tic.  Format as non-log.
+	     % 0 or 1 major tic.  Format as non-log (linear)
 	     variable maxtics = (2*axis.maxtics)/3;
 	     (major_tics, num_minor) = get_major_tics (xmin, xmax, 0, maxtics);
 	     axis.islog = -1;
 	     islog = 0;
 	  }
+#endif
      }
 
    variable major_tic_interval = major_tics[1] - major_tics[0];
@@ -690,7 +721,8 @@ private define setup_axis_tics (p, axis) %{{{
    variable geom = axis.geom;
 
    make_tic_label_objects (axis, axis.tic_labels_just, geom.tic_tweak_x, geom.tic_tweak_y);
-   make_tic_marks_and_tic_labels (axis);
+   %make_tic_marks_and_tic_labels (axis);
+   make_tic_marks (axis);
 }
 
 %}}}

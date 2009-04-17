@@ -18,7 +18,7 @@ public define slsh_main ()
 	   sym="triangle", symcolor="blue", symsize=2, fill=20, eb_color="green4");
    w.xlabel ("Time [s]"R; color="cyan4", size="large");
    w.ylabel ("Voltage [mV]"; color="red");
-   w.x2label ("This is the x2label";size="large");
+   w.x2label ("This is the x2label";size="large", color="orange");
    xfig_new_color ("aquamarine3", (102 shl 16)|(205 shl 8)|170);
 
    variable text = xfig_new_text ("Equation: \bf $e^{-t}\cos(2\pi t)$"R;
