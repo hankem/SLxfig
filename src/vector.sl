@@ -46,12 +46,13 @@ define vector_sqr (v)
 
 define vector_norm (v)
 {
-   return sqrt (vector_sqr (v));
+   return sqrt (v.x^2 + v.y^2 + v.z^2);
+   %return sqrt (vector_sqr (v));
 }
 
 define normalize_vector (v)
 {
-   variable len = vector_norm (v);
+   variable len = sqrt (v.x^2 + v.y^2 + v.z^2);
    v.x /= len;
    v.y /= len;
    v.z /= len;
@@ -66,17 +67,32 @@ define unit_vector (v)
 
 define vector_sum (a,b)
 {
-   return vector (a.x+b.x, a.y+b.y, a.z+b.z);
+   variable c = @Vector_Type;
+   c.x = a.x+b.x; c.y = a.y+b.y; c.z = a.z+b.z;
+   return c;
+}
+
+define vector_a_plus_bt (a, b, t)
+{
+   variable c = @Vector_Type;
+   c.x = a.x+t*b.x;
+   c.y = a.y+t*b.y;
+   c.z = a.z+t*b.z;
+   return c;
 }
 
 define vector_diff (a,b)
 {
-   return vector (a.x-b.x, a.y-b.y, a.z-b.z);
+   variable c = @Vector_Type;
+   c.x = a.x-b.x; c.y = a.y-b.y; c.z = a.z-b.z;
+   return c;
 }
 
 define vector_mul (a, v)
 {
-   return vector (a*v.x, a*v.y, a*v.z);
+   variable c = @Vector_Type;
+   c.x = a*v.x; c.y = a*v.y; c.z = a*v.z;
+   return c;
 }
 
 private define vector_times_scalar (v, a)

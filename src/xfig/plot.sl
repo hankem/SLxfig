@@ -1390,9 +1390,9 @@ private define do_world_method (nth, nargs) %{{{
 	(y0, y1) = (min(ydata), max(ydata));
      }
 
-   (x0, x1) = get_world_min_max (x0, x1, xlog, pad);
-   (y0, y1) = get_world_min_max (y0, y1, ylog, pad);
-   
+   (x0, x1) = get_world_min_max (x0, x1, xlog, qualifier ("padx", pad));
+   (y0, y1) = get_world_min_max (y0, y1, ylog, qualifier ("pady", pad));
+
    xaxis.xmin = double(x0); xaxis.xmax = double(x1); xaxis.islog = xlog;
    yaxis.xmin = double(y0); yaxis.xmax = double(y1); yaxis.islog = ylog;
    

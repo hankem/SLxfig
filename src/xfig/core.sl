@@ -117,7 +117,8 @@ private define intersect_focal_plane (X, n)
    %return vector_sum (X, vector_mul (t, X_E));
 
    variable t = -dotprod(n, Eye)/dotprod(n, X_E);
-   return vector_sum (Eye, vector_mul (t, X_E));
+   return vector_a_plus_bt (Eye, X_E, t);
+   %return vector_sum (Eye, vector_mul (t, X_E));
 }
 
 define xfig_project_to_xfig_plane (X)
@@ -162,13 +163,13 @@ XFig_Header.resolution_coord_system = [PIX_PER_INCH, 2];
 
 define xfig_vwrite ()
 {
-   variable args = __pop_args (_NARGS);
-   () = fprintf (__push_args (args));
+   variable args = __pop_list (_NARGS);
+   () = fprintf (__push_list (args));
 }
 
 define xfig_write (fp, x)
 {
-   () = fprintf (fp, "%s", x);
+   () = fputs (x, fp);
 }
 
 define xfig_write_header (fp, h)

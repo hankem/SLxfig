@@ -218,14 +218,15 @@ private define clip_1 (x, y, is_outside, intersect, a)
    _for (0, n-1, 1)
      {
 	variable i = ();
-	if (is_outside[i] == last_outside)
+	variable io = is_outside[i];
+	if (io == last_outside)
 	  {
 	     sx = x[i];
 	     sy = y[i];
 	  }
 	else
 	  {
-	     last_outside = is_outside[i];
+	     last_outside = io;
 	     xi = x[i]; yi = y[i];
 	     (xx, yy) = (@intersect) (sx, sy, xi, yi, a);
 	     list_append (new_x, xx);
@@ -249,6 +250,7 @@ private define clip_1 (x, y, is_outside, intersect, a)
    return new_x, new_y;
 }
 
+#ifnexists list_to_array
 private define list_to_array (x)
 {
    variable i, n = length (x);
@@ -259,12 +261,13 @@ private define list_to_array (x)
      }
    return xx;
 }
+#endif
 
 define _xfig_clip_polygon2d (x, y, xmin, xmax, ymin, ymax)
 {
    variable is_outside = (x < xmin);
 
-   !if (length (is_outside or (x > xmax) or (y < ymin) or (y > ymax)))
+   !if (any (is_outside or (x > xmax) or (y < ymin) or (y > ymax)))
      return (x, y);
 
    (x, y) = clip_1 (x, y, is_outside, &intersect_x, xmin);

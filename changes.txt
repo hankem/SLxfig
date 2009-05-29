@@ -55,3 +55,5 @@ Changes since 0.1.0
 32. src/xfig/plot.sl: Ignore tic_linestyle qualifier unless gridding.
 33. src/xfig/plot.sl: Cleaned up the tic labeling code and added some
     minor tic labels when using log scaling.
+34. src/vector.sl: small optimizations
+35. src/xfig/clip.sl: Use slang2.2.0 list_to_array.
