@@ -152,6 +152,15 @@ private define write_polyline_header (fp, p, n)
 		(p.forward_arrow != NULL), (p.backward_arrow != NULL), n);
 }
 
+private define make_polyline_header_string (p)
+{
+   return sprintf ("%d %d %d %d %d %d %d %d %d %g %d %d %d %d %d",
+		   2, p.sub_type, p.line_style, p.thickness, p.pen_color,
+		   p.fill_color, p.depth, p.pen_style, p.area_fill, p.style_val,
+		   p.join_style, p.cap_style, p.radius, 
+		   (p.forward_arrow != NULL), (p.backward_arrow != NULL));
+}
+
 private define write_polyline_data (fp, x, y)
 {
    _for (0, length(x)-1, 1)
@@ -257,11 +266,46 @@ define xfig_new_polyline (X)
 
 private define polyline_list_render_to_fp (p, fp)
 {
+#iffalse
    foreach (p.list)
      {
 	variable X = ();
 	write_one_polyline (fp, p, X);
      }
+#else
+   
+   % Since a polyline list has the same attributes, avoid the expensive
+   % call to write_polyline_header
+   variable hdrstr = make_polyline_header_string (p);
+   
+   foreach (p.list)
+     {
+	variable X = ();
+	variable x, y, n;
+
+	(x,y) = xfig_project_to_xfig_plane (X);
+	n = length (x);
+	if (n < 2)
+	  continue;
+
+	x = xfig_convert_units (__tmp(x));
+	y = xfig_convert_units (__tmp(y));
+
+	(x,y) = prune (__tmp(x), __tmp(y));
+	n = length (x);
+	if (n < 2) continue;
+
+	xfig_vwrite (fp, "%s %d\n", hdrstr, n);  % polyline header
+
+	if (p.forward_arrow != NULL)
+	  write_arrow (fp, p.forward_arrow, X, -2, -1);
+   
+	if (p.backward_arrow != NULL)
+	  write_arrow (fp, p.backward_arrow, X, 1, 0);
+
+	write_polyline_data (fp, x, y);
+     }
+#endif
 }
 
 private define polyline_list_rotate (obj, axis, theta)

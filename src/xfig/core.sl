@@ -1,6 +1,7 @@
 require ("vector");
 
 private variable Eye;
+private variable Eye_x, Eye_y, Eye_z;  %  components of Eye
 private variable PIX_PER_INCH = 1200.0; %  xfig units per inch
 private variable XFig_Origin_X = 10.795;%  [cm]
 private variable XFig_Origin_Y = 13.97; %  [cm]
@@ -28,6 +29,8 @@ define xfig_set_eye (dist, theta, phi)
    variable z = dist * cos(theta);
 
    Eye = vector_sum (vector(x,y,z), xfig_get_focus ());
+   Eye_x = Eye.x; Eye_y = Eye.y; Eye_z = Eye.z;
+
    %exit (0);
 }
 
@@ -108,17 +111,20 @@ define xfig_transform_vector (X, xhat, yhat, zhat, X0, scale)
 
 private define intersect_focal_plane (X, n)
 {
-   %variable dX = vector_diff (X, Focus);
-   variable X_E = vector_diff (X, Eye);
-   %variable t = -dotprod (de, de)/dotprod (de, X_E);
-   %return vector_sum (de, vector_mul (t, X_E));
-   
-   %variable t = -dotprod (de, dX)/dotprod (de, X_E);
-   %return vector_sum (X, vector_mul (t, X_E));
+   % This function is expensive and gets called many times.  So
+   % here the calls will be inlined.
 
-   variable t = -dotprod(n, Eye)/dotprod(n, X_E);
-   return vector_a_plus_bt (Eye, X_E, t);
-   %return vector_sum (Eye, vector_mul (t, X_E));
+   variable nx = n.x, ny = n.y, nz = n.z;
+
+   %variable X_E = vector_diff (X, Eye);
+   variable dx = X.x - Eye_x, dy = X.y - Eye_y, dz = X.z - Eye_z;
+
+   %variable t = -dotprod(n, Eye)/dotprod(n, X_E);
+   variable t = -((nx*Eye_x + ny*Eye_y + nz*Eye_z)
+		  /(nx*dx + ny*dy + nz*dz));
+   
+   %return vector_a_plus_bt (Eye, X_E, t);
+   return vector (Eye_x+dx*t, Eye_y+dy*t, Eye_z+dz*t);
 }
 
 define xfig_project_to_xfig_plane (X)
