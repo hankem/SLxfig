@@ -1,6 +1,5 @@
 @slxfig.lis
 @INSTALL
-@Makefile
 @README
 @COPYING
 @configure 0755
@@ -35,7 +34,6 @@
 @src/version.h
 @src/xfig.sl
 @src/vector.sl
-@src/xfig/NOTES
 @src/xfig/clip.sl
 @src/xfig/core.sl
 @src/xfig/ellipse.sl
