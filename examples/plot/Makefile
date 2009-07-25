@@ -1,9 +1,9 @@
 # -*- sh -*-
 
 SL_FILES = simple.sl subplot.sl color.sl histplt.sl image.sl errbar.sl \
-  overlay.sl symbol.sl scatter.sl world.sl
+  overlay.sl symbol.sl scatter.sl world.sl axisxform.png
 PNG_FILES = simple.png subplot.png color.png histplt.png image.png \
-  errbar.png symbol.png scatter.png world.png
+  errbar.png symbol.png scatter.png world.png axisxform.png
 
 png: $(PNG_FILES)
 %.png: %.sl

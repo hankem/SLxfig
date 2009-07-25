@@ -58,3 +58,6 @@ Changes since 0.1.0
 34. src/vector.sl: small optimizations
 35. src/xfig/clip.sl: Use slang2.2.0 list_to_array.
 36. src/xfig/core.sl: Inline the vector calls in intersect_focal_plane.
+37. src/xfig/plot.sl: Rewrote the way custom world coordinate systems
+    were handled.  I also added a "cdf" system that is designed for
+    plots of cumulative distribution functions.

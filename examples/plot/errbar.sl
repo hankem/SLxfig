@@ -1,6 +1,14 @@
 require ("xfig");
 require ("gslrand");
-require ("histogram");
+try
+{
+   require ("histogram");
+}
+catch IOError:
+{
+   () = fprintf (stderr, "This example requires the histogram module\n");
+   exit (0);
+}
 
 define slsh_main ()
 {

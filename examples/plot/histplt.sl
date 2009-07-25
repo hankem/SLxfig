@@ -1,6 +1,14 @@
 require ("xfig");
 require ("rand");
-require ("histogram");
+try
+{
+   require ("histogram");
+}
+catch IOError:
+{
+   () = fprintf (stderr, "This example requires the histogram module\n");
+   exit (0);
+}
 
 private define gauss_pdf (x, sigma)
 {

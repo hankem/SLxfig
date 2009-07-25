@@ -19,6 +19,7 @@
 @doc/text/slxfig.txt
 @examples/slxfigrc
 @examples/plot/Makefile
+@examples/plot/axisxform.sl
 @examples/plot/color.sl
 @examples/plot/errbar.sl
 @examples/plot/histplt.sl

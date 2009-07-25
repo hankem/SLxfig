@@ -1,9 +1,10 @@
 #!/usr/bin/env slsh
-
+_traceback=1;
 prepend_to_slang_load_path (path_concat (getcwd (), "../../src"));
+
 require ("xfig");
-%sldb ("xfig");
-_traceback = 1;
+
+xfig_set_tmp_dir (sprintf ("/tmp/slxfig-%d", getuid()));
 
 private define main ()
 {
@@ -17,7 +18,7 @@ private define main ()
 }
 
 main ();
-if (is_defined ("slsh_main"))
-  slsh_main ();
+%if (is_defined ("slsh_main"))
+%  slsh_main ();
 
 

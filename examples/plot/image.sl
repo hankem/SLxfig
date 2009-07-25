@@ -1,6 +1,15 @@
 require ("xfig");
 require ("png");
-require ("maplib");
+
+try
+{
+   require ("maplib");
+}
+catch IOError:
+{
+   () = fprintf (stderr, "This example requires the maplib module\n");
+   exit (0);
+}
 
 static define func (x, y)
 {

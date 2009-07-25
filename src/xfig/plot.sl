@@ -97,7 +97,8 @@ define xfig_new_legend (labels, colors, linestyles,
 private variable Plot_Axis_Type = struct
 {
    X, dX, dY,			       %  position of axis, direction, tic dir
-   xmin = 0.1, xmax = 1.0, wcs_transform,
+   xmin = 0.1, xmax = 1.0, 
+   wcs_transform,
    islog = 0, 			       %  if non-zero, is a log axis.  if < 0 format tics as non-log
    major_tics, minor_tics, maxtics, 
    %tic_label_format, tic_labels, tic_labels_dX,   %  from tic
@@ -161,34 +162,203 @@ private define setup_axis_wcs (axis, wcs_type)
 {
    if (0 == assoc_key_exists (WCS_Transforms, wcs_type))
      {
-	vmessage ("*** Warning: axis transform %s not supported.  Using linear");
+	vmessage ("*** Warning: axis transform %s not supported.  Using linear", wcs_type);
 	wcs_type = "linear";
      }
    axis.islog = (wcs_type == "log");
-   axis.wcs_transform = WCS_Transforms[wcs_type];
+   variable wcs = WCS_Transforms[wcs_type];
+   axis.wcs_transform = wcs;
+   variable wcs_xmin = wcs.xmin;  if (wcs_xmin == NULL) wcs_xmin = -_Inf;
+   variable wcs_xmax = wcs.xmax;  if (wcs_xmax == NULL) wcs_xmax = _Inf;
+
+   variable x = axis.xmin;
+   if (x == NULL)
+     x = 0.1;
+   if (0 == (wcs_xmin <= x < wcs_xmax))
+     x = wcs_xmin;
+   axis.xmin = x;
+
+   x = axis.xmax;
+   if (x == NULL)
+     x = 1.0;
+   if (0 == (wcs_xmin < x <= wcs_xmax))
+     x = wcs_xmax;
+   axis.xmax = x;
 }
 
-define xfig_plot_add_transform (name, world_to_normalized, normalized_to_world)
+private define world_to_normalized (wcs, x, x0, x1)
+{
+   variable cd = wcs.client_data;
+   variable f = wcs.wcs_func;
+   variable t0 = (@f)(double(x0), cd);
+   variable t1 = (@f)(double(x1), cd);
+   return ((@f)(double(x), cd) - t0)/(t1-t0);
+}
+
+private define normalized_to_world (wcs, t, x0, x1)
+{
+   variable cd = wcs.client_data;
+   variable f = wcs.wcs_func;
+   variable t0 = (@f)(double(x0), cd);
+   variable t1 = (@f)(double(x1), cd);
+   
+   variable x = t0 + t*(t1-t0);
+   return (@wcs.wcs_invfunc)(t0 + t*(t1-t0), cd);
+}
+
+private define round_generic_tic (x)
+{
+   % Try to choose tics that end in 0 or 5
+   variable y = x mod 10;
+   x -= y;
+   if (2.5 <= y <= 7.5)
+     return x + 5;
+   if (y < 2.5)
+     return x;
+   return x + 10;
+}
+    
+private define generic_compute_tics (wcs, xmin, xmax, ntics)
+{
+   ifnot (ntics mod 2) ntics--;
+   variable c = [0:1:#ntics];
+   variable dc = (c[1] - c[0])*0.75;
+   variable tics = normalized_to_world (wcs, c, xmin, xmax);
+   variable s = sign(tics);
+   tics *= s;
+
+   % x = a*10^b
+   % log10(x) = log10(a) + b
+   variable bad = where (tics <= 0);
+   variable y = log10(tics);
+   variable b = int(y);
+   variable a = y - b;
+   variable i = where (a < 0);
+   a[i] += 1;
+   b[i] -= 1;
+   a[bad] = 0;
+   b[bad] = 0;
+   a = 10.0^a;
+
+   tics = a * 10^b;
+   variable n = length (tics);
+   variable ok = Char_Type[n];
+   loop (5)
+     {
+	_for i (0, n-1, 1)
+	  {
+	     if (ok[i])
+	       continue;
+
+	     variable a_i = a[i];
+	     variable b_i = 10^b[i];
+	     variable c_i = c[i];
+	     variable dc1, dc2, tic_1, tic_2;
+	     tic_1 = round_generic_tic (a_i) * b_i;
+	     if (xmin <= tic_1 <= xmax)
+	       {
+		  dc1 = abs(c_i-world_to_normalized (wcs, s[i]*tic_1, xmin, xmax));
+		  if (dc1 < dc)
+		    {
+		       tics[i] = tic_1;
+		       ok[i] = 1;
+		       continue;
+		    }
+	       }
+	     tic_1 = int(a_i)*b_i;
+	     tic_2 = nint(a_i)*b_i;
+	     dc1 = abs(c_i-world_to_normalized (wcs, s[i]*tic_1, xmin, xmax));
+	     dc2 = abs(c_i-world_to_normalized (wcs, s[i]*tic_2, xmin, xmax));
+	     if (dc1 < dc2)
+	       {
+		  if (dc1 < dc)
+		    {
+		       tics[i] = tic_1;
+		       ok[i] = 1;
+		       continue;
+		    }
+	       }
+	     else
+	       {
+		  if (dc2 < dc)
+		    {
+		       tics[i] = tic_2;
+		       ok[i] = 1;
+		       continue;
+		    }
+	       }
+	     
+	     a[i] = a_i*10;
+	     b[i]--;
+	  }
+	if (all(ok))
+	  break;
+     }
+
+   tics = s*tics;
+   variable t0 = tics[0];
+   variable j = 0;
+   i = 1;
+   while (i < n)
+     {
+	variable t1 = tics[i];
+	i++;
+	if (t1 == t0)
+	  continue;
+	j++;
+	tics[j] = t1;
+	t0 = t1;
+     }
+   tics = tics[[0:j]];
+   n = length(tics);
+   if (n <= 1)
+     return NULL, NULL;
+
+   t0 = tics[0];
+   t1 = tics[-1];
+   if (t0 < 0.0 < t1)
+     tics[wherefirst (minabs(tics) == abs(tics))] = 0;
+
+   return tics, NULL;
+}
+
+private define wcs_compute_major_minor_tics (wcs, xmin, xmax, maxtics)
+{
+   variable f = wcs.compute_major_minor_tics;
+   if (f == NULL)
+     return NULL, NULL;
+
+   if (f == &generic_compute_tics)
+     return (@f)(wcs, xmin, xmax, maxtics);
+   
+   return (@f)(xmin, xmax, maxtics, wcs.client_data);
+}
+
+define xfig_plot_add_transform (name, wcs_func, wcs_invfunc, client_data)
 {
    variable s = struct
      {
-	world_to_normalized, normalized_to_world,
+	wcs_func = wcs_func,
+	wcs_invfunc = wcs_invfunc,
+	client_data = client_data,
+	xmin = qualifier ("xmin", -_Inf),
+	xmax = qualifier ("xmax", _Inf),
+	compute_major_minor_tics = qualifier("ticfun"),
      };
-   s.world_to_normalized = world_to_normalized;
-   s.normalized_to_world = normalized_to_world;
+
+   if ((s.compute_major_minor_tics == NULL)
+       && (name != "log") && (name != "linear"))
+     s.compute_major_minor_tics = &generic_compute_tics;
+
    WCS_Transforms[name] = s;
 }
 
-private define linear_world_to_normalized (x, xmin, xmax)
+private define linear_wcs_func (x, cd)
 {
-   return (x-xmin)/(xmax-xmin);
+   return x;
 }
+xfig_plot_add_transform ("linear", &linear_wcs_func, &linear_wcs_func, NULL);
 
-private define linear_normalized_to_world (t, xmin, xmax)
-{
-   return xmin + t * (xmax - xmin);
-}
-xfig_plot_add_transform ("linear", &linear_world_to_normalized, &linear_normalized_to_world);
 
 private define check_xmin_xmax_for_log (xmin, xmax)
 {
@@ -213,7 +383,17 @@ private define check_xmin_xmax_for_log (xmin, xmax)
    return xmin, xmax;
 }
 
-private define log_world_to_normalized (x, xmin, xmax)
+private define log_wcs_func (x, cd)
+{
+   return log10 (x);
+}
+private define log_wcs_invfunc (x, cd)
+{
+   return 10.0^x;
+}
+
+#iffalse
+private define old_log_wcs_func (x, xmin, xmax)
 {
    (xmin, xmax) = check_xmin_xmax_for_log (xmin, xmax);
    variable i = where (x <= 0.0);
@@ -230,45 +410,68 @@ private define log_world_to_normalized (x, xmin, xmax)
      }
    return linear_world_to_normalized (log10(x), log10(xmin), log10(xmax));
 }
+#endif
 
-private define log_normalized_to_world (t, xmin, xmax)
+xfig_plot_add_transform ("log", &log_wcs_func, &log_wcs_invfunc, NULL;
+			 xmin = DOUBLE_MIN);
+
+private define cdf_tan_wcs_func (x, theta0)
 {
-   variable x = linear_normalized_to_world (t, log10(xmin), log10(xmax));
-   return 10.0^x;
+   return 0.5 * (1.0 + tan((2.0*x-1.0)*theta0)/tan(theta0));
+   
+  % (1 + tan((2x-1)*t0)/tan(t0)/2;
+  % 2*x-1 = tan((2x-1)*t0)/tan(t0)
+       
 }
-xfig_plot_add_transform ("log", &log_world_to_normalized, &log_normalized_to_world);
-
-private define resid_mapping (x, n)
+private define cdf_tan_wcs_invfunc (x, theta0)
 {
+   return 0.5*(1.0 + atan((2.0*x-1.0)*tan(theta0))/theta0);
+}
+
+private define cdf_compute_tics (xmin, xmax, maxtics, cd)
+{
+   variable major = [0, 0.01, 0.05, 0.1, 0.2, 0.5, 0.8, 0.9, 0.95, 0.99, 1.0];
+   variable minor =  [[0:0.1:0.01], [0.1:0.9:0.1], [0.9:1.0:0.01]];
+   if (length (where (xmin <= major <= xmax)) < 2)
+     return NULL, NULL;
+
+   return major, minor;
+}
+
+xfig_plot_add_transform ("cdf", &cdf_tan_wcs_func, &cdf_tan_wcs_invfunc, PI/2-0.15
+			 ;ticfun=&cdf_compute_tics,
+			 xmin = 0, xmax = 1);
+
+% x >= 1:  y = 2 - 1/x^n  ==> y >= 1
+% x <  1:  y = x^n        ==> y < 1
+private define resid_wcs_func (x, n)
+{
+   variable s = sign(x);
+   x = s*x;
    variable y = Double_Type[length(x)];
-   variable i = where (x >= 1);
+   variable i, j;
+   i = where (x >= 1, &j);
    y[i] = 2.0 - 1.0/(x[i]^n);
-   i = where (x < 1.0);
-   y[i] = x[i]^n;
+   y[j] = x[j]^n;
    if (typeof (x) != Array_Type)
      y = y[0];
-   return y;
+   return y*s;
 }
 
-private define resid_world_to_normalized (x, xmin, xmax)
+private define resid_wcs_invfunc (y, n)
 {
-   variable n = 4.0;
-   x = resid_mapping (x, n);
-   xmin = resid_mapping (xmin, n);
-   xmax = resid_mapping (xmax, n);
-   return linear_world_to_normalized (x, xmin, xmax);
+   variable x = Double_Type[length(y)];
+   variable i, j;
+   variable s = sign(y);
+   y = s*y;
+   i = where (y >= 1.0, &j);
+   x[i] = (1.0/(2.0 - y[i]))^(1.0/n);
+   x[j] = y[j]^(1.0/n);
+   if (typeof (y) != Array_Type)
+     x = x[0];
+   return x*s;
 }
-
-private define resid_normalized_to_world (t, xmin, xmax)
-{
-   xmin = resid_mapping (xmin);
-   xmax = resid_mapping (xmax);
-   variable x = linear_normalized_to_world (t, xmin, xmax);
-   % FIXME
-   return x;
-}
-xfig_plot_add_transform ("resid", &resid_world_to_normalized, &resid_normalized_to_world);
-
+xfig_plot_add_transform ("resid", &resid_wcs_func, &resid_wcs_invfunc, 2.0);
 
 %}}}
 
@@ -378,7 +581,12 @@ private define make_tic_objects (axis, tics, X, xmin, xmax, dX, dY, ticlen) %{{{
    xmax = double(xmax);
    variable den = (xmax - xmin);
    variable list = xfig_new_polyline_list ();
-   variable world_to_normalized = axis.wcs_transform.world_to_normalized;
+
+   variable f = axis.wcs_transform.wcs_func;
+   variable cd = axis.wcs_transform.client_data;
+   variable t0 = (@f)(xmin, cd);
+   variable t1 = (@f)(xmax, cd);
+   variable dt = t1 - t0;
 
    dY = vector_mul (ticlen, dY);
    variable Xmax = vector_sum (X, dX);
@@ -386,9 +594,8 @@ private define make_tic_objects (axis, tics, X, xmin, xmax, dX, dY, ticlen) %{{{
    _for (0, length(tics)-1, 1)
      {
 	variable i = ();
-	variable x = tics[i];
 	
-	x = (@world_to_normalized)(double (x), xmin, xmax);
+	variable x = ((@f)(double(tics[i]), cd) - t0)/dt;
 
 	variable X0 = vector_sum (X, vector_mul(x, dX));
 	variable X1 = vector_sum (X0, dY);
@@ -409,6 +616,7 @@ private define make_tic_marks (axis) %{{{
    variable X = axis.X, dX = axis.dX, dY = axis.dY;
    variable xmin = axis.xmin;
    variable xmax = axis.xmax;
+
    variable islog = axis.islog;
 
    variable X1 = vector_sum (X, dX);
@@ -453,6 +661,7 @@ private define make_tic_marks (axis) %{{{
 	axis.minor_tic_marks = tics;
      }
 }
+%}}}
 
 private define format_labels_using_scientific_notation (tics)
 {
@@ -543,16 +752,19 @@ private define position_tic_label_objects (axis, tic_pos, tic_label_objects)
    variable xmin = double(axis.xmin);
    variable xmax = double(axis.xmax);
 
-   variable world_to_normalized = axis.wcs_transform.world_to_normalized;
+   variable f = axis.wcs_transform.wcs_func;
+   variable cd = axis.wcs_transform.client_data;
+   variable t0 = (@f)(double(xmin), cd);
+   variable t1 = (@f)(double(xmax), cd);
+   variable dt = t1 - t0;
 
    variable Xmax = vector_sum (X, dX);
-
    _for (0, length(tic_label_objects)-1, 1)
      {
 	variable i = ();
 	variable x = tic_pos[i];
 	
-	x = (@world_to_normalized)(double (x), xmin, xmax);
+	x = ((@f)(double(x), cd) - t0)/dt;
 
 	variable X0 = vector_sum (X, vector_mul(x, dX));
 
@@ -647,13 +859,22 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
    if (xmax < xmin)
      (xmin, xmax) = (xmax, xmin);
 
+   if (major_tics == NULL)
+     {
+	(major_tics, minor_tics) = wcs_compute_major_minor_tics (axis.wcs_transform, xmin, xmax, axis.maxtics);
+     }
+
    if (major_tics != NULL)
      {
 	axis.major_tics = major_tics[where ((major_tics >= xmin) and (major_tics <= xmax))];
 	if (minor_tics != NULL)
 	  minor_tics = minor_tics[where ((minor_tics >= xmin) and (minor_tics <= xmax))];
 	axis.minor_tics = minor_tics;
-	return;
+
+	if (length(major_tics) > 1)
+	  return;
+	major_tics = NULL;
+	minor_tics = NULL;
      }
 
    variable islog = axis.islog;
@@ -860,7 +1081,7 @@ private define add_axis_label (p, axis, label)
 
 private define add_axis (p, axis, wcs_type, major_tics, minor_tics) %{{{
 {
-   setup_axis_wcs (axis, wcs_type);
+   if (wcs_type != NULL) setup_axis_wcs (axis, wcs_type);
    make_major_minor_tic_positions (axis, major_tics, minor_tics);
 
    setup_axis_tics (p, axis);
@@ -1245,7 +1466,8 @@ private define do_axis_method (name, grid_axis)
      }
 
    variable wcs = qualifier ("wcs");
-   if (wcs == NULL)
+   if ((wcs == NULL) 
+       && ((axis.wcs_transform == NULL) || (axis.islog)))
      {
 	wcs = "linear";
 	if (axis.islog)
@@ -1300,7 +1522,7 @@ private define axis_method ()
    yaxis_method (__push_args (args);; __qualifiers);
 }
 
-private define get_world_min_max (x0, x1, islog, pad) %{{{
+private define get_world_min_max (axis, x0, x1, islog, pad) %{{{
 {
    if (isnan (x0) or isnan (x1) or isinf (x0) or isinf (x1))
      {
@@ -1325,7 +1547,7 @@ private define get_world_min_max (x0, x1, islog, pad) %{{{
 
    if (pad == 0.0)
      return x0, x1;
-   
+
    variable save_x0 = x0;
    variable save_x1 = x1;
 
@@ -1346,6 +1568,13 @@ private define get_world_min_max (x0, x1, islog, pad) %{{{
 	if (isinf(x1))
 	  x1 = save_x1;
      }
+
+   variable wcs = axis.wcs_transform;
+   if (x0 < wcs.xmin)
+     x0 = wcs.xmin;
+   if (x1 > wcs.xmax)
+     x1 = wcs.xmax;
+
    return x0, x1;
 }
 
@@ -1390,8 +1619,8 @@ private define do_world_method (nth, nargs) %{{{
 	(y0, y1) = (min(ydata), max(ydata));
      }
 
-   (x0, x1) = get_world_min_max (x0, x1, xlog, qualifier ("padx", pad));
-   (y0, y1) = get_world_min_max (y0, y1, ylog, qualifier ("pady", pad));
+   (x0, x1) = get_world_min_max (xaxis, x0, x1, xlog, qualifier ("padx", pad));
+   (y0, y1) = get_world_min_max (yaxis, y0, y1, ylog, qualifier ("pady", pad));
 
    xaxis.xmin = double(x0); xaxis.xmax = double(x1); xaxis.islog = xlog;
    yaxis.xmin = double(y0); yaxis.xmax = double(y1); yaxis.islog = ylog;
@@ -1464,8 +1693,13 @@ private define scale_coords_for_axis (axis, axis_len, x)
 	%  device coordinate, x runs from 0 to 1
 	return double(x*axis_len);
      }
+   variable wcs = axis.wcs_transform;
+
    variable x0 = axis.xmin, x1 = axis.xmax;
-   return axis_len * (@axis.wcs_transform.world_to_normalized) (double(x), x0, x1);
+   if ((wcs.xmin != NULL) && (x0 < wcs.xmin)) x0 = wcs.xmin;
+   if ((wcs.xmax != NULL) && (x1 > wcs.xmax)) x1 = wcs.xmax;
+
+   return axis_len * world_to_normalized (wcs, x, x0, x1);
 }
 
 private define make_nsided_polygon (n, x0, y0, radius)
@@ -1999,7 +2233,7 @@ define plot_points (p, x, y) %{{{
 
 private define check_axis (p, axis, init_fun, ticlabels, has_log_qualifier)
 {
-   ifnot (axis.inited)
+   if ((axis.inited == 0) || (axis.needs_setup))
      {
 	if (has_log_qualifier)
 	  (@init_fun)(p; log, ticlabels=axis.draw_tic_labels);
@@ -2027,7 +2261,9 @@ private define initialize_plot (p, x, y)
 
    variable logx, logy;
    (logx, logy) = get_log_qualifiers (;;__qualifiers);
-
+   logx = logx || x1axis.islog;
+   logy = logy || y1axis.islog;
+   
    variable xmin = NULL, xmax = NULL;
    if ((x != NULL) && (y != NULL))
      {
