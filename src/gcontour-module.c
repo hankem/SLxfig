@@ -322,7 +322,8 @@ label_40:
 	I = abs(I);
 	J = abs(J);
 
-#define Z(i,j) ((*to_double_fun)(z, (i)*(ny) + (j)))
+/* #define Z(i,j) ((*to_double_fun)(z, (i)*(ny) + (j))) */
+#define Z(i,j) ((*to_double_fun)(z, (i) + ((nx)*(j))))
 
 	zz = Z(I-1,J-1);
 	if ((zz > zmax) || IS_NAN(zz))
@@ -768,8 +769,8 @@ static void gcontr_intrin (void)
 	SLang_verror (SL_INVALID_PARM, "gcontr requires a 2-d image");
 	goto free_return;
      }
-   nx = image->dims[0];
-   ny = image->dims[1];
+   ny = image->dims[0];
+   nx = image->dims[1];
    if ((nx < 2) || (ny < 2))
      {
 	SLang_verror (SL_INVALID_PARM, "gcontr requires at least a 2x2 image");

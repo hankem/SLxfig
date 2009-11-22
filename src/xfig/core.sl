@@ -235,6 +235,7 @@ define xfig_set_output_driver (ext, cmd)
 }
 xfig_set_output_driver("eps", "fig2dev -L eps -z %P %I %O");
 xfig_set_output_driver("ps", "fig2dev -L ps -c -z %P %I %O");
+xfig_set_output_driver("pdf", "fig2dev -L pdf -c -z %P %I %O");
 xfig_set_output_driver("png", "fig2dev -L png %I %O");
 xfig_set_output_driver("gif", "fig2dev -L gif %I %O");
 
@@ -476,7 +477,7 @@ define xfig_close_file (dev)
    (fmt,) = strreplace (fmt, "%O", dev.devfile, strlen(fmt));
    (fmt,) = strreplace (fmt, "%B", path_sans_extname(dev.figfile), strlen(fmt));
 
-   () = system (fmt);
+   () = system_intr (fmt);
 }
 
 

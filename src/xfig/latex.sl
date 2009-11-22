@@ -98,7 +98,7 @@ private variable Dvips_Pgm = "dvips -E";
   
 private define run_cmd (cmd)
 {
-   if (-1 == system (cmd))
+   if (-1 == system_intr (cmd))
      vmessage ("****WARNING: %s failed\n", cmd);
 }
 
@@ -327,14 +327,10 @@ private define add_to_cache (epsfile, escaped_str)
    if (NULL == stat_file (epsfile))
      return;
 
-   variable c = struct
-     {
-	escaped_str, file, next
-     };
-   c.escaped_str = escaped_str;
-   c.file = epsfile;
-   c.next = Latex_Cache;
-   Latex_Cache = c;
+   if (Latex_Cache == NULL)
+     Latex_Cache = Assoc_Type[String_Type];
+
+   Latex_Cache[escaped_str] = epsfile;
 }
 
 private define open_cache_data (mode)
@@ -342,6 +338,11 @@ private define open_cache_data (mode)
    variable dir = xfig_get_autoeps_dir ();
    variable file = path_concat (dir, "epscache.dat");
    return fopen (file, mode);
+}
+
+private define close_cache (fp)
+{
+   () = fclose (fp);
 }
 
 private define load_cache ()
@@ -362,6 +363,7 @@ private define load_cache ()
 
 	add_to_cache (line[0], line[1]);
      }
+   close_cache (fp);
 }
 
 private define save_cache ()
@@ -369,28 +371,25 @@ private define save_cache ()
    if (Latex_Cache == NULL)
      return;
    variable fp = open_cache_data ("w");
-   variable c = Latex_Cache;
-   while (c != NULL)
+   variable k, v;
+   foreach k, v (Latex_Cache) using ("keys", "values")
      {
-	() = fprintf (fp, "%s\t%s\n", c.file, c.escaped_str);
-	c = c.next;
+	() = fprintf (fp, "%s\t%s\n", v, k);
      }
+   close_cache (fp);
 }
 
 private define find_cached_file (str)
 {
    load_cache ();
-   variable c = Latex_Cache;
-   while (c != NULL)
-     {
-	if (c.escaped_str == str)
-	  {
-	     if (NULL != stat_file (c.file))
-	       return c.file;
-	  }
-	c = c.next;
-     }
-   return NULL;
+
+   if (Latex_Cache == NULL)
+     return NULL;
+
+   ifnot (assoc_key_exists (Latex_Cache, str))
+     return NULL;
+
+   return Latex_Cache[str];
 }
 
 private define latex_xxx2eps (env, envargs, xxx, base, fontstruct)

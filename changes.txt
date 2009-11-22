@@ -61,3 +61,8 @@ Changes since 0.1.0
 37. src/xfig/plot.sl: Rewrote the way custom world coordinate systems
     were handled.  I also added a "cdf" system that is designed for
     plots of cumulative distribution functions.
+38. src/xfig/*.sl: Replaced calls to system by calls to system_intr.
+39. src/xfig/core.sl: Added an entry for .pdf to the device table.
+40. src/xfig/latex.sl: Rewrote the cache code to use an assoc array.
+41. src/xfig/plot.sl: Added format=val qualifier to axis method
+42. src/xfig/plot.sl: Invalid index error in plot_shaded_histogram

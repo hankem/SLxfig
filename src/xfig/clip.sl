@@ -271,24 +271,34 @@ define _xfig_clip_polygon2d (x, y, xmin, xmax, ymin, ymax)
      return (x, y);
 
    (x, y) = clip_1 (x, y, is_outside, &intersect_x, xmin);
+   ifnot (length(y))
+     {
+	return Double_Type[0], Double_Type[0];
+     }
+   y = list_to_array (y);
 
+   is_outside = (y < ymin);
+   (x, y) = clip_1 (x, y, is_outside, &intersect_y, ymin);
    ifnot (length(x))
      {
 	return Double_Type[0], Double_Type[0];
      }
-
-   y = list_to_array (y);   
-   is_outside = (y < ymin);
-   (x, y) = clip_1 (x, y, is_outside, &intersect_y, ymin);
-
    x = list_to_array (x);
+
    is_outside = (x > xmax);
    (x, y) = clip_1 (x, y, is_outside, &intersect_x, xmax);
-
+   ifnot (length(y))
+     {
+	return Double_Type[0], Double_Type[0];
+     }
    y = list_to_array (y);
+
    is_outside = (y > ymax);
    (x, y) = clip_1 (x, y, is_outside, &intersect_y, ymax);
-
+   ifnot (length(x))
+     {
+	return Double_Type[0], Double_Type[0];
+     }
    x = list_to_array (x);
    y = list_to_array (y);
    return x, y;

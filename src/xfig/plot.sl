@@ -100,7 +100,8 @@ private variable Plot_Axis_Type = struct
    xmin = 0.1, xmax = 1.0, 
    wcs_transform,
    islog = 0, 			       %  if non-zero, is a log axis.  if < 0 format tics as non-log
-   major_tics, minor_tics, maxtics, 
+   major_tics, minor_tics, maxtics,
+   user_specified_major_tics, user_specified_minor_tics,
    %tic_label_format, tic_labels, tic_labels_dX,   %  from tic
    tic_label_format, tic_label_strings, tic_labels_font_struct = xfig_make_font (),
    tic_label_objects,
@@ -859,6 +860,9 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
    if (xmax < xmin)
      (xmin, xmax) = (xmax, xmin);
 
+   if (major_tics == NULL) major_tics = axis.user_specified_major_tics;
+   if (minor_tics == NULL) minor_tics = axis.user_specified_minor_tics;
+
    if (major_tics == NULL)
      {
 	(major_tics, minor_tics) = wcs_compute_major_minor_tics (axis.wcs_transform, xmin, xmax, axis.maxtics);
@@ -890,13 +894,19 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
      {
 	num_major = length (where (log10(xmin) <= major_tics <= log10(xmax)));
 #ifnfalse
-	if ((num_major < 1)
+	if ((num_major <= 1)
 	    %&& (0.001 <= xmin <= xmax <= 100.0)
 	    )
 	  {
 	     % 0 or 1 major tic.  Format as non-log (linear)
 	     variable maxtics = (2*axis.maxtics)/3;
-	     (major_tics, num_minor) = get_major_tics (xmin, xmax, 0, maxtics);
+	     if (xmax >= 15.0 * xmin)
+	       {
+		  (major_tics, minor_tics) = generic_compute_tics (WCS_Transforms["log"], xmin, xmax, axis.maxtics);
+		  num_minor = (minor_tics == NULL) ? 0 : length (minor_tics);
+	       }
+	     else
+	       (major_tics, num_minor) = get_major_tics (xmin, xmax, 0, maxtics);
 	     axis.islog = -1;
 	     islog = 0;
 	  }
@@ -919,7 +929,7 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
 
    minor_tics = Double_Type[num_minor*length(major_tics)];
 
-   foreach (major_tics)
+   if (num_minor) foreach (major_tics)
      {
 	variable major_tic = ();
 	minor_tics[i] = major_tic + j*minor_tic_interval;
@@ -1359,7 +1369,7 @@ private define do_axis_method (name, grid_axis)
 	       "Qualifiers:\n", +
 	       " off, on, color=val, line=val, major=array, minor=array,\n" +
 	       " width=val, depth=val, ticlabels=0|1, maxtics=val\n" +
-	       "wcs=val, lin, log\n"
+	       "wcs=val, lin, log, format=fmt\n"
 	      );
      }
 
@@ -1379,14 +1389,22 @@ private define do_axis_method (name, grid_axis)
    if (typeof (q) == Int_Type)
      axis.draw_minor_tics = q;
    else
-     minor_tics = q;
+     {
+	minor_tics = q;
+	if (minor_tics != NULL)
+	  axis.user_specified_minor_tics = minor_tics;
+     }
 
    variable major_tics = NULL;
    q = qualifier ("major");
    if (typeof (q) == Int_Type)
      axis.draw_major_tics = q;
    else
-     major_tics = q;
+     {
+	major_tics = q;
+	if (major_tics != NULL)
+	  axis.user_specified_major_tics = major_tics;
+     }
 
    q = qualifier ("color");
    if (q != NULL)
@@ -1437,6 +1455,9 @@ private define do_axis_method (name, grid_axis)
    % requested.
    if (qualifier_exists ("linear")) axis.islog = 0;
    if (qualifier_exists ("log")) axis.islog = get_log_qualifier ("log";;__qualifiers);
+   
+   if (qualifier_exists ("format"))
+     axis.tic_label_format = qualifier ("format");
 
    % FIXME: Allow ticlabels to be an array of strings
    q = qualifier ("ticlabels");
@@ -1536,7 +1557,7 @@ private define get_world_min_max (axis, x0, x1, islog, pad) %{{{
 	x1 = 2.0*x0;
 	if (x0 == x1)
 	  {
-	     () = fprintf (stderr, "xfig_plot_define_world: invalid world limits");
+	     () = fprintf (stderr, "xfig_plot_define_world: invalid world limits: x0=x1=%g\n", x0);
 	     x0 = 0.0;
 	     x1 = 1.0;
 	  }
@@ -2394,7 +2415,7 @@ define xfig_plot_shaded_histogram (p, x, y)
    if (i0 == NULL) i0 = 0;
    variable i1 = wherefirst (x >= w);
    if (i1 == NULL) i1 = length(x);
-   variable i = [i0:i1];
+   variable i = [i0:i1-1];
    %variable i = where ((x>= 0) and (x <= w));
    x = x[i]; y = y[i];
    x[where(x<0)] = 0;

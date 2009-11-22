@@ -1,5 +1,6 @@
 import ("gcontour");
 
+#iffalse
 if (0 == is_defined ("Polygon_List_Type"))
 typedef struct
 {
@@ -119,9 +120,11 @@ define polygon_list_bbox (c)
    return mins, maxs;
 }
 
+#endif
+
 private define do_gcontour_callback (xvals, yvals, zlevel, s)
 {
-   return (@s.fun)(xvals, yvals, zlevel, __push_args (s.args));
+   return (@s.fun)(xvals, yvals, zlevel, __push_list (s.args));
 }
 
 define gcontour ()
@@ -130,7 +133,7 @@ define gcontour ()
    variable args = NULL;
    if (nargs > 3)
      {
-	args = __pop_args (nargs - 3);
+	args = __pop_list (nargs - 3);
 	nargs = 3;
      }
    if (nargs != 3)
@@ -151,17 +154,22 @@ define gcontour ()
    _gcontour (img, zvals, &do_gcontour_callback, s);
 }
 
-private define gcontour_compute_callback (xvals, yvals, zlevel, list)
+private define gcontour_compute_callback (xvals, yvals, zlevel, contours)
 {
-   polygon_list_put (list[zlevel], xvals, yvals);
+   variable s = contours[zlevel];
+   list_append (s.x_list, xvals);
+   list_append (s.y_list, yvals);
 }
 
-% This function returns an array of lists.  Each list in the array contains
-% the contours for the corresponding z level.  Each list element contains
-% an array of 2 arrays.  So, the 3rd contour for the 5th zlevel is given
-% by
-%     icoords = contour[5][3][0];
-%     jcoords = contour[5][3][1];
+% Thus funcion returns a structure containing an array of structures.
+% Each element of the array contains the contours for the
+% corresponding z level.  Each structure contains the following fields:
+%   x_list
+%   y_list
+% As the names indicate, the values of these fields are lists.  Each
+% element of the x_list contains the image x coordinate of the
+% contour.  Similarly each element of the y_list field is an array of
+% image y coordinates.
 define gcontour_compute ()
 {
    if (_NARGS != 2)
@@ -175,7 +183,10 @@ define gcontour_compute ()
    _for (0, nz-1, 1)
      {
 	variable i = ();
-	contours[i] = polygon_list_new (2);
+	contours[i] = struct
+	  {
+	     x_list = {}, y_list = {}
+	  };
      }
    _gcontour (img, zvals, &gcontour_compute_callback, contours);
    return contours;
