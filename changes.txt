@@ -66,3 +66,13 @@ Changes since 0.1.0
 40. src/xfig/latex.sl: Rewrote the cache code to use an assoc array.
 41. src/xfig/plot.sl: Added format=val qualifier to axis method
 42. src/xfig/plot.sl: Invalid index error in plot_shaded_histogram
+43. src/xfig/plot.sl: Added sqrt plot transform
+44. src/xfig/latex.sl: Added xfig_get/set_latex_preamble for adding
+    additional elements to the preamble.
+45. A preamble=value qualifier added to the latex functions to add
+    additional lines to the latex preamble.
+46. src/xfig/plot.sl: Added xfig_plot_get/set_default_size functions
+    for setting the default plot sizes (w=14, h=10 are the defaults).
+47. src/xfig/core.sl: Added "gray" color.
+48. src/xfig/core.sl: rewrote Eye code to allow for a "roll".
+

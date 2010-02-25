@@ -7,13 +7,14 @@ private variable Latex_Tmp_Dir = NULL;
 private variable Latex_Packages = {"amsmath", "bm", "color"};
 private variable Latex_Font_Size = 12;
 private variable Latex_Default_Color = "black";
-private variable Latex_Default_Font_Style = "\bf\boldmath"R; 
+private variable Latex_Default_Font_Style = "\bf\boldmath"R;
 private variable Supported_Font_Sizes =
 [
    "\\tiny", "\\scriptsize", "\\footnotesize", "\\small", "\\normalsize",
      "\\large","\\Large", "\\LARGE", "\\huge", "\\Huge"
 ];
-   
+
+private variable Preamble_Commands = NULL;
 private variable EPS_Dir = NULL;
 
 private define mkdir_recurse ();
@@ -275,6 +276,18 @@ private define make_preamble (font)
 		       str, r / 255.0, g/255.0, b/255.0);
 	str = strcat (str, "\\color{defaultcolor}\n");
      }
+   
+   if (Preamble_Commands != NULL)
+     str = strcat (str, Preamble_Commands, "\n");
+   
+   variable preamble = qualifier ("preamble", NULL);
+   if (preamble != NULL)
+     {
+	if (preamble[-1] != '\n')
+	  preamble += "\n";
+	str = strcat (str, preamble);
+     }
+
    % End of preamble
 
    str = strcat (str, "\\begin{document}\n\\pagestyle{empty}\n");
@@ -311,7 +324,7 @@ private define write_latex_file (file, str)
 
 private define make_latex_string (env, envargs, text, fontstruct)
 {
-   variable str = make_preamble (fontstruct);
+   variable str = make_preamble (fontstruct;; __qualifiers);
    return strcat (str, make_latex_env (env, envargs, text));
 }
 
@@ -394,7 +407,7 @@ private define find_cached_file (str)
 
 private define latex_xxx2eps (env, envargs, xxx, base, fontstruct)
 {
-   variable str = make_latex_string (env, envargs, xxx, fontstruct);
+   variable str = make_latex_string (env, envargs, xxx, fontstruct;; __qualifiers);
    variable hash = escape_latex_string (str);
    variable epsfile = find_cached_file (hash);
 
@@ -417,7 +430,7 @@ private define latex_xxx2eps (env, envargs, xxx, base, fontstruct)
 
 private define xfig_text2eps (text, fontstruct)
 {
-   return latex_xxx2eps (NULL, NULL, text, "text", fontstruct);
+   return latex_xxx2eps (NULL, NULL, text, "text", fontstruct;; __qualifiers);
 }
 
 private define equation_function_env (eq, env, fontstruct)
@@ -425,7 +438,7 @@ private define equation_function_env (eq, env, fontstruct)
    Equation_Number++;
    variable base = sprintf ("eq_%d", Equation_Number);
    eq += " \\nonumber";
-   return latex_xxx2eps (env, "", eq, base, fontstruct);
+   return latex_xxx2eps (env, "", eq, base, fontstruct;; __qualifiers);
 }
 
 define xfig_eq2eps ()
@@ -437,7 +450,7 @@ define xfig_eq2eps ()
      fontstruct = make_font_struct (;;__qualifiers);
 
    variable eq = ();
-   return equation_function_env (eq, "equation*", fontstruct);
+   return equation_function_env (eq, "equation*", fontstruct;; __qualifiers);
 }
 define xfig_eqnarray2eps ()
 {
@@ -447,7 +460,7 @@ define xfig_eqnarray2eps ()
    if (fontstruct == NULL)
      fontstruct = make_font_struct (;;__qualifiers);
    variable eq = ();
-   return equation_function_env (eq, "eqnarray*", fontstruct);
+   return equation_function_env (eq, "eqnarray*", fontstruct;; __qualifiers);
 }
 
 define xfig_new_eps (file)
@@ -507,4 +520,14 @@ define xfig_set_font_style (style)
 define xfig_add_latex_package (package)
 {
    list_append (Latex_Packages, package, -1);
+}
+
+define xfig_set_latex_preamble (preamble)
+{
+   Preamble_Commands = preamble;
+}
+
+define xfig_get_latex_preamble (preamble)
+{
+   return Preamble_Commands;
 }

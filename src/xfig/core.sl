@@ -1,11 +1,8 @@
 require ("vector");
 
-private variable Eye;
-private variable Eye_x, Eye_y, Eye_z;  %  components of Eye
 private variable PIX_PER_INCH = 1200.0; %  xfig units per inch
 private variable XFig_Origin_X = 10.795;%  [cm]
 private variable XFig_Origin_Y = 13.97; %  [cm]
-private variable Origin = vector (0, 0, 0);
 private variable Focus = vector (0, 0, 0);
 
 % XFig has a strange notion about what a cm is--- not 1200/2.54.
@@ -19,24 +16,73 @@ define xfig_get_focus ()
    return Focus;
 }
 
-define xfig_set_eye (dist, theta, phi)
+private variable Eye = vector (0, 0, 1e6);
+private variable EF_Len, EF_x, EF_y, EF_z;
+private variable EFhat_x, EFhat_y, EFhat_z;
+private variable Eye_x, Eye_y, Eye_z;  %  components of Eye
+private variable Focal_Plane_Xhat, Focal_Plane_Yhat;
+private variable Eye_Roll = 0.0;
+private variable Eye_Dist, Eye_Theta, Eye_Phi;
+private define eye_focus_changed ()
 {
-   theta *= PI/180.0;
-   phi *= PI/180.0;
+   
+   variable yhat = vector (0, 1, 0);
+   variable zhat = vector (0, 0, 1);
+   variable eyehat = vector (0, 0, 1);
+   variable up = vector (0, 1, 0);
 
-   variable x = dist * sin(theta)*cos(phi);
-   variable y = dist * sin(theta)*sin(phi);
-   variable z = dist * cos(theta);
+   variable d2r = PI/180.0;
 
-   Eye = vector_sum (vector(x,y,z), xfig_get_focus ());
+   variable
+     roll = Eye_Roll * d2r, theta = Eye_Theta * d2r, phi = Eye_Phi * d2r;
+   
+   eyehat = vector_rotate (eyehat, yhat, theta);
+   up = vector_rotate (up, yhat, theta);
+   
+   eyehat = vector_rotate (eyehat, zhat, phi);
+   up = vector_rotate (up, zhat, phi);
+   
+   up = vector_rotate (up, eyehat, -roll);
+
+   up = unit_vector (up);
+   eyehat = unit_vector (eyehat);
+
+   variable ef = Eye_Dist*eyehat;
+   Eye = Focus + ef;
    Eye_x = Eye.x; Eye_y = Eye.y; Eye_z = Eye.z;
+   EF_Len = Eye_Dist;
+   EF_x = ef.x; EF_y = ef.y; EF_z = ef.z;
+   EFhat_x = eyehat.x; EFhat_y = eyehat.y; EFhat_z = eyehat.z;
 
-   %exit (0);
+   Focal_Plane_Yhat = up;
+   Focal_Plane_Xhat = crossprod (up, eyehat);
+}
+
+define xfig_set_eye_roll (roll)
+{
+   variable Eye_Roll = roll;
+   eye_focus_changed ();
+}
+
+define xfig_get_eye_roll (roll)
+{
+   return Eye_Roll;
+}
+
+define xfig_set_eye ()
+{
+   variable dist, theta, phi;
+   if (_NARGS == 4)
+     Eye_Roll = ();
+
+   (Eye_Dist, Eye_Theta, Eye_Phi) = ();
+   eye_focus_changed ();
 }
 
 define xfig_set_focus (X)
 {
    Focus = X;
+   eye_focus_changed ();
 }
 
 define xfig_get_eye ()
@@ -109,45 +155,35 @@ define xfig_transform_vector (X, xhat, yhat, zhat, X0, scale)
    return vector_sum (X0, vector_mul (scale, X));
 }
 
-private define intersect_focal_plane (X, n)
+define xfig_project_to_xfig_plane (X)
 {
    % This function is expensive and gets called many times.  So
    % here the calls will be inlined.
-
-   variable nx = n.x, ny = n.y, nz = n.z;
-
-   %variable X_E = vector_diff (X, Eye);
+   % E + (X-E)t = X'
+   % (X'-F).n = 0  ; N = E-F = EF, n = EFhat = Nhat
+   % E-F + (X-E)t = X'-F
+   % EF.EF + t(X-E).EF = 0
+   % t = -EF.EF/(X-E).EF   %   = -EF.nhat/(X-E).n
+   %   = -EF_len/(X-E).n
+   % compute X'-F = (E-F)+(X-E)*t   
    variable dx = X.x - Eye_x, dy = X.y - Eye_y, dz = X.z - Eye_z;
-
-   %variable t = -dotprod(n, Eye)/dotprod(n, X_E);
-   variable t = -((nx*Eye_x + ny*Eye_y + nz*Eye_z)
-		  /(nx*dx + ny*dy + nz*dz));
+   variable t = -EF_Len/(EFhat_x*dx + EFhat_y*dy + EFhat_z*dz);
+   X = vector (EF_x+dx*t, EF_y+dy*t, EF_z+dz*t);
    
-   %return vector_a_plus_bt (Eye, X_E, t);
-   return vector (Eye_x+dx*t, Eye_y+dy*t, Eye_z+dz*t);
-}
-
-define xfig_project_to_xfig_plane (X)
-{
-   variable origin = Focus;
-   variable zhat = vector_diff (Eye, origin);
-   normalize_vector (zhat);
-
-   X = intersect_focal_plane (X, zhat);
-   
-   variable yhat = vector_sum (origin, vector (0, 1, 0));
-   yhat = intersect_focal_plane (yhat, zhat);
-   origin = intersect_focal_plane (origin, zhat);
-   yhat = vector_diff (yhat, origin);
-   normalize_vector (yhat);
-   variable xhat = crossprod (yhat, zhat);
-
-   variable x = dotprod (X,xhat); 
-   variable y = dotprod (X,yhat);
+   variable x = dotprod (X,Focal_Plane_Xhat);
+   variable y = dotprod (X,Focal_Plane_Yhat);
    
    y = -y;
    x += XFig_Origin_X;
    y += XFig_Origin_Y;
+   variable is_bad = where (t < 0);
+   if (any(is_bad))
+     {
+	if (typeof (x) != Array_Type)
+	  return _NaN, _NaN;
+	
+	x[is_bad] = _NaN; y[is_bad] = _NaN;
+     }
    return (x, y);
 }
 
@@ -402,7 +438,7 @@ xfig_new_color ("orange", to_rgb(255,165,0));
 xfig_new_color ("orange2",to_rgb(238,154,0));
 xfig_new_color ("orange3",to_rgb(205,133,0));
 xfig_new_color ("orange4",to_rgb(139,90,0));
-
+xfig_new_color ("gray", 0xC0C0C0);
 
 private define write_colors (fp)
 {
@@ -1004,4 +1040,5 @@ define xfig_set_paper_size (paper)
 % Use CM as the default system
 xfig_use_cm ();
 xfig_set_eye (1e6, 0, 0);
+xfig_set_eye_roll (0);
 xfig_set_paper_size ("Letter");

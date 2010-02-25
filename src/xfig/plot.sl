@@ -393,28 +393,21 @@ private define log_wcs_invfunc (x, cd)
    return 10.0^x;
 }
 
-#iffalse
-private define old_log_wcs_func (x, xmin, xmax)
-{
-   (xmin, xmax) = check_xmin_xmax_for_log (xmin, xmax);
-   variable i = where (x <= 0.0);
-   if (length (i))
-     {
-	if (typeof (x) == Array_Type)
-	  {
-	     x = @x;
-	     x[i] = 0.1*xmin;
-	     x[where(x == 0.0)] = xmin;
-	  } 
-	else if (x == 0.0) x = xmin;
-	else x = 0.1*xmin;
-     }
-   return linear_world_to_normalized (log10(x), log10(xmin), log10(xmax));
-}
-#endif
-
 xfig_plot_add_transform ("log", &log_wcs_func, &log_wcs_invfunc, NULL;
 			 xmin = DOUBLE_MIN);
+
+private define sqrt_wcs_func (x, cd)
+{
+   return sqrt (x);
+}
+private define sqrt_wcs_invfunc (x, cd)
+{
+   return x*x;
+}
+
+xfig_plot_add_transform ("sqrt", &sqrt_wcs_func, &sqrt_wcs_invfunc, NULL;
+			 xmin = 0);
+
 
 private define cdf_tan_wcs_func (x, theta0)
 {
@@ -2837,6 +2830,18 @@ private variable XFig_Plot_Type = struct
    shade_region= &shade_region_method,
 };
 
+private variable Default_Width = 14.0;
+private variable Default_Height = 10.0;
+define xfig_plot_set_default_size (w, h)
+{
+   Default_Width = w;
+   Default_Height = h;
+}
+define xfig_plot_get_default_size ()
+{
+   return Default_Width, Default_Height;
+}
+
 %!%+
 %\function{xfig_plot_new}
 %\synopsis{Create a new plot object}
@@ -2856,7 +2861,7 @@ define xfig_plot_new ()
 {
    variable w, h;
    if (_NARGS == 0)
-     (14, 10);
+     (Default_Width, Default_Height);
    (w, h) = ();
 
    variable p = @XFig_Plot_Data_Type;
