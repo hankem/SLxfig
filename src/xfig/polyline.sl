@@ -19,35 +19,42 @@
 %      }
 %      
 %
-private variable Polyline_Type = struct
-{
-   X,				       %  vertices
-   % Methods
-   set_line_style, set_thickness, set_pen_color, set_fill_color, set_depth,
-   set_area_fill, set_join_style, set_cap_style,
-
-   object_code,  % int (always 2)
-     sub_type, % (1: polyline, 2: box, 3: polygon, 4: arc-box, 5: imported-picture bounding-box)
-     line_style, % int (enumeration type)
-     thickness, % int (1/80 inch)
-     pen_color, % int (enumeration type, pen color)
-     fill_color, % int (enumeration type, fill color)
-     depth, % int (enumeration type)
-     pen_style, % int (pen style, not used)
-     area_fill, % int (enumeration type, -1 = no fill)
-     style_val, % float (1/80 inch) of  on/off dashes, etc...
-     join_style, % int (enumeration type)
-     cap_style, % int (enumeration type, only used for POLYLINE)
-     radius, % int (1/80 inch, radius of arc-boxes)
-     forward_arrow, % 
-     backward_arrow % int (0: off, 1: on)
-};
-
 private variable SUBTYPE_POLYLINE	= 1;
 private variable SUBTYPE_BOX		= 2;
 private variable SUBTYPE_POLYGON	= 3;
 private variable SUBTYPE_ARCBOX		= 4;
 private variable SUBTYPE_IMPPICT	= 5;
+
+variable XFIG_AREAFILL_30DEG_LEFT  = 41;  % 30 degree left diagonal pattern
+variable XFIG_AREAFILL_30DEG_RIGHT = 42;  % 30 degree right diagonal pattern
+variable XFIG_AREAFILL_30DEG_CROSS = 43;  % 30 degree crosshatch
+variable XFIG_AREAFILL_45DEG_LEFT  = 44;  % 45 degree left diagonal pattern
+variable XFIG_AREAFILL_45DEG_RIGHT = 45;  % 45 degree right diagonal pattern
+variable XFIG_AREAFILL_45DEG_CROSS = 46;  % 45 degree crosshatch
+variable XFIG_AREAFILL_H_BRICKS    = 47;  % horizontal bricks
+variable XFIG_AREAFILL_V_BRICKS    = 48;  % vertical bricks
+variable XFIG_AREAFILL_H_LINES     = 49;  % horizontal lines
+variable XFIG_AREAFILL_V_LINES     = 50;  % vertical lines
+variable XFIG_AREAFILL_CROSS       = 51;  % crosshatch
+variable XFIG_AREAFILL_H_SHINGLES  = 52;  % horizontal "shingles" skewed to the right
+variable XFIG_AREAFILL_H_SHINGLES2 = 53;  % horizontal "shingles" skewed to the left
+variable XFIG_AREAFILL_V_SHINGLE   = 54;  % vertical "shingles" skewed one way
+variable XFIG_AREAFILL_V_SHINGLE2  = 55;  % vertical "shingles"skewed the other way
+variable XFIG_AREAFILL_FISH        = 56;  % fish scales
+variable XFIG_AREAFILL_SMALL_FISH  = 57;  % small fish scales
+variable XFIG_AREAFILL_CIRCLES     = 58;  % circles
+variable XFIG_AREAFILL_HEXAGONS    = 59;  % hexagons
+variable XFIG_AREAFILL_OCTAGONS    = 60;  % octagons
+variable XFIG_AREAFILL_H_TIRE      = 61;  % horizontal "tire treads"
+variable XFIG_AREAFILL_V_TIRE      = 62;  % vertical "tire treads"
+
+variable XFIG_LINESTYLE_DEFAULT    = -1;  % Default
+variable XFIG_LINESTYLE_SOLID       = 0;  % Solid
+variable XFIG_LINESTYLE_DASHED      = 1;  % Dashed
+variable XFIG_LINESTYLE_DOTTED      = 2;  % Dotted
+variable XFIG_LINESTYLE_DASHDOTTED  = 3;  % Dash-dotted
+variable XFIG_LINESTYLE_DASH2DOTTED = 4;  % Dash-double-dotted
+variable XFIG_LINESTYLE_DASH3DOTTED = 5;  % Dash-triple-dotted
 
 private define set_line_style (obj, val)
 {
@@ -89,30 +96,35 @@ private define set_cap_style (obj, val)
    obj.cap_style = val;
 }
 
+private variable Polyline_Type = struct
+{
+   X, % vertices
+   % Methods
+   set_line_style = &set_line_style,
+   set_thickness = &set_thickness,
+   set_pen_color = &set_pen_color,
+   set_fill_color = &set_fill_color,
+   set_depth = &set_depth,
+   set_area_fill = &set_area_fill,
+   set_join_style = &set_join_style,
+   set_cap_style = &set_cap_style,
 
-Polyline_Type.set_line_style = &set_line_style;
-Polyline_Type.set_thickness = &set_thickness;
-Polyline_Type.set_pen_color = &set_pen_color;
-Polyline_Type.set_fill_color = &set_fill_color;
-Polyline_Type.set_depth = &set_depth;
-Polyline_Type.set_area_fill = &set_area_fill;
-Polyline_Type.set_join_style = &set_join_style;
-Polyline_Type.set_cap_style = &set_cap_style;
-  
-Polyline_Type.sub_type = 1;
-Polyline_Type.line_style = 0;
-Polyline_Type.thickness = 1;
-Polyline_Type.pen_color = 0;
-Polyline_Type.fill_color = 0;
-Polyline_Type.depth = 50;
-Polyline_Type.pen_style = 0;
-Polyline_Type.area_fill = -1;
-Polyline_Type.style_val = 4.0;
-Polyline_Type.join_style = 1;
-Polyline_Type.cap_style = 0;
-Polyline_Type.radius = 10;
-Polyline_Type.forward_arrow = NULL;
-Polyline_Type.backward_arrow = NULL;
+   object_code = 2, % int (always 2)
+   sub_type = 1,    % (1: polyline, 2: box, 3: polygon, 4: arc-box, 5: imported-picture bounding-box)
+   line_style = 0,  % int (enumeration type)
+   thickness = 1,   % int (1/80 inch)
+   pen_color = 0,   % int (enumeration type, pen color)
+   fill_color = 0,  % int (enumeration type, fill color)
+   depth = 50,      % int (enumeration type)
+   pen_style = 0,   % int (pen style, not used)
+   area_fill = -1,  % int (enumeration type, -1 = no fill)
+   style_val = 4.,  % float (1/80 inch) of  on/off dashes, etc...
+   join_style = 1,  % int (enumeration type)
+   cap_style = 0,   % int (enumeration type, only used for POLYLINE)
+   radius = 10,     % int (1/80 inch, radius of arc-boxes)
+   forward_arrow,   % int (0: off, 1: on)
+   backward_arrow   % int (0: off, 1: on)
+};
 
 private define write_arrow (fp, a, X, i1, i2)
 {
@@ -227,8 +239,11 @@ private define polyline_translate (obj, dX)
    obj.X = vector_sum (obj.X, dX);
 }
 
-private define polyline_scale (obj, sx, sy, sz)
+private define polyline_scale ()
 {
+   variable obj, sx, sy, sz;
+   (obj, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
+   
    variable X = obj.X;
    X.x *= sx;
    X.y *= sy;
@@ -244,8 +259,25 @@ private define polyline_get_bbox (obj)
 
 define xfig_new_polyline (X)
 {
+   if (_NARGS>1 || typeof(X)!=Vector_Type)
+     {
+	variable x, y, z, zeros = 0*X;
+	switch(_NARGS)
+	  { case 1: (x, y, z) = (X, zeros, zeros); }
+	  { case 2: x = ();  y = X; z = zeros;}
+	  { case 3: (x,y) = (); z = X;}
+	X = vector(x, y, z);
+     }
+
+   if(qualifier_exists("closed"))
+     {
+	X.x = [X.x, X.x[0]];
+	X.y = [X.y, X.y[0]];
+	X.z = [X.z, X.z[0]];
+     }
+   
    variable p = @Polyline_Type;
-   p.object_code = SUBTYPE_POLYLINE;
+   p.sub_type = SUBTYPE_POLYLINE;
    p.X = X;
 
    variable obj = xfig_new_object (p);
@@ -254,6 +286,20 @@ define xfig_new_polyline (X)
    obj.translate = &polyline_translate;
    obj.scale = &polyline_scale;
    obj.get_bbox = &polyline_get_bbox;
+   obj.line_style = qualifier("line", obj.line_style);
+   obj.thickness = qualifier("width", obj.thickness);
+   if (qualifier_exists("color"))
+     obj.pen_color = xfig_lookup_color(qualifier("color"));
+   if (qualifier_exists("fillcolor"))
+     {
+	obj.fill_color = xfig_lookup_color(qualifier("fillcolor"));
+	obj.area_fill = 20;
+     }
+   obj.area_fill = qualifier ("areafill", obj.area_fill);
+   obj.depth = qualifier("depth", obj.depth);
+   obj.join_style = qualifier("join", obj.join_style);
+   obj.cap_style = qualifier("cap", obj.cap_style);
+
    return obj;
 }
 
@@ -328,8 +374,11 @@ private define polyline_list_translate (obj, dX)
      }
 }
 
-private define polyline_list_scale (obj, sx, sy, sz)
+private define polyline_list_scale ()
 {
+   variable obj, sx, sy, sz;
+   (obj, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
+
    variable list = obj.list;
    _for (0, length(list)-1, 1)
      {
@@ -383,9 +432,7 @@ define xfig_new_polyline_list ()
 {
    variable p = xfig_new_polyline (vector(0,0,0));
    
-   p = struct_combine (p, "insert", "list");
-   p.list = {};
-   p.insert = &polyline_list_insert;
+   p = struct_combine (p, struct { insert=&polyline_list_insert, list={} });
 
    p.render_to_fp = &polyline_list_render_to_fp;
    p.rotate = &polyline_list_rotate;
@@ -416,15 +463,31 @@ private define polygon_render_to_fp (obj, fp)
 
 define xfig_new_polygon (X)
 {
-   variable p = xfig_new_polyline (X);
-   p = struct_combine (p, "n");
-   p.object_code = SUBTYPE_POLYGON;
-   variable x = X.x, y = X.y, z = X.z;
+   variable x, y, z;
+   if (_NARGS>1 || typeof(X)!=Vector_Type)
+     {
+       variable zeros = Double_Type[length(X)];
+       switch(_NARGS)
+       { case 1: (x, y, z) = (X, zeros, zeros); }
+       { case 2: (x, y, z) = ((), X, zeros); }
+       { case 3: (x, y, z) = ((), X); }
+       X = vector(x, y, z);
+     }
+   else
+     (x, y, z) = (X.x, X.y, X.z);
+
    variable x0 = vector (x[0], y[0], z[0]);
    variable x1 = vector (x[1], y[1], z[1]);
    variable x2 = vector (x[2], y[2], z[2]);
-   p.n = crossprod (vector_diff (x1, x0), vector_diff (x2, x1));
+   
+   variable p = 
+     struct_combine (xfig_new_polyline (X;; __qualifiers()),
+		     struct {
+			n = crossprod (vector_diff (x1, x0), 
+				       vector_diff (x2, x1))
+		     });
    normalize_vector (p.n);
+   p.sub_type = SUBTYPE_POLYGON;
    return p;
 }
 
@@ -443,11 +506,13 @@ define xfig_new_polygon (X)
 %{{{
 private define poly_sort (a, b)
 {
-   variable za, zb;
-   za = max (a.X.z);
-   zb = max (b.X.z);
-   if (za > zb) return +1;
-   if (za < zb) return -1;
+   variable eye = xfig_get_eye ();
+   variable aX = a.X, bX = b.X;
+   % min. distances of vertices to eye
+   variable da = min( (eye.x-aX.x)^2 + (eye.y-aX.y)^2 + (eye.z-aX.z)^2 );
+   variable db = min( (eye.x-bX.x)^2 + (eye.y-bX.y)^2 + (eye.z-bX.z)^2 );
+   if (da < db) return +1;  % a is closer to eye than b => "a > b" => draw b first
+   if (da > db) return -1;
    variable na = a.n;
    variable nb = b.n;
    if (na == NULL)
@@ -458,21 +523,19 @@ private define poly_sort (a, b)
    else if (nb == NULL)
      return -1;
 
+   variable foc = xfig_get_focus ();
+   variable cosa = abs(dotprod(na, foc-eye));
+   variable cosb = abs(dotprod(nb, foc-eye));
+   if(cosa > cosb) return +1;  % a is "more perpendicular" to line of sight than b => "a > b" => draw b first
+   if(cosa < cosb) return -1;
    % Using the length has the feature that a single line will get drawn
    % after something more complex.
-   return (length (a.X) < length (b.X));
+   return (length (aX) < length (bX));
 }
 
 private define sort_polygons (list)
 {
-   variable count = length (list);
-   variable ps = Struct_Type[count];
-   variable i;
-   _for (0, count-1, 1)
-     {
-	i = ();
-	ps[i] = list[i];
-     }
+   variable ps = list_to_array (list, Struct_Type);
    return ps[array_sort (ps, &poly_sort)];
 }
 
@@ -480,17 +543,34 @@ private define polygon_list_render_to_fp (obj, fp)
 {
    variable ps = sort_polygons (obj.list);
    variable eye = xfig_get_eye ();
+   variable hide_interior = not qualifier_exists("show_interior");
    foreach (ps)
      {
 	variable p = ();
 	variable n = p.n;
 	variable X = p.X;
-	variable dX = vector_diff (eye, vector(X.x[0],X.y[0],X.z[0]));
-	if (dotprod (dX, n) < 0)
-	  continue;
+	if (hide_interior)
+	  {
+	     variable dX = vector_diff (eye, vector(X.x[0],X.y[0],X.z[0]));
+	     if (dotprod (dX, n) < 0)
+	       continue;
+	  }
 	write_one_polyline (fp, p, p.X);
      }
+
+  variable frame = qualifier ("frame");
+  variable framex = qualifier ("framex", frame);
+  variable framey = qualifier ("framey", frame);
+   if (framex!=NULL && framey!=NULL)
+     { % add a frame in absolute xfig coordinates (no projection)
+	% centered at the XFig_Origin
+	framex = xfig_convert_units (framex);
+	framey = xfig_convert_units (framey);
+	write_polyline_header (fp, xfig_new_polyline (vector(0,0,0);; __qualifiers()), 5); % dummy polyline
+	write_polyline_data (fp, 4858+framex*[1,-1,-1,1,1], 6287+framey*[1,1,-1,-1,1]);
+     }
 }
+
 
 private define polygon_list_set_line_style (obj, val)
 {
@@ -541,17 +621,14 @@ private define polygon_list_set_area_fill (obj, val)
 
 define xfig_new_polygon_list ()
 {
-   variable list = xfig_new_compound_list ();
-   list = struct_combine (list, 
-			  "set_line_style", "set_thickness", "set_pen_color",
-			  "set_fill_color", "set_area_fill");
-   list.set_line_style = &polygon_list_set_line_style;
-   list.set_thickness = &polygon_list_set_thickness;
-   list.set_pen_color = &polygon_list_set_pen_color;
-   list.set_fill_color = &polygon_list_set_fill_color;
-   list.set_area_fill = &polygon_list_set_area_fill;
-   list.render_to_fp = &polygon_list_render_to_fp;
-   return list;
+   return struct_combine (xfig_new_compound_list (), struct {
+      set_line_style = &polygon_list_set_line_style,
+      set_thickness = &polygon_list_set_thickness,
+      set_pen_color = &polygon_list_set_pen_color,
+      set_fill_color = &polygon_list_set_fill_color,
+      set_area_fill = &polygon_list_set_area_fill,
+      render_to_fp = &polygon_list_render_to_fp
+   });
 }
 
 
@@ -594,8 +671,11 @@ private define pict_get_bbox (p)
    return x-dx, x+dx, y-dy, y+dy, z, z+dz;
 }
 
-private define pict_scale (p, sx, sy, sz)
+private define pict_scale ()
 {
+   variable p, sx, sy, sz;
+   (p, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
+
    variable X = p.X;
    X.x *= sx;
    X.y *= sy;
@@ -733,28 +813,20 @@ private define pict_center_pict (pict, X, dx, dy)
 define xfig_new_pict (file, dx, dy)
 {
    variable X = vector(0,0,0);
-   variable p = xfig_new_polyline (X);
+   variable p = xfig_new_polyline (X ;; __qualifiers);
    p.sub_type = SUBTYPE_IMPPICT;
 
-   p = struct_combine (p, "pict_file", "flipped", "bbox_x", 
-		       "bbox_y", "rotate_pict", "scale_pict", "get_pict_bbox",
-		       "center_pict");
-
-   % Use the corners for the polyline
-   p.flipped = 0;
-   if (dy < 0)
-     {
-	p.flipped = 1;
-	dy = -dy;
-     }
-   p.bbox_x = [0, dx, dx, 0, 0];
-   p.bbox_y = [0, 0, dy, dy, 0];
-   p.pict_file = file;
-   p.rotate_pict = &pict_rotate_pict;
-   p.scale_pict = &pict_scale_pict;
-   p.get_pict_bbox = &pict_get_pict_bbox;
-   p.center_pict = &pict_center_pict;
-
+   p = struct_combine (p, struct {
+       pict_file = file,
+       % Use the corners for the polyline
+       flipped = (dy<0),
+       bbox_x = [0, dx, dx, 0, 0],
+       bbox_y = abs(dy)*[0, 0, 1, 1, 0],
+       rotate_pict = &pict_rotate_pict,
+       scale_pict = &pict_scale_pict,
+       get_pict_bbox = &pict_get_pict_bbox,
+       center_pict = &pict_center_pict
+     });
    p.render_to_fp = &pict_render_to_fp;
    p.scale = &pict_scale;
    p.rotate = &pict_rotate;

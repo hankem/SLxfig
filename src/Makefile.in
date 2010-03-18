@@ -6,6 +6,7 @@
 MODULES = gcontour-module.so
 SL_FILES = gcontour.sl xfig.sl vector.sl
 XFIG_SL_FILES = xfig/*.sl
+HLP_FILES = ../doc/help/slxfig.hlp
 MODULE_VERSION	= `./mkversion.sh`
 
 #---------------------------------------------------------------------------
@@ -16,6 +17,7 @@ exec_prefix = @exec_prefix@
 datarootdir = @datarootdir@
 MODULE_INSTALL_DIR = @MODULE_INSTALL_DIR@
 SL_FILES_INSTALL_DIR = @SL_FILES_INSTALL_DIR@
+HLP_FILES_INSTALL_DIR = $(SL_FILES_INSTALL_DIR)/help
 
 #---------------------------------------------------------------------------
 # C Compiler to create a shared library
@@ -47,6 +49,7 @@ LN		= ln -s
 DESTDIR =
 DEST_MODULE_INSTALL_DIR = $(DESTDIR)$(MODULE_INSTALL_DIR)
 DEST_SL_FILES_INSTALL_DIR = $(DESTDIR)$(SL_FILES_INSTALL_DIR)
+DEST_HLP_FILES_INSTALL_DIR = $(DESTDIR)$(HLP_FILES_INSTALL_DIR)
 
 #---------------------------------------------------------------------------
 LIBS = $(SLANG_LIB) $(RPATH) $(DL_LIB) -lm
@@ -73,6 +76,7 @@ test:
 install_directories:
 	$(MKINSDIR) $(DEST_MODULE_INSTALL_DIR)
 	$(MKINSDIR) $(DEST_SL_FILES_INSTALL_DIR)/xfig
+	$(MKINSDIR) $(DEST_HLP_FILES_INSTALL_DIR)
 
 install_modules:
 	@for X in $(MODULES); \
@@ -106,7 +110,17 @@ install_slfiles:
 		fi; \
 	done
 
-install: all install_directories install_modules install_slfiles
+install_hlpfiles:
+	@for X in $(HLP_FILES); \
+	do \
+		echo $(INSTALL_DATA) $$X $(DEST_HLP_FILES_INSTALL_DIR); \
+		$(INSTALL_DATA) $$X $(DEST_HLP_FILES_INSTALL_DIR); \
+		if [ "$$?" != "0" ]; then \
+		  exit 1; \
+		fi; \
+	done
+
+install: all install_directories install_modules install_slfiles install_hlpfiles
 
 clean:
 	-/bin/rm -f $(MODULES) *~ \#*

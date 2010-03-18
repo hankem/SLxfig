@@ -157,8 +157,11 @@ private define text_rotate (f, axis, theta)
    f.X = vector_rotate (f.X, axis, theta);
 }
 
-private define text_scale (f, sx, sy, sz)
+private define text_scale ()
 {
+   variable f, sx, sy, sz;
+   (f, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
+
    variable X = f.X;
    X.x *= sx;
    X.y *= sy;

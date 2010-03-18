@@ -1,19 +1,19 @@
 private variable XFig_Ellipse_Type = struct
 {
-   object_code, % int (always 1)
-     sub_type,			       % int (1: ellipse defined by radii  
-				       % 2: ellipse defined by diameters  
-				       % 3: circle defined by radius  
-				       % 4: circle defined by diameter)  
-     line_style, % int (enumeration type)
-     thickness, % int (1/80 inch)
-     pen_color, % int (enumeration type, pen color)
-     fill_color, % int (enumeration type, fill color)
-     depth, % int (enumeration type)
-     pen_style, % int (pen style, not used)
-     area_fill, % int (enumeration type, -1 = no fill)
-     style_val, % float (1/80 inch)
-     direction, % int (always 1)
+   object_code = 1, % int (always 1)
+   sub_type = 1,    % int (1: ellipse defined by radii
+		    %      2: ellipse defined by diameters
+		    %      3: circle defined by radius
+		    %      4: circle defined by diameter)
+   line_style = 0,  % int (enumeration type)
+   thickness = 1,   % int (1/80 inch)
+   pen_color = -1,  % int (enumeration type, pen color)
+   fill_color = -1, % int (enumeration type, fill color)
+   depth = 50,      % int (enumeration type)
+   pen_style = -1,  % int (pen style, not used)
+   area_fill = -1,  % int (enumeration type, -1 = no fill)
+   style_val = 1.,  % float (1/80 inch)
+   direction = 1,   % int (always 1)
      
      % These quantities describe the shape of the ellipse:
      %   angle, % float (radians, the angle of the x-axis)
@@ -26,7 +26,6 @@ private variable XFig_Ellipse_Type = struct
      X,
      next,
 };
-set_struct_fields (XFig_Ellipse_Type, 1, 1, 0, 1, -1, -1, 50, -1, -1, 1.0, 1);
 
 private define make_ellipse (a, b)
 {
@@ -89,8 +88,10 @@ private define translate_ellipse (e, dX)
 {
    e.X = vector_sum (e.X, dX);
 }
-private define scale_ellipse (e, sx, sy, sz)
+private define scale_ellipse ()
 {
+   variable e, sx, sy, sz;
+   (e, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
    variable X = e.X;
    X.x *= sx;
    X.y *= sy;
@@ -133,7 +134,3 @@ define xfig_new_ellipse (a, b)
    obj.set_pen_color = &set_pen_color;
    return obj;
 }
-   
-   
-   
-   

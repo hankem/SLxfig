@@ -75,4 +75,9 @@ Changes since 0.1.0
     for setting the default plot sizes (w=14, h=10 are the defaults).
 47. src/xfig/core.sl: Added "gray" color.
 48. src/xfig/core.sl: rewrote Eye code to allow for a "roll".
+49. src/xfig/core.sl: Modified the way the roll was implemented.
+50. src/xfig/*.sl: Added a number of changes from Manfred Hanke.
+51. src/xfig/core.sl: Defer the color lookups by the container objects
+    to the objects themselves.
+
 

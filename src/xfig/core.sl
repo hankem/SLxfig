@@ -29,23 +29,47 @@ private define eye_focus_changed ()
    variable yhat = vector (0, 1, 0);
    variable zhat = vector (0, 0, 1);
    variable eyehat = vector (0, 0, 1);
-   variable up = vector (0, 1, 0);
 
    variable d2r = PI/180.0;
 
    variable
      roll = Eye_Roll * d2r, theta = Eye_Theta * d2r, phi = Eye_Phi * d2r;
-   
-   eyehat = vector_rotate (eyehat, yhat, theta);
-   up = vector_rotate (up, yhat, theta);
-   
-   eyehat = vector_rotate (eyehat, zhat, phi);
-   up = vector_rotate (up, zhat, phi);
-   
-   up = vector_rotate (up, eyehat, -roll);
 
-   up = unit_vector (up);
+   eyehat = vector_rotate (eyehat, yhat, theta);
+   eyehat = vector_rotate (eyehat, zhat, phi);
    eyehat = unit_vector (eyehat);
+
+   % Let p be the unit vector from Focus to the Eye.  A vector u
+   % perpendicular to p is given by p.u = 0.  Let w be a unit vector
+   % that we want u to be aligned with as much as possible.  Choose u
+   % such that w.u is maximized.  Then:
+   %  w.du = 0
+   %  p.du = 0
+   %  u.du = 0  (since u.u=1)
+   % Thus:
+   %   wx*dx + wy*dy + wz*dz = 0
+   %   px*dx + py*dy + pz*dz = 0
+   %   ux*dx + uy*dy + uz*dz = 0
+   % ==> 
+   %   wx*py*uz + wy*pz*ux + wz*px*uy = wz*py*ux + wx*pz*uy + wy*px*uz
+   %   (wx*py-wy*px)*uz + (wy*pz-wz*py)*ux + (wz*px-wx*pz)*uy
+   % ==> (w cross p).u = 0
+   % Let v = (w cross p) ==> v.p = 0, v.u = 0
+   % ==> u = p cross v
+   
+   variable u, v, w;
+   variable eps = 2.3e-16;
+   if (abs(eyehat.z)>eps)
+     w = vector (0, 1, 0);
+   else if (abs(eyehat.y) > eps)
+     w = vector (0, 0, 1);
+   else
+     w = vector (0, 0, 1);
+   
+   v = crossprod (w, eyehat);
+   v = vector_rotate (v, eyehat, -roll);
+   v = unit_vector (v);
+   u = crossprod (eyehat, v);
 
    variable ef = Eye_Dist*eyehat;
    Eye = Focus + ef;
@@ -54,8 +78,8 @@ private define eye_focus_changed ()
    EF_x = ef.x; EF_y = ef.y; EF_z = ef.z;
    EFhat_x = eyehat.x; EFhat_y = eyehat.y; EFhat_z = eyehat.z;
 
-   Focal_Plane_Yhat = up;
-   Focal_Plane_Xhat = crossprod (up, eyehat);
+   Focal_Plane_Yhat = u;
+   Focal_Plane_Xhat = v;
 }
 
 define xfig_set_eye_roll (roll)
@@ -189,19 +213,15 @@ define xfig_project_to_xfig_plane (X)
 
 private variable XFig_Header = struct
 {
-   orientation, justification, units, papersize,
-     magnification, multiple_page,
-     transparant_color, resolution_coord_system,
+  orientation = "Portrait",
+  justification = "Center",
+  units = "Metric",
+  papersize = "Letter",
+  magnification = 100,  % percent
+  multiple_page = "Single",
+  transparant_color = -1,  % default
+  resolution_coord_system = [PIX_PER_INCH, 2],
 };
-
-XFig_Header.orientation = "Portrait";
-XFig_Header.justification = "Center";
-XFig_Header.units = "Metric";
-XFig_Header.papersize = "Letter";
-XFig_Header.magnification = 100;       %  percent
-XFig_Header.multiple_page = "Single";
-XFig_Header.transparant_color = -1;    %  default
-XFig_Header.resolution_coord_system = [PIX_PER_INCH, 2];
 
 define xfig_vwrite ()
 {
@@ -368,7 +388,16 @@ private define find_color (color)
      }
 }
 
-   
+define xfig_list_colors()
+{
+   variable s, col = NULL;
+   if(_NARGS==1)  col = ();
+
+   foreach s (Color_List)
+     if(col==NULL || string_match(s.name, col, 1))
+       vmessage("0x%06x - %s", s.rgb, s.name);
+}
+
 define xfig_lookup_color (color)
 {
    variable s = find_color (color);
@@ -625,6 +654,29 @@ define xfig_new_object ()
    return struct_combine (root, __push_args (args));
 }
 
+define _xfig_get_scale_args (nargs)
+{
+   if (nargs == 4)
+     return;			       %  leave them on the stack
+
+   switch (nargs)
+     {
+      case 2:%  sx given.  Set sy=sz=sx
+	dup(); dup();
+	return;
+     }
+     {
+      case 3:
+	return 1;			       %  sx, sy given.  Add sz = 1
+     }
+     {
+      case 1:
+	return 1, 1, 1;
+     }
+   
+   usage (".scale: Expecting 1, 2, or 3 scale parameters");
+}
+
 #iffalse
 define xfig_translate_object ()
 {
@@ -653,8 +705,10 @@ define xfig_rotate_object (obj, axis, theta)
    return obj.rotate (axis, theta);
 }
 
-define xfig_scale_object (obj, sx, sy, sz)
+define xfig_scale_object ()
 {
+   variable obj, sx, sy, sz;
+   (obj, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
    return obj.scale(sx, sy, sz);
 }
 
@@ -694,8 +748,11 @@ private define count_objects_compound (c)
    return count;
 }
 
-private define scale_compound (c, sx, sy, sz)
+private define scale_compound ()
 {
+   variable c, sx, sy, sz;
+   (c, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
+
    foreach (c.list)
      {
 	variable obj = ();
@@ -732,7 +789,9 @@ private define set_line_style_compound (c, ls)
 
 private define set_pen_color_compound (c, pc)
 {
-   pc = xfig_lookup_color (pc);
+   % Currently there is no way to distinguish the xfig integer color ids
+   % from the logical color ids.  So omit the color lookup here.
+   %pc = xfig_lookup_color (pc);
    foreach (c.list)
      {
 	variable obj = ();
@@ -751,7 +810,7 @@ private define set_area_fill_compound (c, x)
 
 private define set_fill_color_compound (c, x)
 {
-   x = xfig_lookup_color (x);
+   %x = xfig_lookup_color (x);
    foreach (c.list)
      {
 	variable obj = ();
@@ -785,7 +844,7 @@ private define render_compound_to_fp (c, fp)
    foreach (c.list)
      {
 	variable obj = ();
-	obj.render_to_fp (fp);
+	obj.render_to_fp (fp ;;__qualifiers());
      }
 }
 
@@ -794,9 +853,14 @@ private define compound_insert (obj, item)
    list_insert (obj.list, item);
 }
 
+private define compound_append (obj, item)
+{
+   list_append (obj.list, item);
+}
+
 define xfig_new_compound_list ()
 {
-   variable obj = xfig_new_object ("insert", "list");
+   variable obj = xfig_new_object ("insert", "append", "list");
    obj.render_to_fp = &render_compound_to_fp;
    obj.rotate = &rotate_compound;
    obj.translate = &translate_compound;
@@ -812,6 +876,7 @@ define xfig_new_compound_list ()
    obj.flags |= XFIG_RENDER_AS_COMPOUND;
 
    obj.insert = &compound_insert;
+   obj.append = &compound_append;
    obj.count_objects = &count_objects_compound;
    obj.list = {};
    return obj;
