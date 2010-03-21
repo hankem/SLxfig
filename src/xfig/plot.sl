@@ -1197,7 +1197,7 @@ private define plot_scale () %{{{
    variable p, sx, sy, sz;
    (p, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
 
-   variable X = p.X;
+   variable X = p.plot_data.X;
    X.x *= sx;
    X.y *= sy;
    X.z *= sz;
