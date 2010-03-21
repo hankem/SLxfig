@@ -259,7 +259,7 @@ private define polyline_get_bbox (obj)
 
 define xfig_new_polyline (X)
 {
-   if (_NARGS>1 || typeof(X)!=Vector_Type)
+   if (_NARGS>1 || (typeof(X)!=Vector_Type && typeof(X)!=Struct_Type))
      {
 	variable x, y, z, zeros = 0*X;
 	switch(_NARGS)
