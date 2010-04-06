@@ -78,3 +78,7 @@ define gcontour_compute ()
    _gcontour (img, zvals, &gcontour_compute_callback, contours);
    return contours;
 }
+
+$1 = path_concat (path_concat (path_dirname (__FILE__), "help"), "gcontour.hlp");
+if (NULL != stat_file ($1))
+    add_doc_file ($1);
