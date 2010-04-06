@@ -2923,3 +2923,27 @@ define xfig_meshgrid ()
 
    return xx, yy;
 }
+
+
+define xfig_multiplot()
+{
+  variable i, dy = 0., args = __pop_list(_NARGS);
+  _for i (1, _NARGS-1, 1)
+  {
+    dy -= args[i].plot_data.plot_height;
+    args[i].translate( vector(0, dy, 0) );
+    args[i].x2axis(; ticlabels=0);
+    args[i].plot_data.x2axis.axis_label = NULL;
+  }
+  _for i (0, _NARGS-2, 1)
+  {
+    args[i].x1axis(; ticlabels=0);
+    args[i].plot_data.x1axis.axis_label = NULL;
+  }
+  if(qualifier_exists("x2label"))
+    args[0].x2label(qualifier("x2label"));
+  if(qualifier_exists("xlabel"))
+    args[-1].xlabel(qualifier("xlabel"));
+
+  return xfig_new_compound( __push_list(args) );
+}
