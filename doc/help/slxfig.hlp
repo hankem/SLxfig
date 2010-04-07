@@ -61,21 +61,22 @@ xfig_set_output_driver
 
 --------------------------------------------------------------
 
-xfig_render_object
+xfig_new_color
 
  SYNOPSIS
-  Render an object to a device
+  Add a new color definition
 
  USAGE
-  xfig_render_object (obj, device)
+  xfig_new_color (name, RGB [,&id]
 
  DESCRIPTION
-  This function renders the specified object to a specified device.
-  If the device parameter is a string, then a device will be opened with
-  the specified name.
+ This function may be used to add a new color called `name'
+ with the specified RGB (24 bit integer) value.  If the optional
+ third parameter is provided, it must be a reference to a variable
+ whose value upon return will be set to the integer index of the color.
 
  SEE ALSO
-  xfig_create_file, xfig_close_file
+  xfig_lookup_color_rgb, xfig_lookup_color
 
 --------------------------------------------------------------
 
@@ -96,6 +97,24 @@ xfig_justify_object
 
  SEE ALSO
   xfig_translate_object
+
+--------------------------------------------------------------
+
+xfig_render_object
+
+ SYNOPSIS
+  Render an object to a device
+
+ USAGE
+  xfig_render_object (obj, device)
+
+ DESCRIPTION
+  This function renders the specified object to a specified device.
+  If the device parameter is a string, then a device will be opened with
+  the specified name.
+
+ SEE ALSO
+  xfig_create_file, xfig_close_file
 
 --------------------------------------------------------------
 
@@ -133,30 +152,6 @@ xfig_new_legend
 
 --------------------------------------------------------------
 
-xfig_plot_new
-
- SYNOPSIS
-  Create a new plot object
-
- USAGE
-  w = xfig_plot_new ( [Int_Type width, Int_Type height] );
-
- DESCRIPTION
- This function creates a new plot object of the specified width and height.
- If the width and height parameters are not given, defaults will be used.
- The width and height values specify the size of the plotting area and do not
- include the space for tic marks and labels.
-
- EXAMPLE
-
-   w = xfig_plot_new ();
-
-
- SEE ALSO
-  xfig_plot_define_world, xfig_render_object
-
---------------------------------------------------------------
-
 xfig_plot_add_symbol
 
  SYNOPSIS
@@ -172,7 +167,7 @@ xfig_plot_add_symbol
  scale size of the symbol in fig units.  The function must return two arrays
  representing the X and Y coordinates of the polygons that represent
  the symbol.  The center of the object is taken to be (0,0).  If more than one
- polygon is require to represent the object, an array of arrays may be
+ polygon is required to represent the object, an array of arrays may be
  returned.
 
 --------------------------------------------------------------
@@ -250,6 +245,30 @@ xfig_plot_png
 
 --------------------------------------------------------------
 
+xfig_plot_new
+
+ SYNOPSIS
+  Create a new plot object
+
+ USAGE
+  w = xfig_plot_new ( [Int_Type width, Int_Type height] );
+
+ DESCRIPTION
+ This function creates a new plot object of the specified width and height.
+ If the width and height parameters are not given, defaults will be used.
+ The width and height values specify the size of the plotting area and do not
+ include the space for tic marks and labels.
+
+ EXAMPLE
+
+   w = xfig_plot_new ();
+
+
+ SEE ALSO
+  xfig_plot_define_world, xfig_render_object
+
+--------------------------------------------------------------
+
 xfig_plot_new_png
 
  SYNOPSIS
@@ -257,6 +276,15 @@ xfig_plot_new_png
 
  USAGE
   w = xfig_plot_new_png (file)
+
+ DESCRIPTION
+  TBD
+
+ EXAMPLE
+  TBD
+
+ SEE ALSO
+  xfig_new_object
 
 --------------------------------------------------------------
 
@@ -285,13 +313,41 @@ xfig_meshgrid
 
 --------------------------------------------------------------
 
+xfig_multiplot
+
+ SYNOPSIS
+  Create a multiplot from individual panels that share the same x-axes
+
+ USAGE
+  compound = xfig_multiplot(xfig_plot p1, p2, ...);
+
+ DESCRIPTION
+ The function switches the appropriate labels and ticmark labels off and
+ returns a compound object consisting of the accordingly translated plots.
+
+ QUALIFIERS
+ ; title=string: title for top panel
+ ; xlabel=string: xlabel for bottom panel
+ ; x2label=string: x2label for top panel
+
+--------------------------------------------------------------
+
 xfig_scale_pict
 
  SYNOPSIS
-  Scale a pict object
+  Scale an xfig pict object
 
  USAGE
   xfig_scale_pict (pict, sx [,sy])
+
+ DESCRIPTION
+  TBD
+
+ EXAMPLE
+  TBD
+
+ SEE ALSO
+  xfig_new_pict
 
 --------------------------------------------------------------
 
@@ -312,5 +368,36 @@ xfig_center_pict_in_box
 
  SEE ALSO
   xfig_translate_object
+
+--------------------------------------------------------------
+
+xfig_new_pict
+
+ SYNOPSIS
+  Create an object that encapsulates an image file
+
+ USAGE
+  obj = xfig_new_pict(filename, width, height [; qualifiers])
+
+ DESCRIPTION
+ This function creates an object containing the specified image file
+ and scales it to the specified width an height.  The resulting
+ object containing the image will be centered at (0,0,0).
+
+ QUALIFIERS
+ The `just' qualifier may be used to indicate how the object is
+ to be justified with respect to the origin.  Its value must be a 2d
+ numeric array [dx,dy] that gives the offset of the center of the
+ image scaled with respect to the bounding box.  Examples include:
+
+    just=[0,0]           Center object upon the origin (default)
+    just=[-0.5,-0.5]     Put the lower-left corner at the origin
+    just=[0.5,-0.5]      Put the lower-right corner at the origin
+    just=[0.5,0.5]       Put the upper-right corner at the origin
+    just=[-0.5,-0.5]     Put the upper-left corner at the origin
+
+
+ SEE ALSO
+  xfig_new_text, xfig_justify_object
 
 --------------------------------------------------------------

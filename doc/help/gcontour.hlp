@@ -1,0 +1,41 @@
+gcontour
+
+ SYNOPSIS
+
+ USAGE
+  gcontour(img, levels, &callback_fun [, callback_args...]);
+
+ DESCRIPTION
+ `img' is a 2d-array of numbers, `levels' is an array of contour-levels,
+ and `callback_fun' is a callback function that will be called as
+
+   callback_fun(x, y, iz [, callback_args...]);
+
+ for each contour line at the level `levels[iz]'
+ with the image coordinates `x' and `y'.
+
+ SEE ALSO
+  gcontour_compute
+
+--------------------------------------------------------------
+
+gcontour_compute
+
+ USAGE
+  Struct_Type[] gcontour_compute(img, levels)
+
+ DESCRIPTION
+ This function takes a 2d array of numbers (`img') and an array of
+ array of N contour-levels (`levels') and returns the
+ corresponding contours in the form of an array of N structures.
+ Each structure contains the contour lines for the corresponding level
+ via the fields `x_list' and `y_list'.
+ As the names indicate, the values of these fields are lists.  Each
+ element of the x_list contains the image x coordinate of the
+ contour.  Similarly each element of the y_list field is an array of
+ image y coordinates.
+
+ SEE ALSO
+  gcontour
+
+--------------------------------------------------------------

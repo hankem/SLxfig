@@ -16,6 +16,7 @@
 @doc/tm/fixtex.sl
 @doc/tm/slxfig.tm
 @doc/help/slxfig.hlp
+@doc/help/gcontour.hlp
 @doc/text/slxfig.txt
 @examples/slxfigrc
 @examples/plot/Makefile
@@ -24,6 +25,7 @@
 @examples/plot/errbar.sl
 @examples/plot/histplt.sl
 @examples/plot/image.sl
+@examples/plot/multiplot.sl
 @examples/plot/overlay.sl
 @examples/plot/project.sl
 @examples/plot/simple.sl
