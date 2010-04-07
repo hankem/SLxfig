@@ -148,7 +148,7 @@ private variable XFig_Plot_Data_Type = struct
    num_plots = 0,
 
    % methods
-   title,
+   title,  % <- Mh: not needed any more?
    line_depth, point_depth, axis_depth, image_depth,
    legend
 };
@@ -2926,6 +2926,18 @@ define xfig_meshgrid ()
 
 
 define xfig_multiplot()
+%!%+
+%\function{xfig_multiplot}
+%\synopsis{Create a multiplot from individual panels that share the same x-axes}
+%\usage{compound = xfig_multiplot(xfig_plot p1, p2, ...);}
+%\description
+% The function switches the appropriate labels and ticmark labels off and
+% returns a compound object consisting of the accordingly translated plots.
+%\qualifiers
+% ; title=string: title for top panel
+% ; xlabel=string: xlabel for bottom panel
+% ; x2label=string: x2label for top panel
+%!%-
 {
   variable i, dy = 0., args = __pop_list(_NARGS);
   _for i (1, _NARGS-1, 1)
@@ -2934,12 +2946,15 @@ define xfig_multiplot()
     args[i].translate( vector(0, dy, 0) );
     args[i].x2axis(; ticlabels=0);
     args[i].plot_data.x2axis.axis_label = NULL;
+    args[i].plot_data.title_object = NULL;
   }
   _for i (0, _NARGS-2, 1)
   {
     args[i].x1axis(; ticlabels=0);
     args[i].plot_data.x1axis.axis_label = NULL;
   }
+  if(qualifier_exists("title"))
+    args[0].title(qualifier("title"));
   if(qualifier_exists("x2label"))
     args[0].x2label(qualifier("x2label"));
   if(qualifier_exists("xlabel"))

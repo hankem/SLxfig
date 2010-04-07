@@ -1,9 +1,19 @@
 # -*- sh -*-
 
-SL_FILES = simple.sl subplot.sl color.sl histplt.sl image.sl errbar.sl \
-  overlay.sl symbol.sl scatter.sl world.sl axisxform.png
-PNG_FILES = simple.png subplot.png color.png histplt.png image.png \
-  errbar.png symbol.png scatter.png world.png axisxform.png
+PNG_FILES = \
+  axisxform.png \
+  color.png \
+  errbar.png \
+  histplt.png \
+  image.png \
+  multiplot.png \
+  scatter.png \
+  simple.png \
+  subplot.png \
+  symbol.png \
+  world.png \
+# overlay.png \
+# project.png \
 
 png: $(PNG_FILES)
 %.png: %.sl
@@ -11,4 +21,4 @@ png: $(PNG_FILES)
 clean:
 	/bin/rm -f $(PNG_FILES) *.fig *~
 	/bin/rm -rf slxfigtmp
-	/bin/rm -rf tmp_* autoeps
+	/bin/rm -rf tmp* autoeps

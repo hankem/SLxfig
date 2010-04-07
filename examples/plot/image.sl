@@ -1,19 +1,9 @@
 require ("xfig");
 require ("png");
 
-try
-{
-   require ("maplib");
-}
-catch IOError:
-{
-   () = fprintf (stderr, "This example requires the maplib module\n");
-   exit (0);
-}
-
 static define func (x, y)
 {
-   (x, y) = maplib_meshgrid (x, y);
+   (x, y) = xfig_meshgrid (x, y);
    return 3*(1-x)^2*exp(-x^2 - (y+1)^2) - 10*(x/5 - x^3 - y^5)*exp(-x^2-y^2)
      -0.5*exp(-(x+1)^2 - y^2);
 }
