@@ -79,5 +79,17 @@ Changes since 0.1.0
 50. src/xfig/*.sl: Added a number of changes from Manfred Hanke.
 51. src/xfig/core.sl: Defer the color lookups by the container objects
     to the objects themselves.
+52. doc/*: Updated docs.
+53. src/gcontour.sl: Remove unused code and fix a typo involving a
+    reference to a local variable. (Manfred Hanke)
+54. src/xfig/plot.sl: New function: xfig_multiplot, which may be used
+    to conveniently stack plot objects on top of one another. (Manfred
+    Hanke).
+55. examples/plot/multiplot.sl: New example provided by Manfred Hanke.
+56. examples/plot/image.sl: Use xfig_meshgrid instead of maplib function
+    (Manfred Hanke).
+57. src/xfig/polyline.sl: Allow xfig_new_polyline to accept a structure
+    mimicking a Vector_Type object. (Manfred Hanke).
+
 
 

@@ -1,76 +1,79 @@
   SLxfig Reference
   John E. Davis, jed@jedsoft.org
-  Apr 30, 2007
+  Apr 7, 2010
   ____________________________________________________________
 
   Table of Contents
 
-   Introduction
 
-  1. Function Reference
-     1.1 xfig_clip_polyline2d
-     1.2 xfig_set_output_driver
-     1.3 xfig_render_object
-     1.4 xfig_justify_object
-     1.5 xfig_new_text
-     1.6 xfig_new_legend
-     1.7 xfig_plot_new
-     1.8 xfig_plot_add_symbol
-     1.9 xfig_plot_add_object
-     1.10 xfig_plot_text
-     1.11 xfig_plot_title
-     1.12 xfig_plot_png
-     1.13 xfig_plot_new_png
-     1.14 xfig_meshgrid
-     1.15 xfig_scale_pict
-     1.16 xfig_center_pict_in_box
+  1. Introduction
+  2. Function Reference
+     2.1 xfig_clip_polyline2d
+     2.2 xfig_set_output_driver
+     2.3 xfig_new_color
+     2.4 xfig_justify_object
+     2.5 xfig_render_object
+     2.6 xfig_new_text
+     2.7 xfig_new_legend
+     2.8 xfig_plot_add_symbol
+     2.9 xfig_plot_add_object
+     2.10 xfig_plot_text
+     2.11 xfig_plot_title
+     2.12 xfig_plot_png
+     2.13 xfig_plot_new
+     2.14 xfig_plot_new_png
+     2.15 xfig_meshgrid
+     2.16 xfig_multiplot
+     2.17 xfig_scale_pict
+     2.18 xfig_center_pict_in_box
+     2.19 xfig_new_pict
 
 
   ______________________________________________________________________
 
 
 
-  [1m1.  Introduction[0m
+  1.  Introduction
 
 
 
-  [1m1.1.  Function Reference[0m
+  2.  Function Reference
 
 
-  [1m1.1.1.  xfig_clip_polyline2d[0m
+  2.1.  xfig_clip_polyline2d
 
 
-      [1mSynopsis[0m
+      Synopsis
         Clip a list of 2d line segments
 
-      [1mUsage[0m
+      Usage
         list = xfig_clip_polyline2d (x[], y[], xmin, xmax, ymin, ymax)
 
-      [1mDescription[0m
+      Description
         This function clips a polyline composed individual line segments
         that run from (x_i,y_i) to (x_{i+1},y_{i+1}) at the boundaries
         of the window defined by the xmin, xmax, ymin, and ymax
-        parameters.  The result is returned as an xfig polyline object.
+        parameters. The result is returned as an xfig polyline object.
 
-      [1mNotes[0m
+      Notes
         This function should be used if the order of the line segments
         does not matter.  Otherwise, the xfig_clip_polygon2d function
         should be used.
 
-      [1mSee Also[0m
+      See Also
         ``xfig_clip_polygon2d'', ``xfig_new_polyline_list''
 
 
-  [1m1.1.2.  xfig_set_output_driver[0m
+  2.2.  xfig_set_output_driver
 
 
-      [1mSynopsis[0m
+      Synopsis
         Associate an output driver to a file extension
 
-      [1mUsage[0m
+      Usage
         xfig_set_output_driver (String_Type ext, String_Type cmd)
 
-      [1mDescription[0m
+      Description
         This may may be used to define the command that runs to created
         the specified output format (dictated by the extension) from the
         corresponding .fig file.  The ext parameter specifies the
@@ -89,14 +92,16 @@
 
 
 
-      [1mExample[0m
+      Example
         The default driver for postscript output is given by:
 
 
             xfig_set_output_driver ("ps", "fig2dev -L ps -c -z %P %I %O");
 
+
+
      The ps2ps command may result in a smaller file size at a slight
-     cost of resolution.  It may be used as follows:
+     cost of resolution. It may be used as follows:
 
 
               xfig_set_output_driver ("ps", "fig2dev -L ps -c -z %P %I %B-tmp.ps"
@@ -104,162 +109,156 @@
 
 
 
-      [1mSee Also[0m
+      See Also
         ``xfig_set_paper_size''
 
 
-  [1m1.1.3.  xfig_render_object[0m
+  2.3.  xfig_new_color
 
 
-      [1mSynopsis[0m
-        Render an object to a device
+      Synopsis
+        Add a new color definition
 
-      [1mUsage[0m
-        xfig_render_object (obj, device)
+      Usage
+        xfig_new_color (name, RGB [,&id]
 
-      [1mDescription[0m
-        This function renders the specified object to a specified
-        device.  If the device parameter is a string, then a device will
-        be opened with the specified name.
+      Description
+        This function may be used to add a new color called name with
+        the specified RGB (24 bit integer) value. If the optional third
+        parameter is provided, it must be a reference to a variable
+        whose value upon return will be set to the integer index of the
+        color.
 
-      [1mSee Also[0m
-        ``xfig_create_file'', ``xfig_close_file''
+      See Also
+        ``xfig_lookup_color_rgb'', ``xfig_lookup_color''
 
 
-  [1m1.1.4.  xfig_justify_object[0m
+  2.4.  xfig_justify_object
 
 
-      [1mSynopsis[0m
+      Synopsis
         Justify an object at a specified position
 
-      [1mUsage[0m
+      Usage
         xfig_justify_object (obj, X, dX)
 
-      [1mDescription[0m
+      Description
         This function moves the object to the specified position X (a
         vector) and justifies it at that position according to the
-        offsets specified by the vector dX.  The components of dX are
+        offsets specified by the vector dX. The components of dX are
         normally in the range -0.5 to 0.5 and represent offsets relative
         to the size of the object.  If the components of dX are 0, then
         the object will be centered at X.
 
-      [1mSee Also[0m
+      See Also
         ``xfig_translate_object''
 
 
-  [1m1.1.5.  xfig_new_text[0m
+  2.5.  xfig_render_object
 
 
-      [1mSynopsis[0m
+      Synopsis
+        Render an object to a device
+
+      Usage
+        xfig_render_object (obj, device)
+
+      Description
+        This function renders the specified object to a specified
+        device.  If the device parameter is a string, then a device will
+        be opened with the specified name.
+
+      See Also
+        ``xfig_create_file'', ``xfig_close_file''
+
+
+  2.6.  xfig_new_text
+
+
+      Synopsis
         Create a text object by running LaTeX
 
-      [1mUsage[0m
+      Usage
         obj = xfig_new_text (String_Type text [,font_object])
 
-      [1mDescription[0m
+      Description
         This function runs LaTeX on the specified text string and
-        returns the resulting object.  The text string must be formatted
-        according to the LaTeX rules.  The optional parameter is a
+        returns the resulting object. The text string must be formatted
+        according to the LaTeX rules. The optional parameter is a
         structure that may be used to specify the font, color,
-        pointsize, etc to use when calling LaTeX.  This structure may be
+        pointsize, etc to use when calling LaTeX. This structure may be
         instantiated using the xfig_font_new.
 
-      [1mSee Also[0m
+      See Also
         ``xfig_font_new''
 
 
-  [1m1.1.6.  xfig_new_legend[0m
+  2.7.  xfig_new_legend
 
 
-      [1mSynopsis[0m
+      Synopsis
         Create a plot legend object
 
-      [1mUsage[0m
+      Usage
         legend = xfig_new_legend (labels[], colors[], linestyles[],
         thicknesses[], width
 
-      [1mDescription[0m
+      Description
         The xfig_new_legend function creates a legend object suitable
-        for adding to a plot.  The legend will consist of ...
+        for adding to a plot. The legend will consist of ...
 
 
-  [1m1.1.7.  xfig_plot_new[0m
+  2.8.  xfig_plot_add_symbol
 
 
-      [1mSynopsis[0m
-        Create a new plot object
-
-      [1mUsage[0m
-        w = xfig_plot_new ( [Int_Type width, Int_Type height] );
-
-      [1mDescription[0m
-        This function creates a new plot object of the specified width
-        and height.  If the width and height parameters are not given,
-        defaults will be used.  The width and height values specify the
-        size of the plotting area and do not include the space for tic
-        marks and labels.
-
-      [1mExample[0m
-
-
-             w = xfig_plot_new ();
-
-
-
-      [1mSee Also[0m
-        ``xfig_plot_define_world'', ``xfig_render_object''
-
-
-  [1m1.1.8.  xfig_plot_add_symbol[0m
-
-
-      [1mSynopsis[0m
+      Synopsis
         Add a plot symbol
 
-      [1mUsage[0m
+      Usage
         xfig_plot_add_symbol (String_Type name, Ref_Type funct)
 
-      [1mDescription[0m
+      Description
         This function may be used to add a new plot symbol of the
         specified name.  The funct parameter specifies a function to be
-        called to create the symbol.  It will be called with a single
+        called to create the symbol. It will be called with a single
         parameter: a value representing the scale size of the symbol in
-        fig units.  The function must return two arrays representing the
+        fig units. The function must return two arrays representing the
         X and Y coordinates of the polygons that represent the symbol.
-        The center of the object is taken to be (0,0).  If more than one
-        polygon is require to represent the object, an array of arrays
+        The center of the object is taken to be (0,0). If more than one
+        polygon is required to represent the object, an array of arrays
         may be returned.
 
 
-  [1m1.1.9.  xfig_plot_add_object[0m
+
+  2.9.  xfig_plot_add_object
 
 
-      [1mSynopsis[0m
+      Synopsis
         Add an object to a plot at a world coordinate position
 
-      [1mUsage[0m
+      Usage
         xfig_plot_add_object (plot_win, obj [,x,y [,dx,dy]])
 
-      [1mDescription[0m
+      Description
         This function may be used to add an object to a plot window at a
-        specified world coordinate.  The dx and dy arguments control the
-        justification of the object.  The values of these parameters are
+        specified world coordinate. The dx and dy arguments control the
+        justification of the object. The values of these parameters are
         offsets relative to the size of the object, and as such
-        ordinarily have values in the interval [-0.5,0.5].  For example,
+        ordinarily have values in the interval [-0.5,0.5]. For example,
         0,0 will center the object on (x,y), and (-0.5,-0.5) will move
         the lower left corner of the object to the specified coordinate.
 
-      [1mSee Also[0m
+      See Also
         ``xfig_plot_define_world1''
 
 
-  [1m1.1.10.  xfig_plot_text[0m
+  2.10.  xfig_plot_text
 
 
-      [1mSynopsis[0m
+      Synopsis
         Add text to the plot
 
-      [1mUsage[0m
+      Usage
         xfig_plot_text (w, text, x, y [,dx, dy])
 
 
@@ -269,14 +268,14 @@
 
 
 
-      [1mDescription[0m
+      Description
         This function creates a text object at the specified location on
         the plot.  By default, the text will be centered on the
         specified world coordinates.  The justification parameters dx
-        and dy may be used to specify the justifcation of the text.  See
+        and dy may be used to specify the justifcation of the text. See
         the documentation for xfig_plot_add_object for more information.
 
-      [1mExample[0m
+      Example
 
 
              xfig_plot_text (w, "$cos(\omega t)$"R, 3.2, 6.0, -0.5, 0);
@@ -285,59 +284,94 @@
 
      will left justify the text at the position (3.2,6.0).
 
-      [1mSee Also[0m
+      See Also
         ``xfig_plot_add_object'', ``xfig_new_text''
 
 
-  [1m1.1.11.  xfig_plot_title[0m
+  2.11.  xfig_plot_title
 
 
-      [1mSynopsis[0m
+      Synopsis
         Add a title to a plot
 
-      [1mUsage[0m
+      Usage
         xfig_plot_title (w, title)
 
 
-  [1m1.1.12.  xfig_plot_png[0m
+  2.12.  xfig_plot_png
 
 
-      [1mSynopsis[0m
+      Synopsis
         Add a png file to a plot, scaling it to the window
 
-      [1mUsage[0m
+      Usage
         xfig_plot_png (w, file)
 
 
-  [1m1.1.13.  xfig_plot_new_png[0m
+  2.13.  xfig_plot_new
 
 
-      [1mSynopsis[0m
+      Synopsis
+        Create a new plot object
+
+      Usage
+        w = xfig_plot_new ( [Int_Type width, Int_Type height] );
+
+      Description
+        This function creates a new plot object of the specified width
+        and height.  If the width and height parameters are not given,
+        defaults will be used.  The width and height values specify the
+        size of the plotting area and do not include the space for tic
+        marks and labels.
+
+      Example
+
+
+             w = xfig_plot_new ();
+
+
+
+      See Also
+        ``xfig_plot_define_world'', ``xfig_render_object''
+
+
+  2.14.  xfig_plot_new_png
+
+
+      Synopsis
         Create a new plot window for a png file
 
-      [1mUsage[0m
+      Usage
         w = xfig_plot_new_png (file)
 
+      Description
+        TBD
 
-  [1m1.1.14.  xfig_meshgrid[0m
+      Example
+        TBD
+
+      See Also
+        ``xfig_new_object''
 
 
-      [1mSynopsis[0m
+  2.15.  xfig_meshgrid
+
+
+      Synopsis
         Produce grid points for an image
-
-      [1mUsage[0m
+      Usage
         (xx,yy) = xfig_meshgrid (xx, yy)
 
-      [1mDescription[0m
+      Description
         This function takes two 1-d vectors representing the orthogonal
         grids for a rectangular region in the (x,y) plane and returns
         two 2-d arrays corresponding to the (x,y) coordinates of each
         intersecting grid point.
 
         Suppose that one wants to evaluate a function f(x,y) at each
-        point defined by the two grid vectors.  Simply calling f(x,y)
+        point defined by the two grid vectors. Simply calling f(x,y)
         using the grid vectors would lead to either a type-mismatch
-        error or produce a 1-d result.  The correct way to do this is to
+        error or produce a 1-d result. The correct way to do this is to
         use the xfig_meshgrid function:
 
 
@@ -345,56 +379,97 @@
 
 
 
-  [1m1.1.15.  xfig_scale_pict[0m
+  2.16.  xfig_multiplot
 
 
-      [1mSynopsis[0m
-        Scale a pict object
+      Synopsis
+        Create a multiplot from individual panels that share the same x-
+        axes
 
-      [1mUsage[0m
+      Usage
+        compound = xfig_multiplot(xfig_plot p1, p2, ...);
+
+      Description
+        The function switches the appropriate labels and ticmark labels
+        off and returns a compound object consisting of the accordingly
+        translated plots.
+
+      Qualifiers
+        ; title=string: title for top panel ; xlabel=string: xlabel for
+        bottom panel ; x2label=string: x2label for top panel
+
+
+  2.17.  xfig_scale_pict
+
+
+      Synopsis
+        Scale an xfig pict object
+
+      Usage
         xfig_scale_pict (pict, sx [,sy])
-  [1m1.1.16.  xfig_center_pict_in_box[0m
+
+      Description
+        TBD
+
+      Example
+        TBD
+
+      See Also
+        ``xfig_new_pict''
 
 
-      [1mSynopsis[0m
+  2.18.  xfig_center_pict_in_box
+
+
+      Synopsis
         Center a pict object in a box
-
-      [1mUsage[0m
+      Usage
         xfig_center_pict_in_box (pict_object, X, dx, dy
 
-      [1mDescription[0m
+      Description
         This function takes a pict object and centers it in a box whose
-        width is dx and whose height is dy.  The vector X denotes the
-        position of the lower-left corner of the box.  If the pict
-        object is too big to fit in the box, then its lower-left corner
-        will coincide with the lower-left corner of the box.
+        width is dx and whose height is dy. The vector X denotes the
+        position of the lower-left corner of the box. If the pict object
+        is too big to fit in the box, then its lower-left corner will
+        coincide with the lower-left corner of the box.
 
-      [1mSee Also[0m
+      See Also
         ``xfig_translate_object''
 
 
+  2.19.  xfig_new_pict
 
-                            [1mTable of Contents[0m
+
+      Synopsis
+        Create an object that encapsulates an image file
+
+      Usage
+        obj = xfig_new_pict(filename, width, height [; qualifiers])
+
+      Description
+        This function creates an object containing the specified image
+        file and scales it to the specified width an height. The
+        resulting object containing the image will be centered at
+        (0,0,0).
 
 
-  1. Introduction  . . . . . . . . . . . . . . . . . . . . . . . . .   2
-  1.1. Function Reference  . . . . . . . . . . . . . . . . . . . . .   2
-  1.1.1. xfig_clip_polyline2d  . . . . . . . . . . . . . . . . . . .   2
-  1.1.2. xfig_set_output_driver  . . . . . . . . . . . . . . . . . .   2
-  1.1.3. xfig_render_object  . . . . . . . . . . . . . . . . . . . .   3
-  1.1.4. xfig_justify_object . . . . . . . . . . . . . . . . . . . .   3
-  1.1.5. xfig_new_text . . . . . . . . . . . . . . . . . . . . . . .   3
-  1.1.6. xfig_new_legend . . . . . . . . . . . . . . . . . . . . . .   4
-  1.1.7. xfig_plot_new . . . . . . . . . . . . . . . . . . . . . . .   4
-  1.1.8. xfig_plot_add_symbol  . . . . . . . . . . . . . . . . . . .   4
-  1.1.9. xfig_plot_add_object  . . . . . . . . . . . . . . . . . . .   5
-  1.1.10. xfig_plot_text . . . . . . . . . . . . . . . . . . . . . .   5
-  1.1.11. xfig_plot_title  . . . . . . . . . . . . . . . . . . . . .   6
-  1.1.12. xfig_plot_png  . . . . . . . . . . . . . . . . . . . . . .   6
-  1.1.13. xfig_plot_new_png  . . . . . . . . . . . . . . . . . . . .   6
-  1.1.14. xfig_meshgrid  . . . . . . . . . . . . . . . . . . . . . .   6
-  1.1.15. xfig_scale_pict  . . . . . . . . . . . . . . . . . . . . .   6
-  1.1.16. xfig_center_pict_in_box  . . . . . . . . . . . . . . . . .   7
+      Qualifiers
+        The just qualifier may be used to indicate how the object is to
+        be justified with respect to the origin. Its value must be a 2d
+        numeric array [dx,dy] that gives the offset of the center of the
+        image scaled with respect to the bounding box. Examples include:
+
+
+              just=[0,0]           Center object upon the origin (default)
+              just=[-0.5,-0.5]     Put the lower-left corner at the origin
+              just=[0.5,-0.5]      Put the lower-right corner at the origin
+              just=[0.5,0.5]       Put the upper-right corner at the origin
+              just=[-0.5,-0.5]     Put the upper-left corner at the origin
+
+
+
+      See Also
+        ``xfig_new_text'', ``xfig_justify_object''
 
 
 

@@ -5,7 +5,6 @@ private define do_gcontour_callback (xvals, yvals, zlevel, s)
    return (@s.fun)(xvals, yvals, zlevel, __push_list (s.args));
 }
 
-define gcontour ()
 %!%+
 %\function{gcontour}
 %\synopsis{}
@@ -20,6 +19,7 @@ define gcontour ()
 % with the image coordinates \exmp{x} and \exmp{y}.
 %\seealso{gcontour_compute}
 %!%-
+define gcontour ()
 {
    variable nargs = _NARGS;
    variable args = NULL;
@@ -36,7 +36,9 @@ define gcontour ()
    
    if (args == NULL)
      return _gcontour (img, zvals, fun);
-   _gcontour (img, zvals, &do_gcontour_callback, struct { fun=fun, args=args });
+
+   return _gcontour (img, zvals, &do_gcontour_callback, 
+		     struct { fun=fun, args=args });
 }
 
 private define gcontour_compute_callback (xvals, yvals, zlevel, contours)
@@ -46,18 +48,22 @@ private define gcontour_compute_callback (xvals, yvals, zlevel, contours)
    list_append (s.y_list, yvals);
 }
 
-define gcontour_compute ()
 %!%+
 %\function{gcontour_compute}
 %\usage{Struct_Type[] gcontour_compute(img, levels)}
 %\description
-% \exmp{img} is a 2d-array of numbers, \exmp{levels} is an array of contour-levels.
-% This return value is an array of the same number of structures.
-% Each element contains the contour lines for the corresponding level
-% via the fields \exmp{x_list} and \exmp{y_list}.  These lists
-% contain the image x and y coordinates of the contours.
+% This function takes a 2d array of numbers (\exmp{img}) and an array of
+% array of N contour-levels (\exmp{levels}) and returns the
+% corresponding contours in the form of an array of N structures.
+% Each structure contains the contour lines for the corresponding level
+% via the fields \exmp{x_list} and \exmp{y_list}.
+% As the names indicate, the values of these fields are lists.  Each
+% element of the x_list contains the image x coordinate of the
+% contour.  Similarly each element of the y_list field is an array of
+% image y coordinates.
 %\seealso{gcontour}
 %!%-
+define gcontour_compute ()
 {
    if (_NARGS != 2)
      usage ("contour_list = %s (2d-array, 1d-levels)", _function_name);

@@ -148,7 +148,6 @@ private variable XFig_Plot_Data_Type = struct
    num_plots = 0,
 
    % methods
-   title,  % <- Mh: not needed any more?
    line_depth, point_depth, axis_depth, image_depth,
    legend
 };
@@ -2865,9 +2864,10 @@ define xfig_plot_new ()
 %\synopsis{Create a new plot window for a png file}
 %\usage{w = xfig_plot_new_png (file)}
 %\description
+%  TBD
 %\example
-%\notes
-%\seealso{}
+%  TBD
+%\seealso{xfig_new_object}
 %!%-
 define xfig_plot_new_png (png)
 {
@@ -2924,8 +2924,6 @@ define xfig_meshgrid ()
    return xx, yy;
 }
 
-
-define xfig_multiplot()
 %!%+
 %\function{xfig_multiplot}
 %\synopsis{Create a multiplot from individual panels that share the same x-axes}
@@ -2938,27 +2936,29 @@ define xfig_multiplot()
 % ; xlabel=string: xlabel for bottom panel
 % ; x2label=string: x2label for top panel
 %!%-
+define xfig_multiplot ()
 {
-  variable i, dy = 0., args = __pop_list(_NARGS);
-  _for i (1, _NARGS-1, 1)
-  {
-    dy -= args[i].plot_data.plot_height;
-    args[i].translate( vector(0, dy, 0) );
-    args[i].x2axis(; ticlabels=0);
-    args[i].plot_data.x2axis.axis_label = NULL;
-    args[i].plot_data.title_object = NULL;
-  }
-  _for i (0, _NARGS-2, 1)
-  {
-    args[i].x1axis(; ticlabels=0);
-    args[i].plot_data.x1axis.axis_label = NULL;
-  }
-  if(qualifier_exists("title"))
-    args[0].title(qualifier("title"));
-  if(qualifier_exists("x2label"))
-    args[0].x2label(qualifier("x2label"));
-  if(qualifier_exists("xlabel"))
-    args[-1].xlabel(qualifier("xlabel"));
+   variable i, dy = 0., args = __pop_list(_NARGS);
+   _for i (1, _NARGS-1, 1)
+     {
+	dy -= args[i].plot_data.plot_height;
+	args[i].translate( vector(0, dy, 0) );
+	args[i].x2axis(; ticlabels=0);
+	args[i].plot_data.x2axis.axis_label = NULL;
+	args[i].plot_data.title_object = NULL;
+     }
+   _for i (0, _NARGS-2, 1)
+     {
+	args[i].x1axis(; ticlabels=0);
+	args[i].plot_data.x1axis.axis_label = NULL;
+     }
 
-  return xfig_new_compound( __push_list(args) );
+   if(qualifier_exists("title"))
+     args[0].title(qualifier("title"));
+   if(qualifier_exists("x2label"))
+     args[0].x2label(qualifier("x2label"));
+   if(qualifier_exists("xlabel"))
+     args[-1].xlabel(qualifier("xlabel"));
+   
+   return xfig_new_compound( __push_list(args) );
 }

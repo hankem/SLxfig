@@ -490,7 +490,7 @@ define xfig_new_eq (eq)
 
 
 %!%+
-%\function{xfig_new_text (text [,font_object])}
+%\function{xfig_new_text}
 %\synopsis{Create a text object by running LaTeX}
 %\usage{obj = xfig_new_text (String_Type text [,font_object])}
 %\description

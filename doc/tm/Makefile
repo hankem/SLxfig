@@ -3,22 +3,24 @@
 # To create the SGML files, you will need to install the tm-utils
 # package.  See http://www.jedsoft.org/ for more information.
 #
-TMEXPAND = /aluche/d1/web/tm-dist/bin/tmexpand
+TMEXPAND = tmexpand
 SL2TM = sl2tm
-MACRODIR = /aluche/d1/web/tm-dist/macros
+TM2HLP = $(TMEXPAND) -Mslhlp
 
 MODULE = slxfig
+GCONTOUR = gcontour
 HLPFUNS_TM = 
-AUTOGEN_TM = slxfigfuns.tm
+AUTOGEN_TM = slxfigfuns.tm 
 MODULE_DEPS = $(AUTOGEN_TM)
 
-TXT_FILES = $(MODULE).txt
+TXT_FILES = $(MODULE).txt 
 SGML_FILES = $(MODULE).sgml
 HTML_FILES = $(MODULE).html
 TEX_FILES = $(MODULE).tex
 PS_FILES = $(MODULE).ps 
 PDF_FILES = $(MODULE).pdf
 HLP_FILE = $(MODULE).hlp
+HLP_FILES = $(HLP_FILE) gcontour.hlp
 
 SGML2LATEX = sgml2latex -p letter -o tex
 SGML2HTML = sgml2html
@@ -36,13 +38,13 @@ HELPDIR = ../help
 SUBDIRS = $(TEXTDIR) $(HTMLDIR) $(PSDIR) $(SGMLDIR) $(PDFDIR) $(HELPDIR)
 SRCDIR = `pwd`
 
-text-files: $(TXT_FILES) $(HLP_FILE)
+text-files: $(TXT_FILES) $(HLP_FILES)
 all: $(SGML_FILES) $(HTML_FILES) $(TEX_FILES) $(TXT_FILES)
 slxfigfuns.tm: ../../src/xfig/*.sl
 	$(SL2TM) ../../src/xfig/*.sl > slxfigfuns.tm
 #----- SGML Files -----------------------------------------------------------
 $(MODULE).sgml : $(MODULE).tm $(MODULE_DEPS)
-	$(TMEXPAND) -I$(MACRODIR) $(MODULE).tm $(MODULE).sgml
+	$(TMEXPAND) $(MODULE).tm $(MODULE).sgml
 #----- HTML Files -----------------------------------------------------------
 $(MODULE).html : $(MODULE).sgml
 	$(SGML2HTML) $(MODULE).sgml
@@ -66,20 +68,22 @@ $(MODULE).ps : $(MODULE).tex texclean
 $(MODULE).txt: $(MODULE).sgml
 	$(SGML2TXT) $(MODULE).sgml
 #----------------------------------------------------------------------------
-help-files: $(HLP_FILE)
+help-files: $(HLP_FILES)
 $(HLP_FILE): slxfigfuns.tm
-	$(TMEXPAND) -I$(MACRODIR) -Mslhlp slxfigfuns.tm $(HLP_FILE)
+	$(TM2HLP) slxfigfuns.tm $(HLP_FILE)
+gcontour.hlp:
+	$(SL2TM) ../../src/gcontour.sl | $(TM2HLP) - gcontour.hlp
 texclean:
 	-rm -f *.dvi *.log *.aux *.toc *.out
 clean: texclean
 	-rm -f *~ rtl/*.BAK rtl/*~ *.tmp *-error
 distclean: clean
-	-rm -f *.html *.ps $(HLP_FILE) $(TXT_FILES) $(TEX_FILES) $(SGML_FILES) $(PDF_FILES) $(AUTOGEN_TM)
+	-rm -f *.html *.ps $(HLP_FILES) $(TXT_FILES) $(TEX_FILES) $(SGML_FILES) $(PDF_FILES) $(AUTOGEN_TM)
 install-txt: $(TXT_FILES)
 	-mv $(TXT_FILES) ../text
-install-help: $(HLP_FILE)
+install-help: $(HLP_FILES)
 	-mkdir -p $(HELPDIR)
-	-mv $(HLP_FILE) $(HELPDIR)
+	-mv $(HLP_FILES) $(HELPDIR)
 install-all: all install-help install-txt $(PS_FILES) $(PDF_FILES)
 	-mkdir -p $(HTMLDIR) $(PSDIR) $(SGMLDIR) $(PDFDIR)
 	-mv *.html $(HTMLDIR)

@@ -21,8 +21,8 @@
 #d preface <preface>
 #d tag#1 <tag>$1</tag>
 
-#d function#1 \sect1{<bf>$1</bf>\label{$1}}<descrip>
-#d variable#1 \sect1{<bf>$1</bf>\label{$1}}<descrip>
+#d function#1 \sect{<bf>$1</bf>\label{$1}}<descrip>
+#d variable#1 \sect{<bf>$1</bf>\label{$1}}<descrip>
 #d function_sect#1 \sect{$1}
 #d begin_constant_sect#1 \sect{$1}<itemize>
 #d constant#1 <item><tt>$1</tt>
@@ -34,6 +34,7 @@
 #d description <tag> Description </tag>
 #d example <tag> Example </tag>
 #d notes <tag> Notes </tag>
+#d qualifiers <tag> Qualifiers </tag>
 #d seealso#1 <tag> See Also </tag> <tt>\linuxdoc_list_to_ref{$1}</tt>
 #d done </descrip><p>
 #d -1 <tt>-1</tt>
@@ -67,7 +68,7 @@
 
 \chapter{Introduction}
 
-\sect{Function Reference}
+\chapter{Function Reference}
 #i slxfigfuns.tm
 
 \end{\documentstyle}

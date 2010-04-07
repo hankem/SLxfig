@@ -259,7 +259,8 @@ private define polyline_get_bbox (obj)
 
 define xfig_new_polyline (X)
 {
-   if (_NARGS>1 || (typeof(X)!=Vector_Type && typeof(X)!=Struct_Type))
+   if ((_NARGS>1) 
+       || (typeof(X)!=Vector_Type) && (typeof(X) != Struct_Type))
      {
 	variable x, y, z, zeros = 0*X;
 	switch(_NARGS)
@@ -731,12 +732,13 @@ define pict_rotate_pict (pict, theta_degrees)
 
 %!%+
 %\function{xfig_scale_pict}
-%\synopsis{}
+%\synopsis{Scale an xfig pict object}
 %\usage{xfig_scale_pict (pict, sx [,sy])}
 %\description
+%  TBD
 %\example
-%\notes
-%\seealso{}
+%  TBD
+%\seealso{xfig_new_pict}
 %!%-
 private define pict_scale_pict ()
 {
