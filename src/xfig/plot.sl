@@ -1766,7 +1766,11 @@ private define pop_plot_err_parms (nargs)
      term_factor = ();
    (p, x, y, dy) = ();
 
-   variable i = where (not (isnan(x) or isnan(y) or isnan (dy)));
+   variable i = where (not (isnan(x) or isnan(y) or
+			    ( typeof(dy) == List_Type       % dy may be
+			    ? isnan(dy[0]) or isnan(dy[1])  % a list { dy_neg, dy_pos } of arrays
+			    : isnan(dy)                     % or an array
+			    )));
    if (length (i) != length (x))
      {
 	x = x[i];
@@ -1804,8 +1808,8 @@ private define plot_erry ()
    variable w = p.plot_width, h = p.plot_height;
 
    x = scale_coords_for_axis (ax, w, x);
-   variable y0 = scale_coords_for_axis (ay, h, y-dy);
-   variable y1 = scale_coords_for_axis (ay, h, y+dy);
+   variable y0 = scale_coords_for_axis (ay, h, y-dy[ 0 ]);  % dy may be an array or a list `{ dy_neg, dy_pos }' of arrays
+   variable y1 = scale_coords_for_axis (ay, h, y+dy[ typeof(dy)==List_Type ? 1 : 0 ]);
 
    variable dt = abs (ERRBAR_TERMINAL_SIZE * term_factor);
    variable dz = [0.0,0.0];
@@ -1832,14 +1836,14 @@ private define plot_erry ()
 
 	if (y1_i < h)
 	  {
-	     if (term_factor)
+	     if (term_factor>0)
 	       lines.insert (vector (dx, [y1_i, y1_i], dz));
 	  }
 	else y1_i = h;
 
 	if (y0_i > 0)
 	  {
-	     if (term_factor)
+	     if (term_factor>0)
 	       lines.insert (vector (dx, [y0_i, y0_i], dz));
 	  }
 	else y0_i = 0;
@@ -1858,8 +1862,8 @@ private define plot_errx ()
    variable w = p.plot_width, h = p.plot_height;
 
    y = scale_coords_for_axis (ay, h, y);
-   variable x0 = scale_coords_for_axis (ax, w, x-dx);
-   variable x1 = scale_coords_for_axis (ax, w, x+dx);
+   variable x0 = scale_coords_for_axis (ax, w, x-dx[ 0 ]);  % dx may be an array or a list `{ dx_neg, dx_pos }' of arrays
+   variable x1 = scale_coords_for_axis (ax, w, x+dx[ typeof(dx)==List_Type ? 1 : 0 ]);
 
    variable dt = abs (ERRBAR_TERMINAL_SIZE * term_factor);
    variable dz = [0.0,0.0];
@@ -1886,14 +1890,14 @@ private define plot_errx ()
 
 	if (x1_i < w)
 	  {
-	     if (term_factor)
+	     if (term_factor>0)
 	       lines.insert (vector ([x1_i, x1_i], dy, dz));
 	  }
 	else x1_i = w;
 
 	if (x0_i > 0)
 	  {
-	     if (term_factor)
+	     if (term_factor>0)
 	       lines.insert (vector ([x0_i, x0_i], dy, dz));
 	  }
 	else x0_i = 0;
@@ -2289,11 +2293,11 @@ private define plot_method () %{{{
      }
    if (dx != NULL)
      {
-	plot_errx (p, x, y, dx ;; __qualifiers);
+	plot_errx (p, x, y, dx, qualifier("eb_factor", 1) ;; __qualifiers);
      }
    if (dy != NULL)
      {
-	plot_erry (p, x, y, dy ;; __qualifiers);
+	plot_erry (p, x, y, dy, qualifier("eb_factor", 1) ;; __qualifiers);
      }
 }
 
@@ -2413,7 +2417,10 @@ private define hplot_method () %{{{
 
    if (dy != NULL)
      {
-	plot_erry (p, x, y, dy ;; __qualifiers);
+	variable xhi = shift(x,1);
+	xhi[-1] = 2*x[-1] - x[-2];
+	x =  (x+xhi)/2.;  % FIX ME: for non-linear wcs, a more reasonable choice might have to be found
+	plot_erry (p, x, y, dy, qualifier("eb_factor", 1) ;; __qualifiers);
      }
 }
 %}}}
