@@ -101,6 +101,7 @@ private variable Plot_Axis_Type = struct
    islog = 0, 			       %  if non-zero, is a log axis.  if < 0 format tics as non-log
    major_tics, minor_tics, maxtics,
    user_specified_major_tics, user_specified_minor_tics,
+   user_specified_tic_labels,
    %tic_label_format, tic_labels, tic_labels_dX,   %  from tic
    tic_label_format, tic_label_strings, tic_labels_font_struct = xfig_make_font (),
    tic_label_objects,
@@ -665,12 +666,28 @@ private define format_labels_using_scientific_notation (tics)
    return array_map (String_Type, &sprintf, "$\bm%g{\times}10^{%d}$"R, a, b);
 }
 
+private define construct_tic_label_strings (axis, tics);
 private define construct_tic_label_strings (axis, tics) %{{{
 {
+   variable n_tics = length(tics);
+   variable tic_labels = String_Type[n_tics];
+   if (axis.user_specified_tic_labels != NULL)
+     {
+       if (_typeof(axis.user_specified_tic_labels) != String_Type)
+	 axis.user_specified_tic_labels = construct_tic_label_strings (axis, axis.user_specified_tic_labels);
+       variable n_tic_labels = length (axis.user_specified_tic_labels);
+       if (n_tics != n_tic_labels)
+         {
+           vmessage("warning: %d user specfied ticlabels, but %d ticmarks", n_tic_labels, n_tics);
+           n_tics = min([n_tics, n_tic_labels]);
+         }
+       tic_labels[ [:n_tics-1] ] = axis.user_specified_tic_labels[ [:n_tics-1] ];
+       return tic_labels;
+     }
+
    variable format = axis.tic_label_format;
    variable fixed_format = (format != NULL);
    variable i, j, alt_fmt = NULL;
-   variable tic_labels;
    variable a, b;
    if (axis.islog > 0)
      {
@@ -683,7 +700,6 @@ private define construct_tic_label_strings (axis, tics) %{{{
 	variable frac, whole;
 	variable is_frac = fneqs (log10_tics, nint(log10_tics));
 	frac = where (is_frac, &whole);
-	tic_labels = String_Type[length(tics)];
 	tic_labels[whole] = array_map (String_Type, &sprintf, format, log10_tics[whole]);
 
 	variable is_small = (0.01 <= tics < 99999.5);
@@ -1354,8 +1370,8 @@ private define do_axis_method (name, grid_axis)
 	usage (".axis ( [;qualifiers] )\n", +
 	       "Qualifiers:\n", +
 	       " off, on, color=val, line=val, major=array, minor=array,\n" +
-	       " width=val, depth=val, ticlabels=0|1, maxtics=val\n" +
-	       "wcs=val, lin, log, format=fmt\n"
+	       " width=val, depth=val, ticlabels=0|1|Array_Type, maxtics=val\n" +
+	       " wcs=val, lin, log, format=fmt\n"
 	      );
      }
 
@@ -1445,10 +1461,11 @@ private define do_axis_method (name, grid_axis)
    if (qualifier_exists ("format"))
      axis.tic_label_format = qualifier ("format");
 
-   % FIXME: Allow ticlabels to be an array of strings
    q = qualifier ("ticlabels");
    if (typeof (q) == Int_Type)
      axis.draw_tic_labels = q;
+   else if (typeof (q) == Array_Type && (_typeof(q) == String_Type || __is_numeric(q)))
+     axis.user_specified_tic_labels = q;
 
    if (axis.draw_major_tics == 0)
      axis.draw_tic_labels = 0;
