@@ -32,6 +32,7 @@
 @examples/plot/subplot.sl
 @examples/plot/symbol.sl
 @examples/plot/scatter.sl
+@examples/plot/ticlabels.sl
 @examples/plot/run.sl
 @examples/plot/world.sl
 @src/Makefile.in
