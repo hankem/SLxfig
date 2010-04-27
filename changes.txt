@@ -90,6 +90,8 @@ Changes since 0.1.0
     (Manfred Hanke).
 57. src/xfig/polyline.sl: Allow xfig_new_polyline to accept a structure
     mimicking a Vector_Type object. (Manfred Hanke).
-
-
-
+58. src/xfig/plot.sl: Added support for asymmetric error bars.  Also
+    error bars for histograms are added at the center of the bin.
+    (Manfred Hanke).
+59. src/Makefile.in: Changes made to have the value of the
+    _xfig_version_string track the changes.txt file.

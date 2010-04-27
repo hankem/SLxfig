@@ -43,6 +43,7 @@ INSTALL_DATA	= @INSTALL_DATA@
 MKINSDIR	= ../autoconf/mkinsdir.sh
 RM		= rm -f
 LN		= ln -s
+UPDATE_VERSION_SCRIPT = $(HOME)/bin/update_changes_version
 #---------------------------------------------------------------------------
 # DESTDIR is designed to facilitate making packages.  Normally it is empty
 #---------------------------------------------------------------------------
@@ -55,13 +56,17 @@ DEST_HLP_FILES_INSTALL_DIR = $(DESTDIR)$(HLP_FILES_INSTALL_DIR)
 LIBS = $(SLANG_LIB) $(RPATH) $(DL_LIB) -lm
 INCS = $(SLANG_INC)
 
-all: $(MODULES)
+all: $(MODULES) xfig.sl
 
 #---------------------------------------------------------------------------
 # Put Rules to create the modules here
 #---------------------------------------------------------------------------
 gcontour-module.so: gcontour-module.c
 	$(CC_SHARED) $(INCS) gcontour-module.c -o gcontour-module.so $(LIBS)
+xfig.sl: ../changes.txt
+	if [ -x $(UPDATE_VERSION_SCRIPT) ]; then \
+	  $(UPDATE_VERSION_SCRIPT) ../changes.txt xfig.sl; \
+	fi
 #---------------------------------------------------------------------------
 # Regression tests
 #---------------------------------------------------------------------------
