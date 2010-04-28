@@ -11,6 +11,7 @@ PNG_FILES = \
   simple.png \
   subplot.png \
   symbol.png \
+  ticlabels.png \
   world.png
 # overlay.png \
 # project.png \

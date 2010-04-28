@@ -101,6 +101,7 @@ private variable Plot_Axis_Type = struct
    islog = 0, 			       %  if non-zero, is a log axis.  if < 0 format tics as non-log
    major_tics, minor_tics, maxtics,
    user_specified_major_tics, user_specified_minor_tics,
+   user_specified_tic_labels,
    %tic_label_format, tic_labels, tic_labels_dX,   %  from tic
    tic_label_format, tic_label_strings, tic_labels_font_struct = xfig_make_font (),
    tic_label_objects,
@@ -665,8 +666,17 @@ private define format_labels_using_scientific_notation (tics)
    return array_map (String_Type, &sprintf, "$\bm%g{\times}10^{%d}$"R, a, b);
 }
 
+private define construct_tic_label_strings (axis, tics);
 private define construct_tic_label_strings (axis, tics) %{{{
 {
+   if (axis.user_specified_tic_labels != NULL)
+     {
+	if (_typeof(axis.user_specified_tic_labels) == String_Type)
+	  return axis.user_specified_tic_labels;
+
+	tics = axis.user_specified_tic_labels;
+     }
+
    variable format = axis.tic_label_format;
    variable fixed_format = (format != NULL);
    variable i, j, alt_fmt = NULL;
@@ -853,11 +863,16 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
 	(major_tics, minor_tics) = wcs_compute_major_minor_tics (axis.wcs_transform, xmin, xmax, axis.maxtics);
      }
 
+   variable i, j;
+
    if (major_tics != NULL)
      {
-	axis.major_tics = major_tics[where ((major_tics >= xmin) and (major_tics <= xmax))];
+	i = where (xmin <= major_tics <= xmax);
+	axis.major_tics = major_tics[i];
+	if (axis.user_specified_tic_labels != NULL)
+	  axis.user_specified_tic_labels = axis.user_specified_tic_labels[i];
 	if (minor_tics != NULL)
-	  minor_tics = minor_tics[where ((minor_tics >= xmin) and (minor_tics <= xmax))];
+	  minor_tics = minor_tics[where (xmin <= minor_tics <= xmax)];
 	axis.minor_tics = minor_tics;
 
 	if (length(major_tics) > 1)
@@ -900,8 +915,8 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
 
    variable major_tic_interval = major_tics[1] - major_tics[0];
    variable minor_tic_interval;
-   variable j = [1:num_minor];
-   variable i = j-1;
+   j = [1:num_minor];
+   i = j-1;
 
    if (islog && (num_minor == 0))
       {
@@ -1354,8 +1369,8 @@ private define do_axis_method (name, grid_axis)
 	usage (".axis ( [;qualifiers] )\n", +
 	       "Qualifiers:\n", +
 	       " off, on, color=val, line=val, major=array, minor=array,\n" +
-	       " width=val, depth=val, ticlabels=0|1, maxtics=val\n" +
-	       "wcs=val, lin, log, format=fmt\n"
+	       " width=val, depth=val, ticlabels=0|1|Array_Type, maxtics=val\n" +
+	       " wcs=val, lin, log, format=fmt\n"
 	      );
      }
 
@@ -1445,10 +1460,20 @@ private define do_axis_method (name, grid_axis)
    if (qualifier_exists ("format"))
      axis.tic_label_format = qualifier ("format");
 
-   % FIXME: Allow ticlabels to be an array of strings
    q = qualifier ("ticlabels");
    if (typeof (q) == Int_Type)
      axis.draw_tic_labels = q;
+   else if ((typeof (q) == Array_Type) 
+	    && ((_typeof(q) == String_Type) || __is_numeric(q)))
+     {
+	if (major_tics == NULL)
+	  message("warning: user specified ticlabels, but no major ticmarks  (=> ignoring ticlabels)");
+	else if (length(major_tics) != length(q))
+	  vmessage("warning: user specified %d major ticmarks, but %d ticlabels  (=> ignoring ticlabels)",
+		   length(major_tics), length(q));
+	else
+	  axis.user_specified_tic_labels = q;
+     }
 
    if (axis.draw_major_tics == 0)
      axis.draw_tic_labels = 0;
