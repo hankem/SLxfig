@@ -1780,25 +1780,36 @@ private define plot_lines (p, x, y)
 
 private define pop_plot_err_parms (nargs)
 {
-   variable p, x, y, dy, term_factor = 1;
-   if (nargs == 5)
-     term_factor = ();
+   variable p, x, y, dy;
    (p, x, y, dy) = ();
 
-   variable i = where (not (isnan(x) or isnan(y) or
-			    ( typeof(dy) == List_Type       % dy may be
-			    ? isnan(dy[0]) or isnan(dy[1])  % a list { dy_neg, dy_pos } of arrays
-			    : isnan(dy)                     % or an array
-			    )));
+   variable 
+     i, dy_neg = dy, dy_pos = dy,
+     is_asymmetric = (typeof (dy) == List_Type);
+
+   if (is_asymmetric)
+     {
+	dy_neg = dy[0];
+	dy_pos = dy[1];
+	i = wherenot (isnan(x) or isnan(y) or isnan(dy_neg) or isnan(dy_pos));
+     }
+   else
+     i = wherenot (isnan(x) or isnan(y) or isnan(dy_neg));
+
    if (length (i) != length (x))
      {
 	x = x[i];
 	y = y[i];
-	if (typeof(dy) == Array_Type)
-	  dy = dy[i];
-	else if (isnan (dy)) dy = dy[i];
+	if (typeof(dy_neg) == Array_Type)
+	  dy_neg = dy_neg[i];
+
+	if (is_asymmetric)
+	  {
+	     if (typeof(dy_pos) == Array_Type)
+	       dy_pos = dy_pos[i];
+	  }	     
      }
-   return p.plot_data, x, y, dy, term_factor;
+   return p.plot_data, x, y, dy_neg, dy_pos;
 }
 
 private define insert_errbar_list (p, lines)
@@ -1820,15 +1831,16 @@ private define insert_errbar_list (p, lines)
 
 private define plot_erry ()
 {
-   variable p, x, y, dy, term_factor;
-   (p, x, y, dy, term_factor) = pop_plot_err_parms (_NARGS);
+   variable p, x, y, dy_neg, dy_pos;
+   (p, x, y, dy_neg, dy_pos) = pop_plot_err_parms (_NARGS);
    variable ax, ay;
    (ax, ay) = get_world_axes (p ;; __qualifiers);
+   variable term_factor = qualifier ("yeb_factor", qualifier ("eb_factor", 1));
    variable w = p.plot_width, h = p.plot_height;
 
    x = scale_coords_for_axis (ax, w, x);
-   variable y0 = scale_coords_for_axis (ay, h, y-dy[ 0 ]);  % dy may be an array or a list `{ dy_neg, dy_pos }' of arrays
-   variable y1 = scale_coords_for_axis (ay, h, y+dy[ typeof(dy)==List_Type ? 1 : 0 ]);
+   variable y0 = scale_coords_for_axis (ay, h, y-dy_neg);
+   variable y1 = scale_coords_for_axis (ay, h, y+dy_pos);
 
    variable dt = abs (ERRBAR_TERMINAL_SIZE * term_factor);
    variable dz = [0.0,0.0];
@@ -1874,15 +1886,17 @@ private define plot_erry ()
 
 private define plot_errx ()
 {
-   variable p, x, y, dx, term_factor;
-   (p, x, y, dx, term_factor) = pop_plot_err_parms (_NARGS);
+   variable p, x, y, dx_neg, dx_pos;
+   (p, x, y, dx_neg, dx_pos) = pop_plot_err_parms (_NARGS);
    variable ax, ay;
    (ax, ay) = get_world_axes (p ;; __qualifiers);
+   variable term_factor = qualifier ("xeb_factor", qualifier ("eb_factor", 1));
+
    variable w = p.plot_width, h = p.plot_height;
 
    y = scale_coords_for_axis (ay, h, y);
-   variable x0 = scale_coords_for_axis (ax, w, x-dx[ 0 ]);  % dx may be an array or a list `{ dx_neg, dx_pos }' of arrays
-   variable x1 = scale_coords_for_axis (ax, w, x+dx[ typeof(dx)==List_Type ? 1 : 0 ]);
+   variable x0 = scale_coords_for_axis (ax, w, x-dx_neg);
+   variable x1 = scale_coords_for_axis (ax, w, x+dx_pos);
 
    variable dt = abs (ERRBAR_TERMINAL_SIZE * term_factor);
    variable dz = [0.0,0.0];
@@ -2312,11 +2326,11 @@ private define plot_method () %{{{
      }
    if (dx != NULL)
      {
-	plot_errx (p, x, y, dx, qualifier("eb_factor", 1) ;; __qualifiers);
+	plot_errx (p, x, y, dx;; __qualifiers);
      }
    if (dy != NULL)
      {
-	plot_erry (p, x, y, dy, qualifier("eb_factor", 1) ;; __qualifiers);
+	plot_erry (p, x, y, dy;; __qualifiers);
      }
 }
 
@@ -2438,8 +2452,8 @@ private define hplot_method () %{{{
      {
 	variable xhi = shift(x,1);
 	xhi[-1] = 2*x[-1] - x[-2];
-	x =  (x+xhi)/2.;  % FIX ME: for non-linear wcs, a more reasonable choice might have to be found
-	plot_erry (p, x, y, dy, qualifier("eb_factor", 1) ;; __qualifiers);
+	x = 0.5*(x+xhi);  % FIX ME: for non-linear wcs, a more reasonable choice might have to be found
+	plot_erry (p, x, y, dy ;; __qualifiers);
      }
 }
 %}}}
