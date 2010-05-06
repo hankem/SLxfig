@@ -1789,8 +1789,16 @@ private define pop_plot_err_parms (nargs)
 
    if (is_asymmetric)
      {
-	dy_neg = dy[0];
-	dy_pos = dy[1];
+        if(qualifier("minmax"))
+        {
+	  dy_neg = y - dy[0];  % dy[0]  is actually  y - dy_neg
+	  dy_pos = dy[1] - y;  % dy[1]  is actually  dy_pos - y
+	}
+        else
+        {
+	  dy_neg = dy[0];
+	  dy_pos = dy[1];
+	}
 	i = wherenot (isnan(x) or isnan(y) or isnan(dy_neg) or isnan(dy_pos));
      }
    else
@@ -1832,7 +1840,7 @@ private define insert_errbar_list (p, lines)
 private define plot_erry ()
 {
    variable p, x, y, dy_neg, dy_pos;
-   (p, x, y, dy_neg, dy_pos) = pop_plot_err_parms (_NARGS);
+   (p, x, y, dy_neg, dy_pos) = pop_plot_err_parms (_NARGS; minmax=qualifier_exists("minmax") or qualifier_exists("yminmax"));
    variable ax, ay;
    (ax, ay) = get_world_axes (p ;; __qualifiers);
    variable term_factor = qualifier ("yeb_factor", qualifier ("eb_factor", 1));
@@ -1887,7 +1895,7 @@ private define plot_erry ()
 private define plot_errx ()
 {
    variable p, x, y, dx_neg, dx_pos;
-   (p, x, y, dx_neg, dx_pos) = pop_plot_err_parms (_NARGS);
+   (p, x, y, dx_neg, dx_pos) = pop_plot_err_parms (_NARGS; minmax=qualifier_exists("minmax") or qualifier_exists("xminmax"));
    variable ax, ay;
    (ax, ay) = get_world_axes (p ;; __qualifiers);
    variable term_factor = qualifier ("xeb_factor", qualifier ("eb_factor", 1));
