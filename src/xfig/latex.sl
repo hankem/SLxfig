@@ -4,7 +4,7 @@
 %{{{ Tmpfile and Dir handling Functions 
 
 private variable Latex_Tmp_Dir = NULL;
-private variable Latex_Packages = {"amsmath", "bm", "color"};
+private variable Latex_Packages = {"amsmath", "bm", "color", "graphicx"};
 private variable Latex_Font_Size = 12;
 private variable Latex_Default_Color = "black";
 private variable Latex_Default_Font_Style = "\bf\boldmath"R;
@@ -114,6 +114,10 @@ private define run_dvips (dvi, eps)
    run_cmd (sprintf ("%s %s -o %s", Dvips_Pgm, dvi, eps));
 }
 
+private define run_eps2eps(eps)
+{
+   run_cmd (sprintf ("cat %s | eps2eps - %s", eps, eps));
+}
 
 %}}}
 
@@ -421,6 +425,7 @@ private define latex_xxx2eps (env, envargs, xxx, base, fontstruct)
 
    run_latex (tex);
    run_dvips (path_sans_extname (tex) + ".dvi", epsfile);
+   if(qualifier_exists("eps2eps"))  run_eps2eps(epsfile);
    
    add_to_cache (epsfile, hash);
    save_cache ();
@@ -509,7 +514,14 @@ define xfig_new_text ()
    if (fontstruct == NULL)
      fontstruct = make_font_struct (;;__qualifiers);
    variable text = ();
-   do_xfig_new_xxx (&xfig_text2eps, text, fontstruct;; __qualifiers);
+   variable q = __qualifiers();
+   variable rotate =  qualifier("rotate");
+   if(rotate!=NULL  &&  0 < __is_datatype_numeric(typeof(rotate)) < 3)
+   {
+     text = sprintf("\\rotatebox{%S}{%s}", rotate, text);
+     q = struct_combine(q, "eps2eps");
+   }
+   do_xfig_new_xxx (&xfig_text2eps, text, fontstruct;; q);
 }
 
 define xfig_set_font_style (style)
