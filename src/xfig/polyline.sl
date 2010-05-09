@@ -814,7 +814,7 @@ private define pict_center_pict (pict, X, dx, dy)
 %!%-
 define xfig_new_pict (file, dx, dy)
 {
-   variable X = vector(0,0,0);
+   variable X = vector(qualifier("x0",0), qualifier("y0",0), qualifier("z0",0));
    variable p = xfig_new_polyline (X ;; __qualifiers);
    p.sub_type = SUBTYPE_IMPPICT;
 
