@@ -95,7 +95,13 @@ Changes since 0.1.0
     (Manfred Hanke).
 59. src/Makefile.in: Changes made to have the value of the
     _xfig_version_string track the changes.txt file.
-60. src/plot.sl: The "ticlabels" qualifier to the plot functions may
+60. src/xfig/plot.sl: The "ticlabels" qualifier to the plot functions may
     be used to specify user-defined labels.  See the
     examples/plot/ticlabels.sl for examples.  (Manfred Hanke).
+61. src/xfig/plot.sl: Added a get_world method to the plot object:
+
+         w = xfig_plot_new ();
+	   .
+	   .
+	 world = w.get_world();  % ==> xmin=world[0], xmax=world[1],...
 

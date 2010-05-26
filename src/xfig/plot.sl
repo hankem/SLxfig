@@ -1718,6 +1718,20 @@ private define get_world_axes (p)
    return p.x1axis, p.y1axis;
 }
 
+private define get_world_for_axis (a)
+{
+   if (a == NULL)
+     return (0.0, 1.0);
+
+   variable x0 = a.xmin, x1 = a.xmax;
+   variable wcs = a.wcs_transform;
+
+   if ((wcs.xmin != NULL) && (x0 < wcs.xmin)) x0 = wcs.xmin;
+   if ((wcs.xmax != NULL) && (x1 > wcs.xmax)) x1 = wcs.xmax;
+
+   return (x0, x1);
+}
+
 private define scale_coords_for_axis (axis, axis_len, x)
 {
    if (axis == NULL)
@@ -1725,13 +1739,8 @@ private define scale_coords_for_axis (axis, axis_len, x)
 	%  device coordinate, x runs from 0 to 1
 	return double(x*axis_len);
      }
-   variable wcs = axis.wcs_transform;
-
-   variable x0 = axis.xmin, x1 = axis.xmax;
-   if ((wcs.xmin != NULL) && (x0 < wcs.xmin)) x0 = wcs.xmin;
-   if ((wcs.xmax != NULL) && (x1 > wcs.xmax)) x1 = wcs.xmax;
-
-   return axis_len * world_to_normalized (wcs, x, x0, x1);
+   return axis_len * 
+     world_to_normalized (axis.wcs_transform, x, get_world_for_axis (axis));
 }
 
 private define make_nsided_polygon (n, x0, y0, radius)
@@ -2618,7 +2627,7 @@ define xfig_plot_text ()
      usage ("%s (win, text, x, y [dx, dy])", _function_name);
    (w, text, x, y) = ();
 
-   text = xfig_new_text (text);
+   text = xfig_new_text (text;; __qualifiers);
    add_object_method (w, text, x, y, dx, dy ;; __qualifiers);
 }
 
@@ -2807,6 +2816,18 @@ private define shade_region_method ()
    w.add_object (obj);
 }
 
+% Usage: [xmin,xmax,ymin,ymax] = w.get_world();
+private define get_world_method (w)
+{
+   variable p = w.plot_data;
+
+   variable ax, ay;
+   (ax, ay) = get_world_axes (p ;; __qualifiers);
+   
+   return [get_world_for_axis(ax), get_world_for_axis(ay)];   
+}
+
+
 private variable XFig_Plot_Type = struct
 {
    plot_data,
@@ -2834,6 +2855,7 @@ private variable XFig_Plot_Type = struct
    plot_png = &plot_png_method,
    plot_pict = &plot_pict_method,
    shade_region= &shade_region_method,
+   get_world = &get_world_method,
 };
 
 private variable Default_Width = 14.0;

@@ -317,7 +317,7 @@ private define new_color (name, rgb, xfigid, id)
    s.id = id;
    Color_Table[name] = s;
 
-   if (id >= 0)
+   %if (id >= 0)
      list_append (Color_List, s);
 }
 
