@@ -2827,7 +2827,7 @@ private define xylabel_method () %{{{
 %\seealso{xfig_plot_text}
 %!%-
 {
-   if(qualifier_exist("help"))  return help("xfig_plot.xylabel");
+   if(qualifier_exists("help"))  return help("xfig_plot.xylabel");
 
    variable w, text, x, y, dx = 0, dy = 0;
    if (_NARGS == 6)
