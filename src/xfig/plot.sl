@@ -1001,79 +1001,8 @@ private define pop_set_tic_args (fun, nargs) %{{{
 }
 
 %}}}
-#iffalse
-private define set_xx_axis_tics (axis_name, fun, nargs) %{{{
-{
-   variable obj, major_tics, tic_labels, minor_tics;
-   (obj, major_tics, tic_labels, minor_tics) = pop_set_tic_args (fun, nargs);
-   variable axis = get_struct_field (obj, axis_name);
-   variable want_tic_labels = (tic_labels != NULL);
-   if (typeof (tic_labels) == String_Type)
-     {
-	want_tic_labels = (tic_labels != "");
-	!if (want_tic_labels) tic_labels = NULL;
-     }
 
-   variable xmin = axis.xmin, xmax = axis.xmax;
-   variable i;
-
-   if (major_tics != NULL)
-     {
-	i = where ((major_tics >= xmin) and (major_tics <= xmax));
-	major_tics = major_tics[i];
-	if (typeof (tic_labels) == Array_Type)
-	  tic_labels = tic_labels[i];
-     }
-   if (minor_tics != NULL)
-     minor_tics = minor_tics[where ((minor_tics >= xmin) and (minor_tics <= xmax))];
-
-   axis.tic_labels = tic_labels;
-   axis.major_tics = major_tics;
-   axis.minor_tics = minor_tics;
-   setup_axis_tics (obj, axis);
-}
-
-%}}}
-
-define xfig_plot_set_x1_tics ()
-{
-   set_xx_axis_tics ("x1axis", _function_name, _NARGS);
-}
-
-define xfig_plot_set_x2_tics ()
-{
-   set_xx_axis_tics ("x2axis", _function_name, _NARGS);
-}
-
-define xfig_plot_set_y1_tics ()
-{
-   set_xx_axis_tics ("y1axis", _function_name, _NARGS);
-}
-
-define xfig_plot_set_y2_tics ()
-{
-   set_xx_axis_tics ("y2axis", _function_name, _NARGS);
-}
-define xfig_plot_set_x_tics ()
-{
-   variable win, major_tics, tic_labels, minor_tics;
-   (win, major_tics, tic_labels, minor_tics) = pop_set_tic_args (_function_name, _NARGS);
-
-   xfig_plot_set_x1_tics (win, major_tics, tic_labels, minor_tics);
-   xfig_plot_set_x2_tics (win, major_tics, "", minor_tics);
-}
-
-define xfig_plot_set_y_tics ()
-{
-   variable win, major_tics, tic_labels, minor_tics;
-   (win, major_tics, tic_labels, minor_tics) = pop_set_tic_args (_function_name, _NARGS);
-
-   xfig_plot_set_y1_tics (win, major_tics, tic_labels, minor_tics);
-   xfig_plot_set_y2_tics (win, major_tics, "", minor_tics);
-}
-#endif
-
-private define position_axis_label (axis)
+private define position_axis_label (axis) %{{{
 {
    variable label = axis.axis_label;
    if (label == NULL)
@@ -1095,6 +1024,7 @@ private define position_axis_label (axis)
 
    xfig_justify_object (axis.axis_label, X, axis.tic_labels_just);
 }
+%}}}
 
 private define add_axis_label (p, axis, label) %{{{
 {
