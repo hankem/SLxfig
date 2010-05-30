@@ -42,6 +42,7 @@ text-files: $(TXT_FILES) $(HLP_FILES)
 all: $(SGML_FILES) $(HTML_FILES) $(TEX_FILES) $(TXT_FILES)
 slxfigfuns.tm: ../../src/xfig/*.sl
 	$(SL2TM) ../../src/xfig/*.sl > slxfigfuns.tm
+	tm-sort.sl slxfigfuns.tm
 #----- SGML Files -----------------------------------------------------------
 $(MODULE).sgml : $(MODULE).tm $(MODULE_DEPS)
 	$(TMEXPAND) $(MODULE).tm $(MODULE).sgml
