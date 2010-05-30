@@ -1771,8 +1771,29 @@ private define world_method () %{{{
 %}}}
 
 private define get_world_axes (p) %{{{
+%!%+
+%\function{xfig_plot--wcs}
+%\synopsis{Qualifiers to specify a plot's world coordinate system}
+%\qualifiers
+%\qualifier{world0}{use device coordinates for x- and y-axes}
+%\qualifier{world1}{use first coordinate system for x- and y-axes}
+%\qualifier{world2}{use second coordinate system for x- and y-axes}
+%\qualifier{world{a}{b}}{use a-th WCS for x-axis and b-th WCS for y-axis, where 0 <= a, b <= 2}
+%\description
+%  If none of these qualifiers is specified, world1 is assumed.
+%
+%  Device coordinates (0th WCS) run from 0 to 1 along the corresponding axis.
+%
+%  The first or second coordinate system (1st or 2nd WCS) can be defined
+%  with the .world(1) or .world(2) methods. (If not set before, they are
+%  set automatically by some plot functions, see \sfun{xfig_plot--initialize_plot}.)
+%
+%  The WCS qualifiers apply to the following functions:
+%  \sfun{xfig_plot.plot}, \sfun{xfig_plot.hplot}, \sfun{xfig_plot.shade_region},
+%  \sfun{xfig_plot.add_object}, \sfun{xfig_plot.xylabel}, \sfun{xfig_plot.xfig_coords}
+%\seealso{xfig_plot.world, xfig_plot.world1, xfig_plot.world2, xfig_plot--initialize_plot}
+%!%-
 {
-   variable world = qualifier ("world");
    variable x_axes = [NULL, p.x1axis, p.x2axis];
    variable y_axes = [NULL, p.y1axis, p.y2axis];
    variable a = 0;
@@ -1812,13 +1833,35 @@ private define scale_coords_for_axis (axis, axis_len, x) %{{{
 }
 %}}}
 
-private define make_nsided_polygon (n, x0, y0, radius)
+private define xfig_coords_method(p, x, y) %{{{
+%!%+
+%\function{xfig_plot.xfig_coords}
+%\usage{(Double_Type xXfig, yXfig) = xfig_plot.xfig_coords(Double_Type x, y);
+%\altusage{Double_Type xXfig = xfig_plot.xfig_coords(Double_Type x, );}
+%\altusage{Double_Type yXfig = xfig_plot.xfig_coords(, Double_Type y);}
+%}
+%\qualifiers
+% % qualifiers to specify the world coordinate system,
+%\seealso{xfig_plot--wcs}
+%!%-
+{
+   if(qualifier_exists("help"))  return help("xfig_plot.xfig_coords");
+   p = p.plot_data;
+   variable ax, ay;
+   (ax, ay) = get_world_axes (p;; __qualifiers);
+   if(y!=NULL)  p.X.y + scale_coords_for_axis (ay, p.plot_height, y);  % left on stack
+   if(x!=NULL)  p.X.x + scale_coords_for_axis (ax, p.plot_width,  x);  % left on stack
+}
+%}}}
+
+private define make_nsided_polygon (n, x0, y0, radius) %{{{
 {
    variable theta = [0:n]*(2*PI/n); theta = [theta, 0];
    variable x = x0 + radius * cos (theta);
    variable y = y0 + radius * sin (theta);
    return x, y;
 }
+%}}}
 
 private define plot_lines (p, x, y) %{{{
 {
@@ -2428,8 +2471,10 @@ private define plot_method () %{{{
 % % qualifiers to initialize the first plot only,
 %   see \sfun{xfig_plot--initialize_plot}
 %
+% % qualifiers to specifiy the world coordinate system,
+%   see \sfun{xfig_plot--wcs}
+%
 % %  general qualifiers:
-%\qualifier{world[012][012]}{select the corresponding world coordinate system}{world11}
 %\qualifier{color=strval}{color of lines symbols and error bars}
 %\qualifier{width=intval}{thickness of lines and error bars}
 %\qualifier{depth=intval}{Xfig depth}
@@ -2453,7 +2498,7 @@ private define plot_method () %{{{
 %  If no \exmp{x} values are given, \exmp{x = [1:length(y)]} is assumed.
 %  If a symbol is specified, no lines are drawn
 %  unless the line qualifier is also specified.
-%\seealso{xfig_plot--initialize-plot}
+%\seealso{xfig_plot--initialize-plot, xfig_plot--wcs}
 %!%-
 {
    if(qualifier_exists("help"))  { ()=__pop_args(_NARGS); return help("xfig_plot.plot"); }
@@ -2512,7 +2557,6 @@ private define plot_method () %{{{
 
 %}}}
 
-% Usage: xfig_plot_histogram (w, x, y [,fill_color, area_fill])
 private define plot_histogram (w, xpts, ypts) %{{{
 {
    variable len = length(xpts);
@@ -2604,6 +2648,9 @@ private define hplot_method () %{{{
 % % qualifiers to initialize the first plot only,
 %   see \sfun{xfig_plot--initialize_plot}
 %
+% % qualifiers to specifiy the world coordinate system,
+%   see \sfun{xfig_plot--wcs}
+%
 %\qualifier{fill}{plot shaded histogram}
 %\qualifier{depth}{}
 %\qualifier{thickness}{}
@@ -2613,7 +2660,7 @@ private define hplot_method () %{{{
 %\qualifier{eb_factor}{}{1}
 %\description
 %  If no \exmp{x} values are given, \exmp{x = [1:length(y)]} is assumed.
-%\seealso{xfig_plot--initialize-plot}
+%\seealso{xfig_plot--initialize-plot, xfig_plot--wcs}
 %!%-
 {
    if(qualifier_exists("help"))  { ()=__pop_args(_NARGS); return help("xfig_plot.hplot"); }
@@ -2747,7 +2794,7 @@ private define add_object_method () %{{{
 %  in the interval \exmp{[-0.5,0.5]}.  For example, \exmp{0,0} will center
 %  the object on \exmp{(x,y)}, and \exmp{(-0.5,-0.5)} will move the lower left
 %  corner of the object to the specified coordinate.
-%\seealso{xfig_plot_define_world1}
+%\seealso{xfig_plot--wcs}
 %!%-
 {
    if(qualifier_exists("help"))  { ()=__pop_args(_NARGS); return help("xfig_plot.add_object"); }
@@ -2824,7 +2871,7 @@ private define xylabel_method () %{{{
 %!%+
 %\function{xfig_plot.xylabel}
 %\usage{xfig_plot.xylabel (String_Type text, Double_Type x, y[, dx, dy]);}
-%\seealso{xfig_plot_text}
+%\seealso{xfig_plot_text, xfig_plot--wcs}
 %!%-
 {
    if(qualifier_exists("help"))  return help("xfig_plot.xylabel");
@@ -3038,8 +3085,9 @@ private define shade_region_method () %{{{
 %\altusage{xfig_plot.shade_region (xmin, xmax, ymin, ymax);}
 %}
 %\qualifiers
-% % qualifiers to initialize the first plot only,
-%   see \sfun{xfig_plot--initialize_plot}
+% % qualifiers to initialize the first plot only
+% % qualifiers to specifiy the world coordinate system
+%\seealso{xfig_plot--initialize_plot, xfig_plot--wcs}
 %!%-
 {
    variable p, w, xs, ys, xmin, xmax, ymin, ymax;
@@ -3124,6 +3172,7 @@ private variable XFig_Plot_Type = struct %{{{
    plot_png = &plot_png_method,
    plot_pict = &plot_pict_method,
    shade_region= &shade_region_method,
+   xfig_coords=&xfig_coords_method,
 };
 %}}}
 

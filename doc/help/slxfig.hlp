@@ -215,6 +215,35 @@ xfig_plot--initialize_plot
 
 --------------------------------------------------------------
 
+xfig_plot--wcs
+
+ SYNOPSIS
+  Qualifiers to specify a plot's world coordinate system
+
+ QUALIFIERS
+  ; world0: use device coordinates for x- and y-axes
+  ; world1: use first coordinate system for x- and y-axes
+  ; world2: use second coordinate system for x- and y-axes
+  ; world{a}{b}: use a-th WCS for x-axis and b-th WCS for y-axis, where 0 <= a, b <= 2
+
+ DESCRIPTION
+  If none of these qualifiers is specified, world1 is assumed.
+
+  Device coordinates (0th WCS) run from 0 to 1 along the corresponding axis.
+
+  The first or second coordinate system (1st or 2nd WCS) can be defined
+  with the .world(1) or .world(2) methods. (If not set before, they are
+  set automatically by some plot functions, see `xfig_plot--initialize_plot'.)
+
+  The WCS qualifiers apply to the following functions:
+  `xfig_plot.plot', `xfig_plot.hplot', `xfig_plot.shade_region',
+  `xfig_plot.add_object', `xfig_plot.xylabel', `xfig_plot.xfig_coords'
+
+ SEE ALSO
+  xfig_plot.world, xfig_plot.world1, xfig_plot.world2, xfig_plot--initialize_plot
+
+--------------------------------------------------------------
+
 xfig_plot.add_object
 
  SYNOPSIS
@@ -233,7 +262,7 @@ xfig_plot.add_object
   corner of the object to the specified coordinate.
 
  SEE ALSO
-  xfig_plot_define_world1
+  xfig_plot--wcs
 
 --------------------------------------------------------------
 
@@ -291,6 +320,9 @@ xfig_plot.hplot
  % qualifiers to initialize the first plot only,
    see `xfig_plot--initialize_plot'
 
+ % qualifiers to specifiy the world coordinate system,
+   see `xfig_plot--wcs'
+
   ; fill: plot shaded histogram
   ; depth:
   ; thickness:
@@ -303,7 +335,7 @@ xfig_plot.hplot
   If no `x' values are given, `x = [1:length(y)]' is assumed.
 
  SEE ALSO
-  xfig_plot--initialize-plot
+  xfig_plot--initialize-plot, xfig_plot--wcs
 
 --------------------------------------------------------------
 
@@ -318,8 +350,10 @@ xfig_plot.plot
  % qualifiers to initialize the first plot only,
    see `xfig_plot--initialize_plot'
 
+ % qualifiers to specifiy the world coordinate system,
+   see `xfig_plot--wcs'
+
  %  general qualifiers:
-  ; world[012][012]: select the corresponding world coordinate system (default: world11)
   ; color=strval: color of lines symbols and error bars
   ; width=intval: thickness of lines and error bars
   ; depth=intval: Xfig depth
@@ -346,7 +380,7 @@ xfig_plot.plot
   unless the line qualifier is also specified.
 
  SEE ALSO
-  xfig_plot--initialize-plot
+  xfig_plot--initialize-plot, xfig_plot--wcs
 
 --------------------------------------------------------------
 
@@ -383,8 +417,11 @@ xfig_plot.shade_region
   xfig_plot.shade_region (xmin, xmax, ymin, ymax);
 
  QUALIFIERS
- % qualifiers to initialize the first plot only,
-   see `xfig_plot--initialize_plot'
+ % qualifiers to initialize the first plot only
+ % qualifiers to specifiy the world coordinate system
+
+ SEE ALSO
+  xfig_plot--initialize_plot, xfig_plot--wcs
 
 --------------------------------------------------------------
 
@@ -509,6 +546,23 @@ xfig_plot.xaxis
 
 --------------------------------------------------------------
 
+xfig_plot.xfig_coords
+
+ USAGE
+  (Double_Type xXfig, yXfig) = xfig_plot.xfig_coords(Double_Type x, y);
+  % or
+  Double_Type xXfig = xfig_plot.xfig_coords(Double_Type x, );
+  % or
+  Double_Type yXfig = xfig_plot.xfig_coords(, Double_Type y);
+
+ QUALIFIERS
+ % qualifiers to specify the world coordinate system,
+
+ SEE ALSO
+  xfig_plot--wcs
+
+--------------------------------------------------------------
+
 xfig_plot.xlabel
 
  SYNOPSIS
@@ -531,7 +585,8 @@ xfig_plot.xylabel
  USAGE
   xfig_plot.xylabel (String_Type text, Double_Type x, y[, dx, dy]);
 
- DESCRIPTION
+ SEE ALSO
+  xfig_plot_text, xfig_plot--wcs
 
 --------------------------------------------------------------
 
