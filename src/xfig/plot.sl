@@ -2784,6 +2784,7 @@ private define add_object_method () %{{{
 }
 %}}}
 
+define xfig_plot_text () %{{{
 %!%+
 %\function{xfig_plot_text}
 %\synopsis{Add text to the plot}
@@ -2806,20 +2807,40 @@ private define add_object_method () %{{{
 % will left justify the text at the position (3.2,6.0).
 %\seealso{xfig_plot_add_object, xfig_new_text}
 %!%-
-define xfig_plot_text ()
 {
    variable w, text, x, y, dx = 0, dy = 0;
    if (_NARGS == 6)
      (dx, dy) = ();
    else if (_NARGS != 4)
-     usage ("%s (win, text, x, y [dx, dy])", _function_name);
+     usage ("%s (win, text, x, y [, dx, dy]);", _function_name);
    (w, text, x, y) = ();
 
-   text = xfig_new_text (text);
-   add_object_method (w, text, x, y, dx, dy ;; __qualifiers);
+   text = xfig_new_text (text;; __qualifiers);
+   add_object_method (w, text, x, y, dx, dy;; __qualifiers);
 }
+%}}}
 
-private define xlabel_method ()
+private define xylabel_method () %{{{
+%!%+
+%\function{xfig_plot.xylabel}
+%\usage{xfig_plot.xylabel (String_Type text, Double_Type x, y[, dx, dy]);}
+%\seealso{xfig_plot_text}
+%!%-
+{
+   if(qualifier_exist("help"))  return help("xfig_plot.xylabel");
+
+   variable w, text, x, y, dx = 0, dy = 0;
+   if (_NARGS == 6)
+     (dx, dy) = ();
+   else if (_NARGS != 4)
+     usage (".xylabel(x, y, text [, dx, dy]);");
+   (w, x, y, text) = ();  % Note the different order of the arguments.
+
+   xfig_plot_text(w, text, x, y, dx, dy;; __qualifiers);
+}
+%}}}
+
+private define xlabel_method () %{{{
 %!%+
 %\function{xfig_plot.xlabel}
 %\synopsis{Add an x-axis label to a plot}
@@ -2838,6 +2859,7 @@ private define xlabel_method ()
    p = p.plot_data;
    add_axis_label (p, p.x1axis, label ;; __qualifiers);
 }
+%}}}
 
 private define ylabel_method () %{{{
 %!%+
@@ -3098,6 +3120,7 @@ private variable XFig_Plot_Type = struct %{{{
    yaxis = &yaxis_method,
    axis = &axis_method,
    axes = &axis_method,
+   xylabel = &xylabel_method,
    plot_png = &plot_png_method,
    plot_pict = &plot_pict_method,
    shade_region= &shade_region_method,
