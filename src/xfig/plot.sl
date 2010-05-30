@@ -691,10 +691,12 @@ private define construct_tic_label_strings (axis, tics); %{{{
 private define construct_tic_label_strings (axis, tics)
 {
    if (axis.user_specified_tic_labels != NULL)
-     if (_typeof(axis.user_specified_tic_labels) == String_Type)
-       return axis.user_specified_tic_labels;
-     else
-       return construct_tic_label_strings (axis, axis.user_specified_tic_labels);
+     {
+	if (_typeof(axis.user_specified_tic_labels) == String_Type)
+	  return axis.user_specified_tic_labels;
+
+	tics = axis.user_specified_tic_labels;
+     }
 
    variable format = axis.tic_label_format;
    variable fixed_format = (format != NULL);
@@ -882,7 +884,8 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
 	(major_tics, minor_tics) = wcs_compute_major_minor_tics (axis.wcs_transform, xmin, xmax, axis.maxtics);
      }
 
-   variable i;
+   variable i, j;
+
    if (major_tics != NULL)
      {
 	i = where (xmin <= major_tics <= xmax);
@@ -890,7 +893,7 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
 	if (axis.user_specified_tic_labels != NULL)
 	  axis.user_specified_tic_labels = axis.user_specified_tic_labels[i];
 	if (minor_tics != NULL)
-	  minor_tics = minor_tics[where ((minor_tics >= xmin) and (minor_tics <= xmax))];
+	  minor_tics = minor_tics[where (xmin <= minor_tics <= xmax)];
 	axis.minor_tics = minor_tics;
 
 	if (length(major_tics) > 1)
@@ -933,8 +936,8 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
 
    variable major_tic_interval = major_tics[1] - major_tics[0];
    variable minor_tic_interval;
-   variable j = [1:num_minor];
-            i = j-1;
+   j = [1:num_minor];
+   i = j-1;
 
    if (islog && (num_minor == 0))
       {
@@ -1417,14 +1420,17 @@ private define do_axis_method (name, grid_axis) %{{{
    q = qualifier ("ticlabels");
    if (typeof (q) == Int_Type)
      axis.draw_tic_labels = q;
-   else if (typeof (q) == Array_Type && (_typeof(q) == String_Type || __is_numeric(q)))
-     if (major_tics == NULL)
-       message("warning: user specified ticlabels, but no major ticmarks  (=> ignoring ticlabels)");
-     else if (length(major_tics) != length(q))
-       vmessage("warning: user specified %d major ticmarks, but %d ticlabels  (=> ignoring ticlabels)",
-                length(major_tics), length(q));
-     else
-       axis.user_specified_tic_labels = q;
+   else if ((typeof (q) == Array_Type) 
+	    && ((_typeof(q) == String_Type) || __is_numeric(q)))
+     {
+	if (major_tics == NULL)
+	  message("warning: user specified ticlabels, but no major ticmarks  (=> ignoring ticlabels)");
+	else if (length(major_tics) != length(q))
+	  vmessage("warning: user specified %d major ticmarks, but %d ticlabels  (=> ignoring ticlabels)",
+		   length(major_tics), length(q));
+	else
+	  axis.user_specified_tic_labels = q;
+     }
 
    if (axis.draw_major_tics == 0)
      axis.draw_tic_labels = 0;

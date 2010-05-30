@@ -25,7 +25,10 @@ define slsh_main ()
    w.world (min(x), max(x), 0.9, max(y)*1.1);
    w.plot (xx, yy);
    x += 0.5*dx;
-   w.plot (x,y, dx, {dy, 0.75*dy}; line=0, sym="diamond", color="blue1", width=3, size=3, fill=10);
+   w.plot (x,y, dx, {dy, 0.75*dy}; 
+	   line=1, color="blue", 
+	   sym="diamond", symcolor="blue1", width=3, size=3, fill=10,
+	   eb_color="orange");
    w.title ("Example with asymmetric error bars");
    w.xlabel("$\lambda$ [\AA]"R);
    w.ylabel("Counts per bin"R);
