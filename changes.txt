@@ -105,3 +105,5 @@ Changes since 0.1.0
 	   .
 	 world = w.get_world();  % ==> xmin=world[0], xmax=world[1],...
 
+62. src/xfig/core.sl: Adjusted the order of plotting colors.  Also
+    added "colors" example, which shows the colors.
