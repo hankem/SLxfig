@@ -7,6 +7,7 @@ PNG_FILES = \
   histplt.png \
   image.png \
   multiplot.png \
+  multiplot2.png \
   scatter.png \
   simple.png \
   subplot.png \

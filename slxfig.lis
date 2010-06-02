@@ -26,6 +26,7 @@
 @examples/plot/histplt.sl
 @examples/plot/image.sl
 @examples/plot/multiplot.sl
+@examples/plot/multiplot2.sl
 @examples/plot/overlay.sl
 @examples/plot/project.sl
 @examples/plot/simple.sl

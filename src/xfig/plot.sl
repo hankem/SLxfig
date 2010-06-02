@@ -3323,38 +3323,146 @@ define xfig_multiplot () %{{{
 %!%+
 %\function{xfig_multiplot}
 %\synopsis{Create a multiplot from individual panels that share the same x-axes}
-%\usage{compound = xfig_multiplot(xfig_plot p1, p2, ...);}
-%\description
-%  The function switches the appropriate labels and ticmark labels off and
-%  returns a compound object consisting of the accordingly translated plots.
+%\usage{compound = xfig_multiplot(xfig_plot p1[], p2[], ...);}
 %\qualifiers
-%\qualifier{title=strval}{title for top panel}
-%\qualifier{xlabel=strval}{xlabel for bottom panel}
-%\qualifier{x2label=strval}{x2label for top panel}
+%\qualifier{cols=intval}{number of columns}{1}
+%\qualifier{title=strval}{overall title on top of the multiplot}
+%\qualifier{xlabel=strval}{overall xlabel below the multiplot}
+%\qualifier{x2label=strval}{overall x2label on top of the multiplot}
+%\qualifier{ylabel=strval}{overall ylabel left of the multiplot}
+%\qualifier{y2label=strval}{overall y2label right of the multiplot}
+%\description
+%  \var{p1}, \var{p2}, ... can be single plot objects or arrays of them.
+%  \sfun{xfig_multiplot} arranges a multi-panel plot with \var{cols} columns.
+%  It may thus be desirable to have common sizes of the plot windows,
+%  as well as common ranges and coordinate systems on adjoining axes.
+%  The plot windows are aligned in left-right, top-down order.
+%  \sfun{xfig_multiplot} switches off titles, axis- and ticmark labels
+%  of those plots for which those would overlap with other plots.
+%
+%  The return value is a compound object containing all plots in the
+%  multiplot (note that their number has to be a multiple of \var{cols}).
+%  If the \var{title} or \var{x(2)label} qualifiers are specified and \var{cols>1},
+%  additional text objects are added above and below the multiplot.
+%  (For \var{cols==1}, the title/x(2)label of the first/last plot are set.)
+%  The same holds for the \var{y(2)label} qualifiers, for which it depends
+%  on the resulting number of rows whether additional text is added
+%  on the left or right of the multiplot or whether the corresponding
+%  labels of the first or last plot are set (possibly overwritten).
 %!%-
 {
-   variable i, dy = 0., args = __pop_list(_NARGS);
-   _for i (1, _NARGS-1, 1)
-     {
-	dy -= args[i].plot_data.plot_height;
-	args[i].translate( vector(0, dy, 0) );
-	args[i].x2axis(; ticlabels=0);
-	args[i].plot_data.x2axis.axis_label = NULL;
-	args[i].plot_data.title_object = NULL;
-     }
-   _for i (0, _NARGS-2, 1)
-     {
-	args[i].x1axis(; ticlabels=0);
-	args[i].plot_data.x1axis.axis_label = NULL;
-     }
+  variable args = __pop_list(_NARGS), element, plots={};
+  loop(_NARGS)
+    foreach element ( list_pop(args) )
+      list_append(plots, element);
 
-   if(qualifier_exists("title"))
-     args[0].title(qualifier("title"));
-   if(qualifier_exists("x2label"))
-     args[0].x2label(qualifier("x2label"));
-   if(qualifier_exists("xlabel"))
-     args[-1].xlabel(qualifier("xlabel"));
-   
-   return xfig_new_compound( __push_list(args) );
+  variable cols = qualifier("cols", 1);
+
+  variable ix, iy, last_ix=cols-1, last_iy=length(plots)/cols-1;
+  variable dy=0.;
+  _for iy (0, last_iy, 1)
+  {
+    dy -= plots[0].plot_data.plot_height;
+    variable dx=0.;
+    _for ix (0, last_ix, 1)
+    {
+      variable p = list_pop(plots);
+      p.translate( vector(dx-p.plot_data.X.x, dy-p.plot_data.X.y, -p.plot_data.X.z) );
+      if(ix)
+      { p.y1axis(; ticlabels=0);
+        p.plot_data.y1axis.axis_label = NULL;
+      }
+      if(ix<last_ix)
+      { p.y2axis(; ticlabels=0);
+        p.plot_data.y2axis.axis_label = NULL;
+      }
+      if(iy)
+      { p.x2axis(; ticlabels=0);
+        p.plot_data.x2axis.axis_label = NULL;
+        p.plot_data.title_object = NULL;
+      }
+      if(iy<last_iy)
+      { p.x1axis(; ticlabels=0);
+        p.plot_data.x1axis.axis_label = NULL;
+      }
+      list_append(args, p);
+      dx += p.plot_data.plot_width;
+    }
+  }
+  if(length(plots))
+    vmessage("warning (%s): %d plots left over when using cols=%d", _function_name(), length(plots), cols);
+
+  plots = xfig_new_compound( __push_list(args) );
+
+  variable xmin, xmax, ymin, ymax;
+  (xmin,xmax, ymin,ymax, ,) = plots.get_bbox();
+
+  variable q, txt;
+  q = qualifier("x2label");
+  if(q!=NULL)
+  {
+    if(cols==1)
+      args[0].x2label(q);
+    else
+    {
+      txt = xfig_new_text(q);
+      xfig_justify_object(txt, vector(.5*dx, ymax, 0), vector(0, -1, 0));
+      plots.append(txt);
+    }
+  }
+  q = qualifier("xlabel");
+  if(q!=NULL)
+  {
+    if(cols==1)
+      args[-1].xlabel(q);
+    else
+    {
+      txt = xfig_new_text(q);
+      xfig_justify_object(txt, vector(.5*dx, ymin, 0), vector(0, 1, 0));
+      plots.append(txt);
+    }
+  }
+  q = qualifier("ylabel");
+  if(q!=NULL)
+  {
+    if(last_iy==0)
+      args[0].ylabel(q);
+    else
+    {
+      txt = xfig_new_text(q);
+      txt.rotate_pict(90);
+      xfig_justify_object(txt, vector(xmin, .5*dy, 0), vector(1, 0, 0));
+      plots.append(txt);
+    }
+  }
+  q = qualifier("y2label");
+  if(q!=NULL)
+  {
+    if(last_iy==0)
+      args[-1].y2label(q);
+    else
+    {
+      txt = xfig_new_text(q);
+      txt.rotate_pict(270);
+      xfig_justify_object(txt, vector(xmax, .5*dy, 0), vector(0, -1, 0));
+      plots.append(txt);
+    }
+  }
+
+  (xmin,xmax, ymin,ymax, ,) = plots.get_bbox();
+  q = qualifier("title");
+  if(q!=NULL)
+  {
+    if(cols==1)
+      args[0].title(q);
+    else
+    {
+      txt = xfig_new_text(q);
+      xfig_justify_object(txt, vector(.5*dx, ymax, 0), vector(0, -1, 0));
+      plots.append(txt);
+    }
+  }
+
+  return plots;
 }
 %}}}
