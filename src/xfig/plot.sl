@@ -1944,12 +1944,8 @@ private define pop_plot_err_parms (nargs) %{{{
 	y = y[i];
 	if (typeof(dy_neg) == Array_Type)
 	  dy_neg = dy_neg[i];
-
-	if (is_asymmetric)
-	  {
-	     if (typeof(dy_pos) == Array_Type)
-	       dy_pos = dy_pos[i];
-	  }	     
+	if (typeof(dy_pos) == Array_Type)
+	  dy_pos = dy_pos[i];
      }
    return p.plot_data, x, y, dy_neg, dy_pos;
 }
