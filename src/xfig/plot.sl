@@ -1162,11 +1162,29 @@ private define plot_scale () %{{{
 {
    variable p, sx, sy, sz;
    (p, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
+   p = p.plot_data;
 
-   variable X = p.plot_data.X;
-   X.x *= sx;
-   X.y *= sy;
-   X.z *= sz;
+   variable X = p.X;
+   X.x *= sx, X.y *= sy, X.z *= sz;
+
+   p.plot_width *= sx;
+   p.plot_height *= sy;
+
+   variable axis, field;
+   foreach axis ([p.x1axis, p.y1axis, p.x2axis, p.y2axis])
+   {
+     foreach X ([axis.X, axis.dX])
+       X.x *= sx, X.y *= sy, X.z *= sz;
+     foreach field ([axis.tic_label_objects, axis.line, axis.major_tic_marks, axis.minor_tic_marks, axis.axis_label])
+       if(field != NULL)
+         field.scale(sx, sy, sz);
+     axis.max_tic_w *= sx;
+     axis.max_tic_h *= sy;
+   }
+
+   foreach field ([p.object_list, p.title_object, p.legend])
+     if(field != NULL)
+       field.scale(sx, sy, sz);
 }
 
 %}}}
