@@ -53,3 +53,5 @@
 @src/xfig/png.sl
 @src/xfig/polyline.sl
 @src/xfig/text.sl
+@src/test/text_rotate_color.sl
+@src/test/plot_scale.sl
