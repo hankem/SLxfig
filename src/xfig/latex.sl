@@ -116,7 +116,8 @@ private define run_dvips (dvi, eps)
 
 private define run_eps2eps(eps)
 {
-   run_cmd (sprintf ("cat %s | eps2eps - %s", eps, eps));
+   % run_cmd (sprintf ("cat %s | eps2eps - %s", eps, eps));
+   run_cmd (sprintf ("ps2epsi %s tmp_ps2epsi; mv tmp_ps2epsi %s", eps, eps));
 }
 
 %}}}
