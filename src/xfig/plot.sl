@@ -1873,8 +1873,8 @@ private define xfig_coords_method(p, x, y) %{{{
    p = p.plot_data;
    variable ax, ay;
    (ax, ay) = get_world_axes (p;; __qualifiers);
-   if(y!=NULL)  p.X.y + scale_coords_for_axis (ay, p.plot_height, y);  % left on stack
    if(x!=NULL)  p.X.x + scale_coords_for_axis (ax, p.plot_width,  x);  % left on stack
+   if(y!=NULL)  p.X.y + scale_coords_for_axis (ay, p.plot_height, y);  % left on stack
 }
 %}}}
 
