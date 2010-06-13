@@ -2614,13 +2614,6 @@ private define plot_shaded_histogram (p, x, y) %{{{
    x = scale_coords_for_axis (ax, w, x);
    y = scale_coords_for_axis (ay, h, y);
 
-   variable depth = qualifier ("depth", p.line_depth);
-   variable thickness = qualifier ("width", p.thickness);
-   variable color = qualifier ("color", p.line_color);
-   variable linestyle = qualifier ("line", p.line_style);
-   variable area_fill = qualifier ("fill", 20);
-   variable fillcolor = qualifier ("fillcolor", color);
-
    variable y0 = scale_coords_for_axis (ay, h, 0.0);
    if (y0 < 0.0) y0 = 0.0;
 
@@ -2639,9 +2632,8 @@ private define plot_shaded_histogram (p, x, y) %{{{
    y[where (y > h)] = h;
 
    variable list = xfig_new_polyline_list ();
-   _for (0, length (x)-2, 1)
+   _for i (0, length (x)-2, 1)
      {
-	i = ();
 	variable x0 = x[i];
 	variable x1 = x[i+1];
 	variable y1 = y[i];
@@ -2649,10 +2641,14 @@ private define plot_shaded_histogram (p, x, y) %{{{
 	list.insert (vector([x0, x0, x1, x1], [y0,y1,y1,y0], [0.0,0.0,0.0,0.0]));
      }
    list.translate (p.X);
-   list.set_depth (p.line_depth+1);
+   list.set_depth (qualifier ("depth", p.line_depth+1));
+   list.set_thickness (qualifier ("width", p.thickness));
+   variable color = qualifier ("color", p.line_color);
    list.set_pen_color (color);
-   list.set_line_style (linestyle);
-   list.set_fill_color (fillcolor);
+   list.set_line_style (qualifier ("line", p.line_style));
+   list.set_fill_color (qualifier ("fillcolor", color));
+   variable area_fill = qualifier ("fill");
+   if(area_fill==NULL)  area_fill = 20;
    list.set_area_fill (area_fill);
    p.object_list.insert (list);
 }
@@ -2710,7 +2706,7 @@ private define hplot_method () %{{{
      }
    p = ();
 
-   if (NULL != qualifier ("fill"))
+   if (qualifier_exists ("fill"))
      plot_shaded_histogram (p, x, y;; __qualifiers);
    else
      plot_histogram (p, x, y;; __qualifiers);
