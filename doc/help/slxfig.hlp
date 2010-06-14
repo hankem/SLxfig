@@ -1,3 +1,23 @@
+xfig_center_pict_in_box
+
+ SYNOPSIS
+  Center a pict object in a box
+
+ USAGE
+  xfig_center_pict_in_box (pict_object, X, dx, dy
+
+ DESCRIPTION
+ This function takes a pict object and centers it in a box whose width
+ is `dx' and whose height is `dy'.  The vector `X' denotes the
+ position of the lower-left corner of the box.  If the pict object is too
+ big to fit in the box, then its lower-left corner will coincide with the
+ lower-left corner of the box.
+
+ SEE ALSO
+  xfig_translate_object
+
+--------------------------------------------------------------
+
 xfig_clip_polyline2d
 
  SYNOPSIS
@@ -18,6 +38,793 @@ xfig_clip_polyline2d
 
  SEE ALSO
   xfig_clip_polygon2d, xfig_new_polyline_list
+
+--------------------------------------------------------------
+
+xfig_justify_object
+
+ SYNOPSIS
+  Justify an object at a specified position
+
+ USAGE
+  xfig_justify_object (obj, X, dX)
+
+ DESCRIPTION
+  This function moves the object to the specified position X (a vector)
+  and justifies it at that position according to the offsets specified by
+  the vector `dX'.  The components of `dX' are normally in the
+  range -0.5 to 0.5 and represent offsets relative to the size of the object.
+  If the components of dX are 0, then the object will be centered at `X'.
+
+ SEE ALSO
+  xfig_translate_object
+
+--------------------------------------------------------------
+
+xfig_meshgrid
+
+ SYNOPSIS
+  Produce grid points for an image
+
+ USAGE
+  (xx,yy) = xfig_meshgrid (xx, yy)
+
+ DESCRIPTION
+  This function takes two 1-d vectors representing the orthogonal
+  grids for a rectangular region in the (x,y) plane and returns two
+  2-d arrays corresponding to the (x,y) coordinates of each
+  intersecting grid point.
+
+  Suppose that one wants to evaluate a
+  function `f(x,y)' at each point defined by the two grid
+  vectors.  Simply calling `f(x,y)' using the grid vectors would
+  lead to either a type-mismatch error or produce a 1-d result.  The
+  correct way to do this is to use the `xfig_meshgrid' function:
+
+    result = f(xfig_meshgrid(x,y));
+
+
+--------------------------------------------------------------
+
+xfig_multiplot
+
+ SYNOPSIS
+  Create a multiplot from individual panels that share the same x-axes
+
+ USAGE
+  compound = xfig_multiplot(xfig_plot p1, p2, ...);
+
+ DESCRIPTION
+  The function switches the appropriate labels and ticmark labels off and
+  returns a compound object consisting of the accordingly translated plots.
+
+ QUALIFIERS
+  ; title=strval: title for top panel
+  ; xlabel=strval: xlabel for bottom panel
+  ; x2label=strval: x2label for top panel
+
+--------------------------------------------------------------
+
+xfig_new_color
+
+ SYNOPSIS
+  Add a new color definition
+
+ USAGE
+  xfig_new_color (name, RGB [,&id]
+
+ DESCRIPTION
+ This function may be used to add a new color called `name'
+ with the specified RGB (24 bit integer) value.  If the optional
+ third parameter is provided, it must be a reference to a variable
+ whose value upon return will be set to the integer index of the color.
+
+ SEE ALSO
+  xfig_lookup_color_rgb, xfig_lookup_color
+
+--------------------------------------------------------------
+
+xfig_new_legend
+
+ SYNOPSIS
+  Create a plot legend object
+
+ USAGE
+  legend = xfig_new_legend (labels[], colors[], linestyles[], thicknesses[], width);
+
+ QUALIFIERS
+  ; areafill=intval: (default: 20)
+  ; fillcolor=strval: (default: "white")
+
+ DESCRIPTION
+  The `xfig_new_legend' function creates a legend object suitable for adding
+  to a plot.  The legend will consist of ...
+
+--------------------------------------------------------------
+
+xfig_new_pict
+
+ SYNOPSIS
+  Create an object that encapsulates an image file
+
+ USAGE
+  obj = xfig_new_pict(filename, width, height [; qualifiers])
+
+ DESCRIPTION
+ This function creates an object containing the specified image file
+ and scales it to the specified width an height.  The resulting
+ object containing the image will be centered at (0,0,0).
+
+ QUALIFIERS
+ The `just' qualifier may be used to indicate how the object is
+ to be justified with respect to the origin.  Its value must be a 2d
+ numeric array [dx,dy] that gives the offset of the center of the
+ image scaled with respect to the bounding box.  Examples include:
+
+    just=[0,0]           Center object upon the origin (default)
+    just=[-0.5,-0.5]     Put the lower-left corner at the origin
+    just=[0.5,-0.5]      Put the lower-right corner at the origin
+    just=[0.5,0.5]       Put the upper-right corner at the origin
+    just=[-0.5,-0.5]     Put the upper-left corner at the origin
+
+
+ SEE ALSO
+  xfig_new_text, xfig_justify_object
+
+--------------------------------------------------------------
+
+xfig_new_text
+
+ SYNOPSIS
+  Create a text object by running LaTeX
+
+ USAGE
+  obj = xfig_new_text (String_Type text [,font_object])
+
+ DESCRIPTION
+  This function runs LaTeX on the specified text string and returns the
+  resulting object.  The text string must be formatted according to the LaTeX
+  rules.  The optional parameter is a structure that may be used to specify
+  the font, color, pointsize, etc to use when calling LaTeX.  This structure
+  may be instantiated using the xfig_font_new.
+
+ SEE ALSO
+  xfig_font_new
+
+--------------------------------------------------------------
+
+xfig_plot--initialize_plot
+
+ SYNOPSIS
+  Qualifiers to initialize the axes of an xfig_plot object:
+
+ QUALIFIERS
+  ; xlog: use a logarithmic x-axis
+  ; ylog: use a logarithmic y-axis
+  ; loglog: use logarithmic axes
+  ; padx: [=0.05]: fraction of xrange to be padded on both sides
+  ; pady: [=0.05]: fraction of xrange to be padded on both sides
+
+ DESCRIPTION
+  The world coordinate system of an xfig_plot object
+  are initialized through the following functions,
+  unless they are already set before:
+
+ SEE ALSO
+  xfig_plot.plot, xfig_plot.hplot, xfig_plot.plot_png, xfig_plot.plot_pict, xfig_plot.shade_region
+
+--------------------------------------------------------------
+
+xfig_plot--wcs
+
+ SYNOPSIS
+  Qualifiers to specify a plot's world coordinate system
+
+ QUALIFIERS
+  ; world0: use device coordinates for x- and y-axes
+  ; world1: use first coordinate system for x- and y-axes
+  ; world2: use second coordinate system for x- and y-axes
+  ; world{a}{b}: use a-th WCS for x-axis and b-th WCS for y-axis, where 0 <= a, b <= 2
+
+ DESCRIPTION
+  If none of these qualifiers is specified, world1 is assumed.
+
+  Device coordinates (0th WCS) run from 0 to 1 along the corresponding axis.
+
+  The first or second coordinate system (1st or 2nd WCS) can be defined
+  with the .world(1) or .world(2) methods. (If not set before, they are
+  set automatically by some plot functions, see `xfig_plot--initialize_plot'.)
+
+  The WCS qualifiers apply to the following functions:
+  `xfig_plot.plot', `xfig_plot.hplot', `xfig_plot.shade_region',
+  `xfig_plot.add_object', `xfig_plot.xylabel', `xfig_plot.xfig_coords'
+
+ SEE ALSO
+  xfig_plot.world, xfig_plot.world1, xfig_plot.world2, xfig_plot--initialize_plot
+
+--------------------------------------------------------------
+
+xfig_plot.add_object
+
+ SYNOPSIS
+  Add an object to a plot at a world coordinate position
+
+ USAGE
+  xfig_plot.add_object (obj[, x, y[, dx, dy]]);
+
+ DESCRIPTION
+  This function may be used to add an object to a plot window at a specified
+  world coordinate.  The `dx' and `dy' arguments control the
+  justification of the object.  The values of these parameters are offsets
+  relative to the size of the object, and as such ordinarily have values
+  in the interval `[-0.5,0.5]'.  For example, `0,0' will center
+  the object on `(x,y)', and `(-0.5,-0.5)' will move the lower left
+  corner of the object to the specified coordinate.
+
+ SEE ALSO
+  xfig_plot--wcs
+
+--------------------------------------------------------------
+
+xfig_plot.axis
+
+ USAGE
+  xfig_plot.axis([; qualifiers]);
+
+ QUALIFIERS
+  ; on: draw axis, major and minor tic marks, as well as tic labels (default: on)
+  ; off: do not draw axis, major nor minor tic marks, nor tic labels
+  ; linear: set linear axis scale
+  ; log: set logarithmic axis scale
+  ; major: draw major tic marks [precedence over on/off] or array of major tic mark values
+  ; minor: draw minor tic marks [precedence over on/off] or array of minor tic mark values
+  ; color: color of axis, major and minor tic marks
+  ; major_color: color of major tic marks [precedence over color]
+  ; minor_color: color of minor tic marks [precedence over color]
+  ; width: width of axis, major and minor tic marks
+  ; major_width: width of major tic marks [precedence over width]
+  ; minor_width: width of minor tic marks [precedence over width]
+  ; line: line style of axis, major and minor tic marks
+  ; major_line: line style of major tic marks [precedence over line]
+  ; minor_line: line style of minor tic marks [precedence over line]
+  ; major_len: length of the major tic marks
+  ; minor_len: length of the minor tic marks
+  ; grid: extend major and minor tic marks to a grid
+  ; major_grid: extend major tic marks to a grid [precedence over grid]
+  ; minor_grid: extend minor tic marks to a grid [precedence over grid]
+  ; depth: Xfig depth of the axis
+  ; tic_depth: Xfig depth of the ticmarks
+  ; maxtics:  maximum number of major tic marks
+  ; ticlabels: draw tic labels (requires major tic marks)
+  ; ticlabel_style: tic label font style
+  ; ticlabel_color: tic label font color
+  ; ticlabel_size: tic label font size
+  ; wcs: name of a custom world coordinate system transformation
+
+ DESCRIPTION
+  All axes can be configured with the qualifiers mentioned above.
+
+ SEE ALSO
+  xfig_plot.xaxis, xfig_plot.x1axis, xfig_plot.x2axis, xfig_plot.yaxis, xfig_plot.y1axis, xfig_plot.y2axis
+
+--------------------------------------------------------------
+
+xfig_plot.hplot
+
+ USAGE
+  xfig_plot.hplot([x,] y);
+  % or
+  xfig_plot.hplot(x, y[, dy]);
+
+ QUALIFIERS
+ % qualifiers to initialize the first plot only,
+   see `xfig_plot--initialize_plot'
+
+ % qualifiers to specifiy the world coordinate system,
+   see `xfig_plot--wcs'
+
+  ; fill: plot shaded histogram
+  ; depth:
+  ; thickness:
+  ; color:
+  ; line: linestyle
+  ; width:
+  ; eb_factor: (default: 1)
+
+ DESCRIPTION
+  If no `x' values are given, `x = [1:length(y)]' is assumed.
+
+ SEE ALSO
+  xfig_plot--initialize-plot, xfig_plot--wcs
+
+--------------------------------------------------------------
+
+xfig_plot.plot
+
+ USAGE
+  xfig_plot.plot([x,] y);
+  % or
+  xfig_plot.plot(x, y, [dx,] dy);
+
+ QUALIFIERS
+ % qualifiers to initialize the first plot only,
+   see `xfig_plot--initialize_plot'
+
+ % qualifiers to specifiy the world coordinate system,
+   see `xfig_plot--wcs'
+
+ %  general qualifiers:
+  ; color=strval: color of lines symbols and error bars
+  ; width=intval: thickness of lines and error bars
+  ; depth=intval: Xfig depth
+
+ % qualifiers for lines and error bars:
+  ; line=intval: line style for lines and error bars
+  ; eb_line=intval: line style for error bars [precendence over line]
+  ; eb_color=intval: color of error bars [precedence over color]
+  ; eb_width=intval: thickness of error bars [precedence over width]
+
+ % qualifiers for symbols:
+  ; sym=strval: symbol, see xfig_plot_get_symbol_names
+  ; symcolor=strval: color of symbols [precedence over color]
+  ; size=val: symbol point size
+  ; fill=intval (from -1 to 20): area fill style
+  ; fillcolor=strval: color for filled symbols
+  ; symlinestyle=intval: line style to draw symbols
+  ; symwidth=intval: thickness of symbol lines [precedence over width]
+  ; symdepth=intval: Xfig depth of symbols [precedence over depth]
+
+ DESCRIPTION
+  If no `x' values are given, `x = [1:length(y)]' is assumed.
+  If a symbol is specified, no lines are drawn
+  unless the line qualifier is also specified.
+
+ SEE ALSO
+  xfig_plot--initialize-plot, xfig_plot--wcs
+
+--------------------------------------------------------------
+
+xfig_plot.plot_pict
+
+ USAGE
+  xfig_plot.plot_pict (String_Type imgfile);
+
+ QUALIFIERS
+ % qualifiers to initialize the first plot only,
+   see `xfig_plot--initialize_plot'
+
+--------------------------------------------------------------
+
+xfig_plot.plot_png
+
+ SYNOPSIS
+  Add a png file to a plot, scaling it to the window
+
+ USAGE
+  xfig_plot.plot_png (String_Type pngfile);
+
+ QUALIFIERS
+ % qualifiers to initialize the first plot only,
+   see `xfig_plot--initialize_plot'
+
+--------------------------------------------------------------
+
+xfig_plot.shade_region
+
+ USAGE
+  xfig_plot.shade_region(x[], y[]);
+  % or
+  xfig_plot.shade_region (xmin, xmax, ymin, ymax);
+
+ QUALIFIERS
+ % qualifiers to initialize the first plot only
+ % qualifiers to specifiy the world coordinate system
+
+ SEE ALSO
+  xfig_plot--initialize_plot, xfig_plot--wcs
+
+--------------------------------------------------------------
+
+xfig_plot.title
+
+ SYNOPSIS
+  Add a title to a plot
+
+ USAGE
+  xfig_plot.title (String_Type title);
+  % or
+  xfig_plot.title(XFig_Object title);
+
+ DESCRIPTION
+  The title is created from the string with the
+  `xfig_new_text' function using all applied qualifiers.
+  If `title' is no string, it is assumed to be
+  an already properly formatted xfig object.
+  The title is centered above the plot area.
+  Any previously existing title object is removed.
+
+--------------------------------------------------------------
+
+xfig_plot.world
+
+ SYNOPSIS
+  define a plot's world coordinate system
+
+ USAGE
+  xfig_plot.world(Double_Type xdata[], ydata[]);
+  % or
+  xfig_plot.world(Double_Type x0, x1, y0, y1);
+
+ QUALIFIERS
+  ; xlog: use a logarithmic x-axis
+  ; ylog: use a logarithmic y-axis
+  ; loglog: use logarithmic axes
+  ; padx: fraction of xrange to be padded on both sides (default: 0.05 or 0)
+  ; pady: fraction of yrange to be padded on both sides (default: 0.05 or 0)
+
+ SEE ALSO
+  xfig_plot.world1, xfig_plot.world2
+
+--------------------------------------------------------------
+
+xfig_plot.world1
+
+ SYNOPSIS
+  define a plot's first world coordinate system
+
+ SEE ALSO
+  xfig_plot.world
+
+--------------------------------------------------------------
+
+xfig_plot.world2
+
+ SYNOPSIS
+  define a plot's second world coordinate system
+
+ SEE ALSO
+  xfig_plot.world
+
+--------------------------------------------------------------
+
+xfig_plot.x1axis
+
+ USAGE
+  xfig_plot.x1axis([; qualifiers]);
+
+ DESCRIPTION
+  This method allows for the configuration of the first x-axis
+  via qualifiers -- see `xfig_plot.axis' for further information.
+
+ SEE ALSO
+  xfig_plot.axis
+
+--------------------------------------------------------------
+
+xfig_plot.x2axis
+
+ USAGE
+  xfig_plot.x2axis([; qualifiers]);
+
+ DESCRIPTION
+  This method allows for the configuration of the second x-axis
+  via qualifiers -- see `xfig_plot.axis' for further information.
+
+ SEE ALSO
+  xfig_plot.axis
+
+--------------------------------------------------------------
+
+xfig_plot.x2label
+
+ SYNOPSIS
+  Add a label for the second x-axis to a plot
+
+ USAGE
+  xfig_plot.x2label (String_Type x2label);
+
+ DESCRIPTION
+  The x2label is created from the string with the
+  `xfig_new_text' function using all applied qualifiers.
+
+ SEE ALSO
+  xfig_new_text
+
+--------------------------------------------------------------
+
+xfig_plot.xaxis
+
+ USAGE
+  xfig_plot.xaxis([; qualifiers]);
+
+ DESCRIPTION
+  This method allows for the configuration of both x-axes
+  via qualifiers -- see `xfig_plot.axis' for further information.
+
+ SEE ALSO
+  xfig_plot.axis
+
+--------------------------------------------------------------
+
+xfig_plot.xfig_coords
+
+ USAGE
+  (Double_Type xXfig, yXfig) = xfig_plot.xfig_coords(Double_Type x, y);
+  % or
+  Double_Type xXfig = xfig_plot.xfig_coords(Double_Type x, );
+  % or
+  Double_Type yXfig = xfig_plot.xfig_coords(, Double_Type y);
+
+ QUALIFIERS
+ % qualifiers to specify the world coordinate system,
+
+ SEE ALSO
+  xfig_plot--wcs
+
+--------------------------------------------------------------
+
+xfig_plot.xlabel
+
+ SYNOPSIS
+  Add an x-axis label to a plot
+
+ USAGE
+  xfig_plot.xlabel (String_Type xlabel);
+
+ DESCRIPTION
+  The x-label is created from the string with the
+  `xfig_new_text' function using all applied qualifiers.
+
+ SEE ALSO
+  xfig_new_text
+
+--------------------------------------------------------------
+
+xfig_plot.xylabel
+
+ USAGE
+  xfig_plot.xylabel (String_Type text, Double_Type x, y[, dx, dy]);
+
+ SEE ALSO
+  xfig_plot_text, xfig_plot--wcs
+
+--------------------------------------------------------------
+
+xfig_plot.y1axis
+
+ USAGE
+  xfig_plot.y1axis([; qualifiers]);
+
+ DESCRIPTION
+  This method allows for the configuration of the first y-axis
+  via qualifiers -- see `xfig_plot.axis' for further information.
+
+ SEE ALSO
+  xfig_plot.axis
+
+--------------------------------------------------------------
+
+xfig_plot.y2axis
+
+ USAGE
+  xfig_plot.y2axis([; qualifiers]);
+
+ DESCRIPTION
+  This method allows for the configuration of the second y-axis
+  via qualifiers -- see `xfig_plot.axis' for further information.
+
+ SEE ALSO
+  xfig_plot.axis
+
+--------------------------------------------------------------
+
+xfig_plot.y2label
+
+ SYNOPSIS
+  Add a label for the second y-axis to a plot
+
+ USAGE
+  xfig_plot.y2label(String_Type y2label);
+
+ DESCRIPTION
+  The y2label is created from the string with the
+  `xfig_new_text' function using all applied qualifiers.
+
+ SEE ALSO
+  xfig_new_text
+
+--------------------------------------------------------------
+
+xfig_plot.yaxis
+
+ USAGE
+  xfig_plot.yaxis([; qualifiers]);
+
+ DESCRIPTION
+  This method allows for the configuration of both y-axes
+  via qualifiers -- see `xfig_plot.axis' for further information.
+
+ SEE ALSO
+  xfig_plot.axis
+
+--------------------------------------------------------------
+
+xfig_plot.ylabel
+
+ SYNOPSIS
+  Add a y-axis label to a plot
+
+ USAGE
+  xfig_plot.ylabel (String_Type ylabel);
+
+ DESCRIPTION
+  The ylabel is created from the string with the
+  `xfig_new_text' function using all applied qualifiers.
+
+ SEE ALSO
+  xfig_new_text
+
+--------------------------------------------------------------
+
+xfig_plot_add_symbol
+
+ SYNOPSIS
+  Add a plot symbol
+
+ USAGE
+  xfig_plot_add_symbol (String_Type name, Ref_Type funct)
+
+ DESCRIPTION
+  This function may be used to add a new plot symbol of the specified name.
+  The `funct' parameter specifies a function to be called to create the
+  symbol.  It will be called with a single parameter: a value representing the
+  scale size of the symbol in fig units.  The function must return two arrays
+  representing the X and Y coordinates of the polygons that represent
+  the symbol.  The center of the object is taken to be (0,0).  If more than one
+  polygon is required to represent the object, an array of arrays may be
+  returned.
+
+--------------------------------------------------------------
+
+xfig_plot_add_transform
+
+ USAGE
+  xfig_plot_add_transform (String_Type name, Ref_Type &wcs_func, &wcs_invfunc, Any_Type client_data);
+
+ QUALIFIERS
+  ; xmin: (default: -inf)
+  ; xmax: (default: +inf)
+  ; ticfun: (default: &generic_compute_tics)
+
+ DESCRIPTION
+  `wcs_func' (`wcs_invfunc') is a function
+  of two arguments: the world (plot) coordinate and some client data.
+  It has to return the correspondig plot (world) coordinate.
+
+  The qualifier `ticfun' may reference a function
+  that takes 4 arguments: xmin, xmax, maxtics, and client_data.
+  It is supposed to return two arrays of major and minor tic marks.
+
+--------------------------------------------------------------
+
+xfig_plot_get_symbol_names
+
+ USAGE
+  String_Type[] xfig_plot_get_symbol_names ()
+
+ SEE ALSO
+  xfig_plot.plot
+
+--------------------------------------------------------------
+
+xfig_plot_new
+
+ SYNOPSIS
+  Create a new plot object
+
+ USAGE
+  w = xfig_plot_new ( [Int_Type width, Int_Type height] );
+
+ DESCRIPTION
+  This function creates a new plot object of the specified width and height.
+  If the width and height parameters are not given, defaults will be used.
+  The width and height values specify the size of the plotting area and do not
+  include the space for tic marks and labels.
+
+ EXAMPLE
+
+   w = xfig_plot_new ();
+
+
+ SEE ALSO
+  xfig_plot_define_world, xfig_render_object
+
+--------------------------------------------------------------
+
+xfig_plot_new_png
+
+ SYNOPSIS
+  Create a new plot window for a png file
+
+ USAGE
+  w = xfig_plot_new_png (file)
+
+ DESCRIPTION
+  TBD
+
+ EXAMPLE
+  TBD
+
+ SEE ALSO
+  xfig_new_object
+
+--------------------------------------------------------------
+
+xfig_plot_text
+
+ SYNOPSIS
+  Add text to the plot
+
+ USAGE
+  xfig_plot_text (w, text, x, y [,dx, dy])
+
+        w: plot object
+     x, y: world coordinates
+   dx, dy: justification
+
+
+ DESCRIPTION
+  This function creates a text object at the specified location on the plot.
+  By default, the text will be centered on the specified world coordinates.
+  The justification parameters `dx' and `dy' may be used to specify
+  the justifcation of the text.  See the documentation for `xfig_plot_add_object'
+  for more information.
+
+ EXAMPLE
+
+   xfig_plot_text (w, "$cos(\omega t)$"R, 3.2, 6.0, -0.5, 0);
+
+ will left justify the text at the position (3.2,6.0).
+
+ SEE ALSO
+  xfig_plot_add_object, xfig_new_text
+
+--------------------------------------------------------------
+
+xfig_render_object
+
+ SYNOPSIS
+  Render an object to a device
+
+ USAGE
+  xfig_render_object (obj, device)
+
+ DESCRIPTION
+  This function renders the specified object to a specified device.
+  If the device parameter is a string, then a device will be opened with
+  the specified name.
+
+ SEE ALSO
+  xfig_create_file, xfig_close_file
+
+--------------------------------------------------------------
+
+xfig_scale_pict
+
+ SYNOPSIS
+  Scale an xfig pict object
+
+ USAGE
+  xfig_scale_pict (pict, sx [,sy])
+
+ DESCRIPTION
+  TBD
+
+ EXAMPLE
+  TBD
+
+ SEE ALSO
+  xfig_new_pict
 
 --------------------------------------------------------------
 
@@ -58,346 +865,5 @@ xfig_set_output_driver
 
  SEE ALSO
   xfig_set_paper_size
-
---------------------------------------------------------------
-
-xfig_new_color
-
- SYNOPSIS
-  Add a new color definition
-
- USAGE
-  xfig_new_color (name, RGB [,&id]
-
- DESCRIPTION
- This function may be used to add a new color called `name'
- with the specified RGB (24 bit integer) value.  If the optional
- third parameter is provided, it must be a reference to a variable
- whose value upon return will be set to the integer index of the color.
-
- SEE ALSO
-  xfig_lookup_color_rgb, xfig_lookup_color
-
---------------------------------------------------------------
-
-xfig_justify_object
-
- SYNOPSIS
-  Justify an object at a specified position
-
- USAGE
-  xfig_justify_object (obj, X, dX)
-
- DESCRIPTION
-  This function moves the object to the specified position X (a vector)
-  and justifies it at that position according to the offsets specified by
-  the vector `dX'.  The components of `dX' are normally in the
-  range -0.5 to 0.5 and represent offsets relative to the size of the object.
-  If the components of dX are 0, then the object will be centered at `X'.
-
- SEE ALSO
-  xfig_translate_object
-
---------------------------------------------------------------
-
-xfig_render_object
-
- SYNOPSIS
-  Render an object to a device
-
- USAGE
-  xfig_render_object (obj, device)
-
- DESCRIPTION
-  This function renders the specified object to a specified device.
-  If the device parameter is a string, then a device will be opened with
-  the specified name.
-
- SEE ALSO
-  xfig_create_file, xfig_close_file
-
---------------------------------------------------------------
-
-xfig_new_text
-
- SYNOPSIS
-  Create a text object by running LaTeX
-
- USAGE
-  obj = xfig_new_text (String_Type text [,font_object])
-
- DESCRIPTION
-  This function runs LaTeX on the specified text string and returns the
-  resulting object.  The text string must be formatted according to the LaTeX
-  rules.  The optional parameter is a structure that may be used to specify
-  the font, color, pointsize, etc to use when calling LaTeX.  This structure
-  may be instantiated using the xfig_font_new.
-
- SEE ALSO
-  xfig_font_new
-
---------------------------------------------------------------
-
-xfig_new_legend
-
- SYNOPSIS
-  Create a plot legend object
-
- USAGE
-  legend = xfig_new_legend (labels[], colors[], linestyles[], thicknesses[], width
-
- DESCRIPTION
- The `xfig_new_legend' function creates a legend object suitable for adding
- to a plot.  The legend will consist of ...
-
---------------------------------------------------------------
-
-xfig_plot_add_symbol
-
- SYNOPSIS
-  Add a plot symbol
-
- USAGE
-  xfig_plot_add_symbol (String_Type name, Ref_Type funct)
-
- DESCRIPTION
- This function may be used to add a new plot symbol of the specified name.
- The `funct' parameter specifies a function to be called to create the
- symbol.  It will be called with a single parameter: a value representing the
- scale size of the symbol in fig units.  The function must return two arrays
- representing the X and Y coordinates of the polygons that represent
- the symbol.  The center of the object is taken to be (0,0).  If more than one
- polygon is required to represent the object, an array of arrays may be
- returned.
-
---------------------------------------------------------------
-
-xfig_plot_add_object
-
- SYNOPSIS
-  Add an object to a plot at a world coordinate position
-
- USAGE
-  xfig_plot_add_object (plot_win, obj [,x,y [,dx,dy]])
-
- DESCRIPTION
-  This function may be used to add an object to a plot window at a specified
-  world coordinate.  The `dx' and `dy' arguments control the
-  justification of the object.  The values of these parameters are offsets
-  relative to the size of the object, and as such ordinarily have values
-  in the interval `[-0.5,0.5]'.  For example, `0,0' will center
-  the object on `(x,y)', and `(-0.5,-0.5)' will move the lower left
-  corner of the object to the specified coordinate.
-
- SEE ALSO
-  xfig_plot_define_world1
-
---------------------------------------------------------------
-
-xfig_plot_text
-
- SYNOPSIS
-  Add text to the plot
-
- USAGE
-  xfig_plot_text (w, text, x, y [,dx, dy])
-
-        w: plot object
-     x, y: world coordinates
-   dx, dy: justification
-
-
- DESCRIPTION
-  This function creates a text object at the specified location on the plot.
-  By default, the text will be centered on the specified world coordinates.
-  The justification parameters `dx' and `dy' may be used to specify
-  the justifcation of the text.  See the documentation for `xfig_plot_add_object'
-  for more information.
-
- EXAMPLE
-
-   xfig_plot_text (w, "$cos(\omega t)$"R, 3.2, 6.0, -0.5, 0);
-
- will left justify the text at the position (3.2,6.0).
-
- SEE ALSO
-  xfig_plot_add_object, xfig_new_text
-
---------------------------------------------------------------
-
-xfig_plot_title
-
- SYNOPSIS
-  Add a title to a plot
-
- USAGE
-  xfig_plot_title (w, title)
-
---------------------------------------------------------------
-
-xfig_plot_png
-
- SYNOPSIS
-  Add a png file to a plot, scaling it to the window
-
- USAGE
-  xfig_plot_png (w, file)
-
---------------------------------------------------------------
-
-xfig_plot_new
-
- SYNOPSIS
-  Create a new plot object
-
- USAGE
-  w = xfig_plot_new ( [Int_Type width, Int_Type height] );
-
- DESCRIPTION
- This function creates a new plot object of the specified width and height.
- If the width and height parameters are not given, defaults will be used.
- The width and height values specify the size of the plotting area and do not
- include the space for tic marks and labels.
-
- EXAMPLE
-
-   w = xfig_plot_new ();
-
-
- SEE ALSO
-  xfig_plot_define_world, xfig_render_object
-
---------------------------------------------------------------
-
-xfig_plot_new_png
-
- SYNOPSIS
-  Create a new plot window for a png file
-
- USAGE
-  w = xfig_plot_new_png (file)
-
- DESCRIPTION
-  TBD
-
- EXAMPLE
-  TBD
-
- SEE ALSO
-  xfig_new_object
-
---------------------------------------------------------------
-
-xfig_meshgrid
-
- SYNOPSIS
-  Produce grid points for an image
-
- USAGE
-  (xx,yy) = xfig_meshgrid (xx, yy)
-
- DESCRIPTION
- This function takes two 1-d vectors representing the orthogonal
- grids for a rectangular region in the (x,y) plane and returns two
- 2-d arrays corresponding to the (x,y) coordinates of each
- intersecting grid point.
-
- Suppose that one wants to evaluate a
- function `f(x,y)' at each point defined by the two grid
- vectors.  Simply calling `f(x,y)' using the grid vectors would
- lead to either a type-mismatch error or produce a 1-d result.  The
- correct way to do this is to use the `xfig_meshgrid' function:
-
-    result = f(xfig_meshgrid(x,y));
-
-
---------------------------------------------------------------
-
-xfig_multiplot
-
- SYNOPSIS
-  Create a multiplot from individual panels that share the same x-axes
-
- USAGE
-  compound = xfig_multiplot(xfig_plot p1, p2, ...);
-
- DESCRIPTION
- The function switches the appropriate labels and ticmark labels off and
- returns a compound object consisting of the accordingly translated plots.
-
- QUALIFIERS
- ; title=string: title for top panel
- ; xlabel=string: xlabel for bottom panel
- ; x2label=string: x2label for top panel
-
---------------------------------------------------------------
-
-xfig_scale_pict
-
- SYNOPSIS
-  Scale an xfig pict object
-
- USAGE
-  xfig_scale_pict (pict, sx [,sy])
-
- DESCRIPTION
-  TBD
-
- EXAMPLE
-  TBD
-
- SEE ALSO
-  xfig_new_pict
-
---------------------------------------------------------------
-
-xfig_center_pict_in_box
-
- SYNOPSIS
-  Center a pict object in a box
-
- USAGE
-  xfig_center_pict_in_box (pict_object, X, dx, dy
-
- DESCRIPTION
- This function takes a pict object and centers it in a box whose width
- is `dx' and whose height is `dy'.  The vector `X' denotes the
- position of the lower-left corner of the box.  If the pict object is too
- big to fit in the box, then its lower-left corner will coincide with the
- lower-left corner of the box.
-
- SEE ALSO
-  xfig_translate_object
-
---------------------------------------------------------------
-
-xfig_new_pict
-
- SYNOPSIS
-  Create an object that encapsulates an image file
-
- USAGE
-  obj = xfig_new_pict(filename, width, height [; qualifiers])
-
- DESCRIPTION
- This function creates an object containing the specified image file
- and scales it to the specified width an height.  The resulting
- object containing the image will be centered at (0,0,0).
-
- QUALIFIERS
- The `just' qualifier may be used to indicate how the object is
- to be justified with respect to the origin.  Its value must be a 2d
- numeric array [dx,dy] that gives the offset of the center of the
- image scaled with respect to the bounding box.  Examples include:
-
-    just=[0,0]           Center object upon the origin (default)
-    just=[-0.5,-0.5]     Put the lower-left corner at the origin
-    just=[0.5,-0.5]      Put the lower-right corner at the origin
-    just=[0.5,0.5]       Put the upper-right corner at the origin
-    just=[-0.5,-0.5]     Put the upper-left corner at the origin
-
-
- SEE ALSO
-  xfig_new_text, xfig_justify_object
 
 --------------------------------------------------------------
