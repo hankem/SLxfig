@@ -111,3 +111,5 @@ Changes since 0.1.0
     _xfig_check_help which handles the "help" qualifier.
 64. src/xfig/polyline.sl: Added qualifier support to xfig_create_arrow
     for various arrow types (Manfred Hanke).
+65. src/xfig/plot.sl: Numerous doc updates, and added support for a
+    "help" qualifier (Manfred Hanke).
