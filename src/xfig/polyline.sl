@@ -56,6 +56,15 @@ variable XFIG_LINESTYLE_DASHDOTTED  = 3;  % Dash-dotted
 variable XFIG_LINESTYLE_DASH2DOTTED = 4;  % Dash-double-dotted
 variable XFIG_LINESTYLE_DASH3DOTTED = 5;  % Dash-triple-dotted
 
+variable XFIG_ARROWTYPE_STICK    = 0;  % Stick-type (the default in xfig 2.1 and earlier)
+variable XFIG_ARROWTYPE_TRIANGLE = 1;  % Closed triangle
+variable XFIG_ARROWTYPE_INDENTED = 2;  % Closed with "indented" butt
+variable XFIG_ARROWTYPE_POINTED  = 3;  % Closed with "pointed" butt
+
+variable XFIG_ARROWSTYLE_HOLLOW  = 0;  % Hollow (actually filled with white)
+variable XFIG_ARROWSTYLE_FILLED  = 1;  % Filled with pen_color
+
+
 private define set_line_style (obj, val)
 {
    obj.line_style = val;
@@ -257,6 +266,17 @@ private define polyline_get_bbox (obj)
    return min(X.x), max(X.x), min(X.y), max(X.y), min(X.z), max(X.z);
 }
 
+define xfig_create_arrow ()
+{
+   return struct {
+     arrow_type = qualifier("arrow_type", 2),             % int (enumeration type)
+     arrow_style = qualifier("arrow_style", 3),           % int (enumeration type)
+     arrow_thickness = qualifier("arrow_thickness", 1),   % float (1/80 inch)
+     arrow_width = qualifier("arrow_width", 4)*2.54/80.,  % float (Fig units)
+     arrow_height = qualifier("arrow_height", 8)*2.54/80. % float (Fig units)
+   };
+}
+
 define xfig_new_polyline (X)
 {
    if ((_NARGS>1) 
@@ -300,6 +320,20 @@ define xfig_new_polyline (X)
    obj.depth = qualifier("depth", obj.depth);
    obj.join_style = qualifier("join", obj.join_style);
    obj.cap_style = qualifier("cap", obj.cap_style);
+   
+   variable arrow;
+   if (qualifier_exists("forward_arrow"))
+     {
+	arrow = qualifier("forward_arrow");
+	if (arrow == NULL) arrow = xfig_create_arrow(;; __qualifiers);
+	obj.forward_arrow = arrow;
+     }
+   if (qualifier_exists("backward_arrow"))
+     {
+	arrow = qualifier("backward_arrow");
+	if (arrow == NULL) arrow = xfig_create_arrow(;; __qualifiers);
+	obj.forward_arrow = arrow;
+     }
 
    return obj;
 }
@@ -814,7 +848,7 @@ private define pict_center_pict (pict, X, dx, dy)
 %!%-
 define xfig_new_pict (file, dx, dy)
 {
-   variable X = vector(0,0,0);
+   variable X = vector(qualifier("x0",0), qualifier("y0",0), qualifier("z0",0));
    variable p = xfig_new_polyline (X ;; __qualifiers);
    p.sub_type = SUBTYPE_IMPPICT;
 
@@ -885,25 +919,5 @@ define xfig_new_arrow_head (w, h, dX)
      }
    a.set_area_fill (20);
    a.set_fill_color ("default");
-   return a;
-}
-
-private variable XFig_Arrow_Type = struct
-{
-   arrow_type, % int (enumeration type)
-     arrow_style, % int (enumeration type)
-     arrow_thickness, % float (1/80 inch)
-     arrow_width, % float (Fig units)
-     arrow_height, % float (Fig units)
-};
-
-define xfig_create_arrow ()
-{
-   variable a = @XFig_Arrow_Type;
-   a.arrow_type = 2;
-   a.arrow_style = 3;
-   a.arrow_thickness = 1;
-   a.arrow_width = (1.0/80.0)*4 * 2.54;
-   a.arrow_height = (1.0/80.0)*8 * 2.54;
    return a;
 }

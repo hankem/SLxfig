@@ -109,3 +109,5 @@ Changes since 0.1.0
     added "colors" example, which shows the colors.
 63. src/xfig/core.sl: Added xfig_set_verbose and a new function called
     _xfig_check_help which handles the "help" qualifier.
+64. src/xfig/polyline.sl: Added qualifier support to xfig_create_arrow
+    for various arrow types (Manfred Hanke).
