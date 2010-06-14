@@ -11,6 +11,26 @@ private variable DISPLAY_PIX_PER_INCH = 80;
 private variable Scale_Factor;
 private variable Display_Pixel_Size;
 
+variable _XFig_Verbose = 0;
+
+define _xfig_check_help (nargs, fname)
+{
+   ifnot (qualifier_exists ("help"))
+     return 0;
+
+   _pop_n (nargs);
+#ifexists help
+   help (fname);
+#else
+   variable txt = get_doc_string_from_file (fname);
+   if (txt == NULL)
+     vmessage ("No help found for %S\n", fname);
+   else
+     message (txt);
+#endif
+   return 1;
+}
+
 define xfig_get_focus ()
 {
    return Focus;
@@ -1106,9 +1126,14 @@ define xfig_set_paper_size (paper)
    XFig_Header.papersize = paper;
 }
 
+define xfig_set_verbose (n)
+{
+   _XFig_Verbose = n;
+}
 
 % Use CM as the default system
 xfig_use_cm ();
 xfig_set_eye (1e6, 0, 0);
 xfig_set_eye_roll (0);
 xfig_set_paper_size ("Letter");
+xfig_set_verbose (0);

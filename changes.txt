@@ -107,3 +107,5 @@ Changes since 0.1.0
 
 62. src/xfig/core.sl: Adjusted the order of plotting colors.  Also
     added "colors" example, which shows the colors.
+63. src/xfig/core.sl: Added xfig_set_verbose and a new function called
+    _xfig_check_help which handles the "help" qualifier.
