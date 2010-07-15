@@ -846,6 +846,20 @@ xfig_scale_pict
 
 --------------------------------------------------------------
 
+xfig_set_latex_verbosity
+
+ SYNOPSIS
+  Set how output of external programs run by the latex/eps interface is shown.
+
+ USAGE
+  xfig_set_latex_verbosity(Integer_Type verbosity);
+
+ DESCRIPTION
+    If `verbosity' is positive, the full output is displayed.
+    If `verbosity' is zero, only the running command is shown.
+
+--------------------------------------------------------------
+
 xfig_set_output_driver
 
  SYNOPSIS

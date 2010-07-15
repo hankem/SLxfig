@@ -94,24 +94,51 @@ private define make_tmp_latex_file (base)
 
 %{{{ Running LaTeX and dvips 
 
-private variable LaTeX_Pgm = "latex";
+private variable LaTeX_Pgm = "latex -halt-on-error";
 private variable Dvips_Pgm = "dvips -E";
-  
+private variable Verbosity = 0;
+
 private define run_cmd (cmd)
 {
    if (-1 == system_intr (cmd))
      vmessage ("****WARNING: %s failed\n", cmd);
 }
 
+define xfig_set_latex_verbosity(v) %{{{
+%!%+
+%\function{xfig_set_latex_verbosity}
+%\synopsis{Set how output of external programs run by the latex/eps interface is shown.}
+%\usage{xfig_set_latex_verbosity(Integer_Type verbosity);}
+%\description
+%    If \svar{verbosity} is positive, the full output is displayed.
+%    If \svar{verbosity} is zero, only the running command is shown.
+%!%-
+{
+   Verbosity = v;
+}
+%}}}
+
+private define run_quiet_cmd(cmd)
+{
+   if(Verbosity<=0)
+   {
+#ifdef UNIX
+     cmd += " > /dev/null 2>&1";
+#endif
+   }
+   if(Verbosity==0)  message("$ "+cmd);
+   run_cmd(cmd);
+}
+
 private define run_latex (file)
 {
-   run_cmd (sprintf ("cd %s; %s %s", 
-		     path_dirname (file), LaTeX_Pgm, path_basename (file)));
+   run_quiet_cmd (sprintf ("cd %s; %s %s",
+			   path_dirname (file), LaTeX_Pgm, path_basename (file)));
 }
 
 private define run_dvips (dvi, eps)
 {
-   run_cmd (sprintf ("%s %s -o %s", Dvips_Pgm, dvi, eps));
+   run_quiet_cmd (sprintf ("%s %s -o %s", Dvips_Pgm, dvi, eps));
 }
 
 private define run_eps2eps(eps)
