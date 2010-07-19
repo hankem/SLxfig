@@ -382,7 +382,10 @@ private define open_cache_data (mode)
 {
    variable dir = xfig_get_autoeps_dir ();
    variable file = path_concat (dir, "epscache.dat");
-   return fopen (file, mode);
+   variable fp = fopen (file, mode);
+   if(fp==NULL && mode=="w")
+     throw WriteError, sprintf ("Writing to cache file %s failed: %S", file, errno_string (errno));
+   return fp;
 }
 
 private define close_cache (fp)
