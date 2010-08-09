@@ -115,3 +115,6 @@ Changes since 0.1.0
     "help" qualifier (Manfred Hanke).
 66. doc/: documentation updates (requires very recent version of
     tmexpand) (Manfred Hanke)
+67. src/xfig/plot.sl: When creating tic labels in scientific notation,
+    use the same exponent.
+
