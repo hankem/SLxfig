@@ -117,4 +117,6 @@ Changes since 0.1.0
     tmexpand) (Manfred Hanke)
 67. src/xfig/plot.sl: When creating tic labels in scientific notation,
     use the same exponent.
-
+68. src/xfig/clip.sl: clips involving infinite values were not always
+    being handled properly.
+69. examples/plot/*.sl: removed dependence upon gsl.
