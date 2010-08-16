@@ -381,6 +381,8 @@ xfig_plot.plot
   ; eb_line=intval: line style for error bars [precendence over line]
   ; eb_color=intval: color of error bars [precedence over color]
   ; eb_width=intval: thickness of error bars [precedence over width]
+  ; eb_depth=intval: Xfig depth of error bars [precedence over depth]
+  ; [x,y]eb_factor=intval: terminal size of error bars (default: 1)
 
  % qualifiers for symbols:
   ; sym=strval: symbol, see xfig_plot_get_symbol_names

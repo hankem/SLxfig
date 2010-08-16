@@ -1974,12 +1974,10 @@ private define pop_plot_err_parms (nargs) %{{{
 
 private define insert_errbar_list (p, lines) %{{{
 {
-   variable depth = qualifier ("depth", p.line_depth);
-   variable width = qualifier ("width", p.thickness);
-   variable color = qualifier ("color", p.line_color);
-   variable style = qualifier ("eb_line", p.line_style);
-   color = qualifier ("eb_color", color);
-   width = qualifier ("eb_width", width);
+   variable depth = qualifier ("eb_depth", qualifier ("depth",   p.line_depth));
+   variable width = qualifier ("eb_width", qualifier ("width",   p.thickness ));
+   variable color = qualifier ("eb_color", qualifier ("color",   p.line_color));
+   variable style = qualifier ("eb_line",                        p.line_style );
 
    lines.translate(p.X);
    lines.set_depth(depth);
@@ -2507,6 +2505,8 @@ private define plot_method () %{{{
 %\qualifier{eb_line=intval}{line style for error bars [precendence over line]}
 %\qualifier{eb_color=intval}{color of error bars [precedence over color]}
 %\qualifier{eb_width=intval}{thickness of error bars [precedence over width]}
+%\qualifier{eb_depth=intval}{Xfig depth of error bars [precedence over depth]}
+%\qualifier{[x,y]eb_factor=intval}{terminal size of error bars}{1}
 %
 % % qualifiers for symbols:
 %\qualifier{sym=strval}{symbol, see xfig_plot_get_symbol_names}
