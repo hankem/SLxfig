@@ -55,3 +55,4 @@
 @src/xfig/text.sl
 @src/test/text_rotate_color.sl
 @src/test/plot_scale.sl
+@src/test/xfig_multiplot-align_ylabels.sl

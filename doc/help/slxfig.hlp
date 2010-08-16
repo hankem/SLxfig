@@ -101,6 +101,7 @@ xfig_multiplot
   ; x2label=strval: overall x2label on top of the multiplot
   ; ylabel=strval: overall ylabel left of the multiplot
   ; y2label=strval: overall y2label right of the multiplot
+  ; align_ylabels=intval: align all y1axis-labels and all y2axis-labels (default: 1)
 
  DESCRIPTION
   `p1', `p2', ... can be single plot objects or arrays of them.

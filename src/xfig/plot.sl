@@ -3344,6 +3344,7 @@ define xfig_multiplot () %{{{
 %\qualifier{x2label=strval}{overall x2label on top of the multiplot}
 %\qualifier{ylabel=strval}{overall ylabel left of the multiplot}
 %\qualifier{y2label=strval}{overall y2label right of the multiplot}
+%\qualifier{align_ylabels=intval}{align all y1axis-labels and all y2axis-labels}{1}
 %\description
 %  \var{p1}, \var{p2}, ... can be single plot objects or arrays of them.
 %  \sfun{xfig_multiplot} arranges a multi-panel plot with \var{cols} columns.
@@ -3372,7 +3373,7 @@ define xfig_multiplot () %{{{
   variable cols = qualifier("cols", 1);
 
   variable ix, iy, last_ix=cols-1, last_iy=length(plots)/cols-1;
-  variable dy=0.;
+  variable dy=0., y1label_x=1./0, y2label_x=-1./0;
   _for iy (0, last_iy, 1)
   {
     dy -= plots[0].plot_data.plot_height;
@@ -3385,10 +3386,16 @@ define xfig_multiplot () %{{{
       { p.y1axis(; ticlabels=0);
         p.plot_data.y1axis.axis_label = NULL;
       }
+      else
+        if(p.plot_data.y1axis.axis_label!=NULL)
+          y1label_x = _min(y1label_x, p.plot_data.y1axis.axis_label.X.x);
       if(ix<last_ix)
       { p.y2axis(; ticlabels=0);
         p.plot_data.y2axis.axis_label = NULL;
       }
+      else
+        if(p.plot_data.y2axis.axis_label!=NULL)
+          y2label_x = _max(y2label_x, p.plot_data.y2axis.axis_label.X.x);
       if(iy)
       { p.x2axis(; ticlabels=0);
         p.plot_data.x2axis.axis_label = NULL;
@@ -3402,6 +3409,15 @@ define xfig_multiplot () %{{{
       dx += p.plot_data.plot_width;
     }
   }
+  if(qualifier("align_ylabels", 1))
+    _for iy (0, last_iy, 1)
+    {
+      variable label = args[iy*cols].plot_data.y1axis.axis_label;
+      if(label!=NULL)  label.X.x = y1label_x;
+      label = args[iy*cols+last_ix].plot_data.y2axis.axis_label;
+      if(label!=NULL)  label.X.x = y2label_x;
+    }
+
   if(length(plots))
     vmessage("warning (%s): %d plots left over when using cols=%d", _function_name(), length(plots), cols);
 
