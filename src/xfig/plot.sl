@@ -1437,7 +1437,10 @@ private define do_axis_method (name, grid_axis) %{{{
 
    q = qualifier ("ticlabels");
    if (typeof (q) == Int_Type)
-     axis.draw_tic_labels = q;
+     {
+       axis.draw_tic_labels = q;
+       axis.user_specified_tic_labels = NULL;
+     }
    else if ((typeof (q) == Array_Type) 
 	    && ((_typeof(q) == String_Type) || __is_numeric(q)))
      {
