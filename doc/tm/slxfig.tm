@@ -62,7 +62,7 @@
 \begin{\documentstyle}
 
 \title SLxfig Reference
-\author John E. Davis, \tt{jed@jedsoft.org}
+\author John E. Davis, with small contributions from Manfred Hanke
 \date \__today__
 
 \toc

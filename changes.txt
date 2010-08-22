@@ -95,7 +95,23 @@ Changes since 0.1.0
     (Manfred Hanke).
 59. src/Makefile.in: Changes made to have the value of the
     _xfig_version_string track the changes.txt file.
-60. src/plot.sl: The "ticlabels" qualifier to the plot functions may
+60. src/xfig/plot.sl: The "ticlabels" qualifier to the plot functions may
     be used to specify user-defined labels.  See the
     examples/plot/ticlabels.sl for examples.  (Manfred Hanke).
+61. src/xfig/plot.sl: Added a get_world method to the plot object:
 
+         w = xfig_plot_new ();
+	   .
+	   .
+	 world = w.get_world();  % ==> xmin=world[0], xmax=world[1],...
+
+62. src/xfig/core.sl: Adjusted the order of plotting colors.  Also
+    added "colors" example, which shows the colors.
+63. src/xfig/core.sl: Added xfig_set_verbose and a new function called
+    _xfig_check_help which handles the "help" qualifier.
+64. src/xfig/polyline.sl: Added qualifier support to xfig_create_arrow
+    for various arrow types (Manfred Hanke).
+65. src/xfig/plot.sl: Numerous doc updates, and added support for a
+    "help" qualifier (Manfred Hanke).
+66. doc/: documentation updates (requires very recent version of
+    tmexpand) (Manfred Hanke)

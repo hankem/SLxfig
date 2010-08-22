@@ -3,6 +3,7 @@
 PNG_FILES = \
   axisxform.png \
   color.png \
+  colors.png \
   errbar.png \
   histplt.png \
   image.png \

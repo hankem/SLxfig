@@ -320,12 +320,20 @@ define xfig_new_polyline (X)
    obj.depth = qualifier("depth", obj.depth);
    obj.join_style = qualifier("join", obj.join_style);
    obj.cap_style = qualifier("cap", obj.cap_style);
-   variable forward_arrow = qualifier("forward_arrow");
-   if(qualifier_exists("forward_arrow"))
-     obj.forward_arrow = forward_arrow ? forward_arrow : xfig_create_arrow(;; __qualifiers);
-   variable backward_arrow = qualifier("backward_arrow");
-   if(qualifier_exists("backward_arrow"))
-     obj.forward_arrow = backward_arrow ? backward_arrow : xfig_create_arrow(;; __qualifiers);
+
+   variable arrow;
+   if (qualifier_exists("forward_arrow"))
+     {
+	arrow = qualifier("forward_arrow");
+	if (arrow == NULL) arrow = xfig_create_arrow(;; __qualifiers);
+	obj.forward_arrow = arrow;
+     }
+   if (qualifier_exists("backward_arrow"))
+     {
+	arrow = qualifier("backward_arrow");
+	if (arrow == NULL) arrow = xfig_create_arrow(;; __qualifiers);
+	obj.forward_arrow = arrow;
+     }
 
    return obj;
 }

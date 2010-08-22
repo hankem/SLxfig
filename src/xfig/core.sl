@@ -11,6 +11,26 @@ private variable DISPLAY_PIX_PER_INCH = 80;
 private variable Scale_Factor;
 private variable Display_Pixel_Size;
 
+variable _XFig_Verbose = 0;
+
+define _xfig_check_help (nargs, fname)
+{
+   ifnot (qualifier_exists ("help"))
+     return 0;
+
+   _pop_n (nargs);
+#ifexists help
+   help (fname);
+#else
+   variable txt = get_doc_string_from_file (fname);
+   if (txt == NULL)
+     vmessage ("No help found for %S\n", fname);
+   else
+     message (txt);
+#endif
+   return 1;
+}
+
 define xfig_get_focus ()
 {
    return Focus;
@@ -317,7 +337,7 @@ private define new_color (name, rgb, xfigid, id)
    s.id = id;
    Color_Table[name] = s;
 
-   if (id >= 0)
+   %if (id >= 0)
      list_append (Color_List, s);
 }
 
@@ -335,7 +355,7 @@ add_color ("white",	0xFFFFFF,	7);
 
 add_color ("black",	0x000000,	0);
 add_color ("red",	0xFF0000,	4);
-add_color ("green",	0x00FF00,	2);
+add_color ("green3",	0x00b000,	13);
 add_color ("blue",	0x0000FF,	1);
 add_color ("magenta",	0xFF00FF,	5);
 add_color ("cyan",	0x00FFFF,	3);
@@ -349,7 +369,7 @@ add_color ("cyan4",	0x009090,	15);
 
 add_color ("brown3",	0xa04000,	25);
 add_color ("red3",	0xb00000,	19);
-add_color ("green3",	0x00b000,	13);
+add_color ("green",	0x00FF00,	2);
 add_color ("blue3",	0x0000d0,	10);
 add_color ("magenta3",	0xb000b0,	22);
 add_color ("cyan3",	0x00b0b0,	16);
@@ -417,6 +437,11 @@ define xfig_lookup_color_rgb (color)
 	return 0;
      }
    return s.rgb;
+}
+
+define xfig_get_color_info (color)
+{
+   return find_color (color);
 }
 
 
@@ -1101,9 +1126,14 @@ define xfig_set_paper_size (paper)
    XFig_Header.papersize = paper;
 }
 
+define xfig_set_verbose (n)
+{
+   _XFig_Verbose = n;
+}
 
 % Use CM as the default system
 xfig_use_cm ();
 xfig_set_eye (1e6, 0, 0);
 xfig_set_eye_roll (0);
 xfig_set_paper_size ("Letter");
+xfig_set_verbose (0);

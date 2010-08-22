@@ -1,11 +1,13 @@
 # -*- sh -*-
 #
-# To create the SGML files, you will need to install the tm-utils
-# package.  See http://www.jedsoft.org/ for more information.
+# To create the SGML files, you will need to install a recent version of
+# the the tmexpand.  See <http://www.jedsoft.org/jed/madewithjed.html>
+# for more information.
 #
 TMEXPAND = tmexpand
-SL2TM = sl2tm
 TM2HLP = $(TMEXPAND) -Mslhlp
+SL2TM = tm-strip
+TMSORT = tm-sort
 
 MODULE = slxfig
 GCONTOUR = gcontour
@@ -42,7 +44,7 @@ text-files: $(TXT_FILES) $(HLP_FILES)
 all: $(SGML_FILES) $(HTML_FILES) $(TEX_FILES) $(TXT_FILES)
 slxfigfuns.tm: ../../src/xfig/*.sl
 	$(SL2TM) ../../src/xfig/*.sl > slxfigfuns.tm
-	tm-sort.sl slxfigfuns.tm
+	$(TMSORT) slxfigfuns.tm
 #----- SGML Files -----------------------------------------------------------
 $(MODULE).sgml : $(MODULE).tm $(MODULE_DEPS)
 	$(TMEXPAND) $(MODULE).tm $(MODULE).sgml

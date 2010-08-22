@@ -1498,8 +1498,8 @@ private define xaxis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
+   if (_xfig_check_help (_NARGS, "xfig_plot.xaxis")) return;
    variable args = __pop_args (_NARGS);
-   if(qualifier_exists("help"))  return help("xfig_plot.xaxis");
    do_axis_method (__push_args (args), "x1axis", 1 ;; __qualifiers);
    do_axis_method (__push_args (args), "x2axis", 0 ;; __qualifiers);
 }
@@ -1515,8 +1515,8 @@ private define yaxis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
+   if (_xfig_check_help (_NARGS, "xfig_plot.yaxis")) return;
    variable args = __pop_args (_NARGS);
-   if(qualifier_exists("help"))  return help("xfig_plot.yaxis");
    do_axis_method (__push_args (args), "y1axis", 2 ;; __qualifiers);
    do_axis_method (__push_args (args), "y2axis", 0 ;; __qualifiers);
 }
@@ -1532,8 +1532,8 @@ private define x1axis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
+   if (_xfig_check_help (_NARGS, "xfig_plot.x1axis")) return;
    variable args = __pop_args (_NARGS);
-   if(qualifier_exists("help"))  return help("xfig_plot.x1axis");
    do_axis_method (__push_args (args), "x1axis", 1 ;; __qualifiers);
 }
 %}}}
@@ -1548,8 +1548,8 @@ private define x2axis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
+   if (_xfig_check_help (_NARGS, "xfig_plot.x2axis")) return;
    variable args = __pop_args (_NARGS);
-   if(qualifier_exists("help"))  return help("xfig_plot.x2axis");
    do_axis_method (__push_args (args), "x2axis", 1 ;; __qualifiers);
 }
 %}}}
@@ -1564,8 +1564,8 @@ private define y1axis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
+   if (_xfig_check_help (_NARGS, "xfig_plot.y1axis")) return;
    variable args = __pop_args (_NARGS);
-   if(qualifier_exists("help"))  return help("xfig_plot.y1axis");
    do_axis_method (__push_args (args), "y1axis", 2 ;; __qualifiers);
 }
 %}}}
@@ -1580,8 +1580,8 @@ private define y2axis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
+   if (_xfig_check_help (_NARGS, "xfig_plot.y2axis")) return;
    variable args = __pop_args (_NARGS);
-   if(qualifier_exists("help"))  return help("xfig_plot.y2axis");
    do_axis_method (__push_args (args), "y2axis", 2 ;; __qualifiers);
 }
 %}}}
@@ -1624,8 +1624,8 @@ private define axis_method () %{{{
 %\seealso{xfig_plot.xaxis, xfig_plot.x1axis, xfig_plot.x2axis, xfig_plot.yaxis, xfig_plot.y1axis, xfig_plot.y2axis}
 %!%-
 {
+   if (_xfig_check_help (_NARGS, "xfig_plot.axis")) return;
    variable args = __pop_args (_NARGS);
-   if(qualifier_exists("help"))  return help("xfig_plot.axis");
    xaxis_method (__push_args (args);; __qualifiers);
    yaxis_method (__push_args (args);; __qualifiers);
 }
@@ -1748,7 +1748,7 @@ private define world1_method () %{{{
 %\seealso{xfig_plot.world}
 %!%-
 {
-   if(qualifier_exists("help"))  { ()=__pop_args(_NARGS); return help("xfig_plot.world1"); }
+   if (_xfig_check_help (_NARGS, "xfig_plot.world1")) return;
    return do_world_method (1, _NARGS ;; __qualifiers);
 }
 %}}}
@@ -1762,11 +1762,10 @@ private define world2_method () %{{{
 %\seealso{xfig_plot.world}
 %!%-
 {
+   if (_xfig_check_help (_NARGS, "xfig_plot.world2")) return;
    variable w, args;
    args = __pop_args (_NARGS-1);
    w = ();
-   if(qualifier_exists("help"))  return help("xfig_plot.world2");
-
    w.plot_data.x2axis.draw_tic_labels = 1;
    w.plot_data.y2axis.draw_tic_labels = 1;
    return do_world_method (w, __push_args(args), 2, _NARGS ;; __qualifiers);
@@ -1777,8 +1776,8 @@ private define world_method () %{{{
 %!%+
 %\function{xfig_plot.world}
 %\synopsis{define a plot's world coordinate system}
-%\usage{xfig_plot.world(Double_Type xdata[], ydata[]);
-%\altusage{xfig_plot.world(Double_Type x0, x1, y0, y1);}
+%\usage{xfig_plot.world (Double_Type xdata[], ydata[]);
+%\altusage{xfig_plot.world (Double_Type x0, x1, y0, y1);}
 %}
 %\qualifiers
 %\qualifier{xlog}{use a logarithmic x-axis}
@@ -1790,8 +1789,8 @@ private define world_method () %{{{
 %\seealso{xfig_plot.world1, xfig_plot.world2}
 %!%-
 {
+   if (_xfig_check_help (_NARGS, "xfig_plot.world")) return;
    variable args = __pop_args (_NARGS);
-   if(qualifier_exists("help"))  return help("xfig_plot.world");
    do_world_method (__push_args (args), 1, _NARGS ;; __qualifiers);
    do_world_method (__push_args (args), 2, _NARGS ;; __qualifiers);
 }
@@ -1817,7 +1816,8 @@ private define get_world_axes (p) %{{{
 %
 %  The WCS qualifiers apply to the following functions:
 %  \sfun{xfig_plot.plot}, \sfun{xfig_plot.hplot}, \sfun{xfig_plot.shade_region},
-%  \sfun{xfig_plot.add_object}, \sfun{xfig_plot.xylabel}, \sfun{xfig_plot.xfig_coords}
+%  \sfun{xfig_plot.add_object}, \sfun{xfig_plot.xylabel},
+%  \sfun{xfig_plot.get_world}, \sfun{xfig_plot.xfig_coords}
 %\seealso{xfig_plot.world, xfig_plot.world1, xfig_plot.world2, xfig_plot--initialize_plot}
 %!%-
 {
@@ -1843,6 +1843,20 @@ private define get_world_axes (p) %{{{
 }
 %}}}
 
+private define get_world_for_axis (a)
+{
+   if (a == NULL)
+     return (0.0, 1.0);
+
+   variable x0 = a.xmin, x1 = a.xmax;
+   variable wcs = a.wcs_transform;
+
+   if ((wcs.xmin != NULL) && (x0 < wcs.xmin)) x0 = wcs.xmin;
+   if ((wcs.xmax != NULL) && (x1 > wcs.xmax)) x1 = wcs.xmax;
+
+   return (x0, x1);
+}
+
 private define scale_coords_for_axis (axis, axis_len, x) %{{{
 {
    if (axis == NULL)
@@ -1850,29 +1864,25 @@ private define scale_coords_for_axis (axis, axis_len, x) %{{{
 	%  device coordinate, x runs from 0 to 1
 	return double(x*axis_len);
      }
-   variable wcs = axis.wcs_transform;
-
-   variable x0 = axis.xmin, x1 = axis.xmax;
-   if ((wcs.xmin != NULL) && (x0 < wcs.xmin)) x0 = wcs.xmin;
-   if ((wcs.xmax != NULL) && (x1 > wcs.xmax)) x1 = wcs.xmax;
-
-   return axis_len * world_to_normalized (wcs, x, x0, x1);
+   return axis_len * 
+     world_to_normalized (axis.wcs_transform, x, get_world_for_axis (axis));
 }
+
 %}}}
 
 private define xfig_coords_method(p, x, y) %{{{
 %!%+
 %\function{xfig_plot.xfig_coords}
-%\usage{(Double_Type xXfig, yXfig) = xfig_plot.xfig_coords(Double_Type x, y);
-%\altusage{Double_Type xXfig = xfig_plot.xfig_coords(Double_Type x, );}
-%\altusage{Double_Type yXfig = xfig_plot.xfig_coords(, Double_Type y);}
+%\usage{(Double_Type xXfig, yXfig) = xfig_plot.xfig_coords (Double_Type x, y);
+%\altusage{Double_Type xXfig = xfig_plot.xfig_coords (Double_Type x, );}
+%\altusage{Double_Type yXfig = xfig_plot.xfig_coords (, Double_Type y);}
 %}
 %\qualifiers
 % % qualifiers to specify the world coordinate system,
 %\seealso{xfig_plot--wcs}
 %!%-
 {
-   if(qualifier_exists("help"))  return help("xfig_plot.xfig_coords");
+   if (_xfig_check_help (_NARGS, "xfig_plot.xfig_coords")) return;
    p = p.plot_data;
    variable ax, ay;
    (ax, ay) = get_world_axes (p;; __qualifiers);
@@ -1945,15 +1955,15 @@ private define pop_plot_err_parms (nargs) %{{{
    if (is_asymmetric)
      {
         if(qualifier("minmax"))
-        {
-	  dy_neg = y - dy[0];  % dy[0]  is actually  y - dy_neg
-	  dy_pos = dy[1] - y;  % dy[1]  is actually  dy_pos - y
-	}
+	  {
+	     dy_neg = y - dy[0];  % dy[0]  is actually  y - dy_neg
+	     dy_pos = dy[1] - y;  % dy[1]  is actually  dy_pos - y
+	  }
         else
-        {
-	  dy_neg = dy[0];
-	  dy_pos = dy[1];
-	}
+	  {
+	     dy_neg = dy[0];
+	     dy_pos = dy[1];
+	  }
 	i = wherenot (isnan(x) or isnan(y) or isnan(dy_neg) or isnan(dy_pos));
      }
    else
@@ -1991,7 +2001,7 @@ private define insert_errbar_list (p, lines) %{{{
 private define plot_erry () %{{{
 {
    variable p, x, y, dy_neg, dy_pos;
-   (p, x, y, dy_neg, dy_pos) = pop_plot_err_parms (_NARGS; minmax=qualifier_exists("minmax") or qualifier_exists("yminmax"));
+   (p, x, y, dy_neg, dy_pos) = pop_plot_err_parms (_NARGS; minmax=qualifier_exists("minmax") || qualifier_exists("yminmax"));
    variable ax, ay;
    (ax, ay) = get_world_axes (p ;; __qualifiers);
    variable term_factor = qualifier ("yeb_factor", qualifier ("eb_factor", 1));
@@ -2047,7 +2057,7 @@ private define plot_erry () %{{{
 private define plot_errx () %{{{
 {
    variable p, x, y, dx_neg, dx_pos;
-   (p, x, y, dx_neg, dx_pos) = pop_plot_err_parms (_NARGS; minmax=qualifier_exists("minmax") or qualifier_exists("xminmax"));
+   (p, x, y, dx_neg, dx_pos) = pop_plot_err_parms (_NARGS; minmax=qualifier_exists("minmax") || qualifier_exists("xminmax"));
    variable ax, ay;
    (ax, ay) = get_world_axes (p ;; __qualifiers);
    variable term_factor = qualifier ("xeb_factor", qualifier ("eb_factor", 1));
@@ -2485,8 +2495,8 @@ private define initialize_plot (p, x, y) %{{{
 private define plot_method () %{{{
 %!%+
 %\function{xfig_plot.plot}
-%\usage{xfig_plot.plot([x,] y);
-%\altusage{xfig_plot.plot(x, y, [dx,] dy);}
+%\usage{xfig_plot.plot ([x,] y);
+%\altusage{xfig_plot.plot (x, y, [dx,] dy);}
 %}
 %\qualifiers
 % % qualifiers to initialize the first plot only,
@@ -2524,7 +2534,7 @@ private define plot_method () %{{{
 %\seealso{xfig_plot--initialize-plot, xfig_plot--wcs}
 %!%-
 {
-   if(qualifier_exists("help"))  { ()=__pop_args(_NARGS); return help("xfig_plot.plot"); }
+   if (_xfig_check_help (_NARGS, "xfig_plot.plot")) return;
    variable x, y, dx = NULL, dy = NULL, p;
 
    switch (_NARGS)
@@ -2660,8 +2670,8 @@ private define plot_shaded_histogram (p, x, y) %{{{
 private define hplot_method () %{{{
 %!%+
 %\function{xfig_plot.hplot}
-%\usage{xfig_plot.hplot([x,] y);
-%\altusage{xfig_plot.hplot(x, y[, dy]);}
+%\usage{xfig_plot.hplot ([x,] y);
+%\altusage{xfig_plot.hplot (x, y[, dy]);}
 %}
 %\qualifiers
 % % qualifiers to initialize the first plot only,
@@ -2682,7 +2692,7 @@ private define hplot_method () %{{{
 %\seealso{xfig_plot--initialize-plot, xfig_plot--wcs}
 %!%-
 {
-   if(qualifier_exists("help"))  { ()=__pop_args(_NARGS); return help("xfig_plot.hplot"); }
+   if (_xfig_check_help (_NARGS, "xfig_plot.hplot")) return;
 
    variable x, y, dy = NULL, p;
 
@@ -2816,7 +2826,7 @@ private define add_object_method () %{{{
 %\seealso{xfig_plot--wcs}
 %!%-
 {
-   if(qualifier_exists("help"))  { ()=__pop_args(_NARGS); return help("xfig_plot.add_object"); }
+   if (_xfig_check_help (_NARGS, "xfig_plot.add_object")) return;
 
    variable p, obj, x=NULL, y=NULL, dx=0, dy=0;
    switch (_NARGS)
@@ -2893,7 +2903,7 @@ private define xylabel_method () %{{{
 %\seealso{xfig_plot_text, xfig_plot--wcs}
 %!%-
 {
-   if(qualifier_exists("help"))  return help("xfig_plot.xylabel");
+   if (_xfig_check_help (_NARGS, "xfig_plot.xylabel")) return;
 
    variable w, text, x, y, dx = 0, dy = 0;
    if (_NARGS == 6)
@@ -2917,7 +2927,7 @@ private define xlabel_method () %{{{
 %\seealso{xfig_new_text}
 %!%-
 {
-   if(qualifier_exists("help"))  { ()=__pop_args(_NARGS); return help("xfig_plot.xlabel"); }
+   if (_xfig_check_help (_NARGS, "xfig_plot.xlabel")) return;
    if (_NARGS != 2)  usage (".xlabel (label [; qualifiers])");
 
    variable p, label;
@@ -2938,7 +2948,7 @@ private define ylabel_method () %{{{
 %\seealso{xfig_new_text}
 %!%-
 {
-   if(qualifier_exists("help"))  { ()=__pop_args(_NARGS); return help("xfig_plot.ylabel"); }
+   if (_xfig_check_help (_NARGS, "xfig_plot.ylabel")) return;
    if (_NARGS != 2)  usage (".ylabel (label [; qualifiers])");
    variable p, label;
    (p, label) = ();
@@ -2958,7 +2968,7 @@ private define x2label_method () %{{{
 %\seealso{xfig_new_text}
 %!%-
 {
-   if(qualifier_exists("help"))  { ()=__pop_args(_NARGS); return help("xfig_plot.x2label"); }
+   if (_xfig_check_help (_NARGS, "xfig_plot.x2label")) return;
    if (_NARGS != 2)  usage (".x2label (label [; qualifiers])");
    variable w, p, label;
    (w, label) = ();
@@ -2975,14 +2985,14 @@ private define y2label_method () %{{{
 %!%+
 %\function{xfig_plot.y2label}
 %\synopsis{Add a label for the second y-axis to a plot}
-%\usage{xfig_plot.y2label(String_Type y2label);}
+%\usage{xfig_plot.y2label (String_Type y2label);}
 %\description
 %  The y2label is created from the string with the
 %  \sfun{xfig_new_text} function using all applied qualifiers.
 %\seealso{xfig_new_text}
 %!%-
 {
-   if(qualifier_exists("help"))  { ()=__pop_args(_NARGS); return help("xfig_plot.y2label"); }
+   if (_xfig_check_help (_NARGS, "xfig_plot.y2label")) return;
    if (_NARGS != 2)  usage (".y2label (label [; qualifiers])");
    variable p, label;
    (p, label) = ();
@@ -2996,7 +3006,7 @@ private define title_method (w, title) %{{{
 %\function{xfig_plot.title}
 %\synopsis{Add a title to a plot}
 %\usage{xfig_plot.title (String_Type title);
-%\altusage{xfig_plot.title(XFig_Object title);}
+%\altusage{xfig_plot.title (XFig_Object title);}
 %}
 %\description
 %  The title is created from the string with the
@@ -3007,7 +3017,7 @@ private define title_method (w, title) %{{{
 %  Any previously existing title object is removed.
 %!%-
 {
-   if(qualifier_exists("help"))  return help("xfig_plot.title");
+   if (_xfig_check_help (_NARGS, "xfig_plot.title")) return;
 
    variable x0, x1, y, z;
    variable p = w.plot_data;
@@ -3053,7 +3063,7 @@ define plot_png_method () %{{{
 %   see \sfun{xfig_plot--initialize_plot}
 %!%-
 {
-   if(qualifier_exists("help"))  return help("xfig_plot.plot_png");
+   if (_xfig_check_help (_NARGS, "xfig_plot.plot_png")) return;
 
    variable w, png;
    if (_NARGS != 2)
@@ -3075,7 +3085,7 @@ private define plot_pict_method () %{{{
 %   see \sfun{xfig_plot--initialize_plot}
 %!%-
 {
-   if(qualifier_exists("help"))  return help("xfig_plot.plot_pict");
+   if (_xfig_check_help (_NARGS, "xfig_plot.plot_pict")) return;
 
    variable w, img;
    if (_NARGS != 2)
@@ -3100,7 +3110,7 @@ private define plot_pict_method () %{{{
 private define shade_region_method () %{{{
 %!%+
 %\function{xfig_plot.shade_region}
-%\usage{xfig_plot.shade_region(x[], y[]);
+%\usage{xfig_plot.shade_region (x[], y[]);
 %\altusage{xfig_plot.shade_region (xmin, xmax, ymin, ymax);}
 %}
 %\qualifiers
@@ -3109,6 +3119,8 @@ private define shade_region_method () %{{{
 %\seealso{xfig_plot--initialize_plot, xfig_plot--wcs}
 %!%-
 {
+   if (_xfig_check_help (_NARGS, "xfig_plot.shade_region")) return;
+
    variable p, w, xs, ys, xmin, xmax, ymin, ymax;
 
    switch (_NARGS)
@@ -3163,6 +3175,26 @@ private define shade_region_method () %{{{
 }
 %}}}
 
+private define get_world_method (w)
+%!%+
+%\function{xfig_plot.get_world}
+%\synopsis{Get the world coordinates of a plot}
+%\usage{[xmin,xmax,ymin,ymax] = xfig_plot.get_world ();}
+%\qualifiers
+% % qualifiers to specifiy the world coordinate system
+%\seealso{xfig_plot--wcs}
+%!%-
+{
+   if (_xfig_check_help (_NARGS, "xfig_plot.get_world")) return;
+
+   variable p = w.plot_data;
+
+   variable ax, ay;
+   (ax, ay) = get_world_axes (p ;; __qualifiers);
+   
+   return [get_world_for_axis(ax), get_world_for_axis(ay)];   
+}
+
 private variable XFig_Plot_Type = struct %{{{
 {
    plot_data,
@@ -3191,6 +3223,7 @@ private variable XFig_Plot_Type = struct %{{{
    plot_png = &plot_png_method,
    plot_pict = &plot_pict_method,
    shade_region= &shade_region_method,
+   get_world = &get_world_method,
    xfig_coords=&xfig_coords_method,
 };
 %}}}
@@ -3336,7 +3369,7 @@ define xfig_multiplot () %{{{
 %!%+
 %\function{xfig_multiplot}
 %\synopsis{Create a multiplot from individual panels that share the same x-axes}
-%\usage{compound = xfig_multiplot(xfig_plot p1[], p2[], ...);}
+%\usage{compound = xfig_multiplot (xfig_plot p1[], p2[], ...);}
 %\qualifiers
 %\qualifier{cols=intval}{number of columns}{1}
 %\qualifier{title=strval}{overall title on top of the multiplot}

@@ -1,15 +1,6 @@
 $1 = 0; $2 = 2; $3 = 0;
 variable _xfig_version = $1*10000 + $2*100 + $3;
-variable _xfig_version_string = "pre$1.$2.$3-60"$;
-
-#ifnexists help
-define help (topic)
-{
-   variable doc = get_doc_string_from_file (topic);
-   if (doc != NULL)
-     message (doc);
-}
-#endif
+variable _xfig_version_string = "pre$1.$2.$3-66"$;
 
 ()=evalfile ("xfig/core");
 ()=evalfile ("xfig/polyline");
