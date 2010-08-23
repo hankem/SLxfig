@@ -120,3 +120,12 @@ Changes since 0.1.0
 68. src/xfig/clip.sl: clips involving infinite values were not always
     being handled properly.
 69. examples/plot/*.sl: removed dependence upon gsl.
+70. merged a number of changes from Manfred Hanke (see git log for
+    details):
+       * documentation updates
+       * Additional examples
+       * added src/test/*
+       * latex.sl: graphicx added to package latex package list,
+	 xfig_set_latex_verbosity function, ...
+       * plot.sl: fixes to the plot_scale method. depth qualifiers for
+	 error bars, etc,
