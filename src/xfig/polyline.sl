@@ -320,7 +320,7 @@ define xfig_new_polyline (X)
    obj.depth = qualifier("depth", obj.depth);
    obj.join_style = qualifier("join", obj.join_style);
    obj.cap_style = qualifier("cap", obj.cap_style);
-   
+
    variable arrow;
    if (qualifier_exists("forward_arrow"))
      {

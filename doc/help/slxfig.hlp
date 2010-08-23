@@ -92,16 +92,35 @@ xfig_multiplot
   Create a multiplot from individual panels that share the same x-axes
 
  USAGE
-  compound = xfig_multiplot(xfig_plot p1, p2, ...);
-
- DESCRIPTION
-  The function switches the appropriate labels and ticmark labels off and
-  returns a compound object consisting of the accordingly translated plots.
+  compound = xfig_multiplot (xfig_plot p1[], p2[], ...);
 
  QUALIFIERS
-  ; title=strval: title for top panel
-  ; xlabel=strval: xlabel for bottom panel
-  ; x2label=strval: x2label for top panel
+  ; cols=intval: number of columns (default: 1)
+  ; title=strval: overall title on top of the multiplot
+  ; xlabel=strval: overall xlabel below the multiplot
+  ; x2label=strval: overall x2label on top of the multiplot
+  ; ylabel=strval: overall ylabel left of the multiplot
+  ; y2label=strval: overall y2label right of the multiplot
+  ; align_ylabels=intval: align all y1axis-labels and all y2axis-labels (default: 1)
+
+ DESCRIPTION
+  `p1', `p2', ... can be single plot objects or arrays of them.
+  `xfig_multiplot' arranges a multi-panel plot with `cols' columns.
+  It may thus be desirable to have common sizes of the plot windows,
+  as well as common ranges and coordinate systems on adjoining axes.
+  The plot windows are aligned in left-right, top-down order.
+  `xfig_multiplot' switches off titles, axis- and ticmark labels
+  of those plots for which those would overlap with other plots.
+
+  The return value is a compound object containing all plots in the
+  multiplot (note that their number has to be a multiple of `cols').
+  If the `title' or `x(2)label' qualifiers are specified and `cols>1',
+  additional text objects are added above and below the multiplot.
+  (For `cols==1', the title/x(2)label of the first/last plot are set.)
+  The same holds for the `y(2)label' qualifiers, for which it depends
+  on the resulting number of rows whether additional text is added
+  on the left or right of the multiplot or whether the corresponding
+  labels of the first or last plot are set (possibly overwritten).
 
 --------------------------------------------------------------
 
@@ -237,7 +256,8 @@ xfig_plot--wcs
 
   The WCS qualifiers apply to the following functions:
   `xfig_plot.plot', `xfig_plot.hplot', `xfig_plot.shade_region',
-  `xfig_plot.add_object', `xfig_plot.xylabel', `xfig_plot.xfig_coords'
+  `xfig_plot.add_object', `xfig_plot.xylabel',
+  `xfig_plot.get_world', `xfig_plot.xfig_coords'
 
  SEE ALSO
   xfig_plot.world, xfig_plot.world1, xfig_plot.world2, xfig_plot--initialize_plot
@@ -309,12 +329,28 @@ xfig_plot.axis
 
 --------------------------------------------------------------
 
+xfig_plot.get_world
+
+ SYNOPSIS
+  Get the world coordinates of a plot
+
+ USAGE
+  [xmin,xmax,ymin,ymax] = xfig_plot.get_world ();
+
+ QUALIFIERS
+ % qualifiers to specifiy the world coordinate system
+
+ SEE ALSO
+  xfig_plot--wcs
+
+--------------------------------------------------------------
+
 xfig_plot.hplot
 
  USAGE
-  xfig_plot.hplot([x,] y);
+  xfig_plot.hplot ([x,] y);
   % or
-  xfig_plot.hplot(x, y[, dy]);
+  xfig_plot.hplot (x, y[, dy]);
 
  QUALIFIERS
  % qualifiers to initialize the first plot only,
@@ -342,9 +378,9 @@ xfig_plot.hplot
 xfig_plot.plot
 
  USAGE
-  xfig_plot.plot([x,] y);
+  xfig_plot.plot ([x,] y);
   % or
-  xfig_plot.plot(x, y, [dx,] dy);
+  xfig_plot.plot (x, y, [dx,] dy);
 
  QUALIFIERS
  % qualifiers to initialize the first plot only,
@@ -363,6 +399,8 @@ xfig_plot.plot
   ; eb_line=intval: line style for error bars [precendence over line]
   ; eb_color=intval: color of error bars [precedence over color]
   ; eb_width=intval: thickness of error bars [precedence over width]
+  ; eb_depth=intval: Xfig depth of error bars [precedence over depth]
+  ; [x,y]eb_factor=intval: terminal size of error bars (default: 1)
 
  % qualifiers for symbols:
   ; sym=strval: symbol, see xfig_plot_get_symbol_names
@@ -412,7 +450,7 @@ xfig_plot.plot_png
 xfig_plot.shade_region
 
  USAGE
-  xfig_plot.shade_region(x[], y[]);
+  xfig_plot.shade_region (x[], y[]);
   % or
   xfig_plot.shade_region (xmin, xmax, ymin, ymax);
 
@@ -433,7 +471,7 @@ xfig_plot.title
  USAGE
   xfig_plot.title (String_Type title);
   % or
-  xfig_plot.title(XFig_Object title);
+  xfig_plot.title (XFig_Object title);
 
  DESCRIPTION
   The title is created from the string with the
@@ -451,9 +489,9 @@ xfig_plot.world
   define a plot's world coordinate system
 
  USAGE
-  xfig_plot.world(Double_Type xdata[], ydata[]);
+  xfig_plot.world (Double_Type xdata[], ydata[]);
   % or
-  xfig_plot.world(Double_Type x0, x1, y0, y1);
+  xfig_plot.world (Double_Type x0, x1, y0, y1);
 
  QUALIFIERS
   ; xlog: use a logarithmic x-axis
@@ -549,11 +587,11 @@ xfig_plot.xaxis
 xfig_plot.xfig_coords
 
  USAGE
-  (Double_Type xXfig, yXfig) = xfig_plot.xfig_coords(Double_Type x, y);
+  (Double_Type xXfig, yXfig) = xfig_plot.xfig_coords (Double_Type x, y);
   % or
-  Double_Type xXfig = xfig_plot.xfig_coords(Double_Type x, );
+  Double_Type xXfig = xfig_plot.xfig_coords (Double_Type x, );
   % or
-  Double_Type yXfig = xfig_plot.xfig_coords(, Double_Type y);
+  Double_Type yXfig = xfig_plot.xfig_coords (, Double_Type y);
 
  QUALIFIERS
  % qualifiers to specify the world coordinate system,
@@ -624,7 +662,7 @@ xfig_plot.y2label
   Add a label for the second y-axis to a plot
 
  USAGE
-  xfig_plot.y2label(String_Type y2label);
+  xfig_plot.y2label (String_Type y2label);
 
  DESCRIPTION
   The y2label is created from the string with the
@@ -825,6 +863,20 @@ xfig_scale_pict
 
  SEE ALSO
   xfig_new_pict
+
+--------------------------------------------------------------
+
+xfig_set_latex_verbosity
+
+ SYNOPSIS
+  Set how output of external programs run by the latex/eps interface is shown.
+
+ USAGE
+  xfig_set_latex_verbosity(Integer_Type verbosity);
+
+ DESCRIPTION
+    If `verbosity' is positive, the full output is displayed.
+    If `verbosity' is zero, only the running command is shown.
 
 --------------------------------------------------------------
 

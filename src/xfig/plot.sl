@@ -1213,11 +1213,29 @@ private define plot_scale () %{{{
 {
    variable p, sx, sy, sz;
    (p, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
+   p = p.plot_data;
 
-   variable X = p.plot_data.X;
-   X.x *= sx;
-   X.y *= sy;
-   X.z *= sz;
+   variable X = p.X;
+   X.x *= sx, X.y *= sy, X.z *= sz;
+
+   p.plot_width *= sx;
+   p.plot_height *= sy;
+
+   variable axis, field;
+   foreach axis ([p.x1axis, p.y1axis, p.x2axis, p.y2axis])
+   {
+     foreach X ([axis.X, axis.dX])
+       X.x *= sx, X.y *= sy, X.z *= sz;
+     foreach field ([axis.tic_label_objects, axis.line, axis.major_tic_marks, axis.minor_tic_marks, axis.axis_label])
+       if(field != NULL)
+         field.scale(sx, sy, sz);
+     axis.max_tic_w *= sx;
+     axis.max_tic_h *= sy;
+   }
+
+   foreach field ([p.object_list, p.title_object, p.legend])
+     if(field != NULL)
+       field.scale(sx, sy, sz);
 }
 
 %}}}
@@ -1470,7 +1488,10 @@ private define do_axis_method (name, grid_axis) %{{{
 
    q = qualifier ("ticlabels");
    if (typeof (q) == Int_Type)
-     axis.draw_tic_labels = q;
+     {
+       axis.draw_tic_labels = q;
+       axis.user_specified_tic_labels = NULL;
+     }
    else if ((typeof (q) == Array_Type) 
 	    && ((_typeof(q) == String_Type) || __is_numeric(q)))
      {
@@ -1562,7 +1583,7 @@ private define x1axis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.xaxis")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.x1axis")) return;
    variable args = __pop_args (_NARGS);
    do_axis_method (__push_args (args), "x1axis", 1 ;; __qualifiers);
 }
@@ -1806,8 +1827,8 @@ private define world_method () %{{{
 %!%+
 %\function{xfig_plot.world}
 %\synopsis{define a plot's world coordinate system}
-%\usage{xfig_plot.world(Double_Type xdata[], ydata[]);
-%\altusage{xfig_plot.world(Double_Type x0, x1, y0, y1);}
+%\usage{xfig_plot.world (Double_Type xdata[], ydata[]);
+%\altusage{xfig_plot.world (Double_Type x0, x1, y0, y1);}
 %}
 %\qualifiers
 %\qualifier{xlog}{use a logarithmic x-axis}
@@ -1846,7 +1867,8 @@ private define get_world_axes (p) %{{{
 %
 %  The WCS qualifiers apply to the following functions:
 %  \sfun{xfig_plot.plot}, \sfun{xfig_plot.hplot}, \sfun{xfig_plot.shade_region},
-%  \sfun{xfig_plot.add_object}, \sfun{xfig_plot.xylabel}, \sfun{xfig_plot.xfig_coords}
+%  \sfun{xfig_plot.add_object}, \sfun{xfig_plot.xylabel},
+%  \sfun{xfig_plot.get_world}, \sfun{xfig_plot.xfig_coords}
 %\seealso{xfig_plot.world, xfig_plot.world1, xfig_plot.world2, xfig_plot--initialize_plot}
 %!%-
 {
@@ -1902,9 +1924,9 @@ private define scale_coords_for_axis (axis, axis_len, x) %{{{
 private define xfig_coords_method(p, x, y) %{{{
 %!%+
 %\function{xfig_plot.xfig_coords}
-%\usage{(Double_Type xXfig, yXfig) = xfig_plot.xfig_coords(Double_Type x, y);
-%\altusage{Double_Type xXfig = xfig_plot.xfig_coords(Double_Type x, );}
-%\altusage{Double_Type yXfig = xfig_plot.xfig_coords(, Double_Type y);}
+%\usage{(Double_Type xXfig, yXfig) = xfig_plot.xfig_coords (Double_Type x, y);
+%\altusage{Double_Type xXfig = xfig_plot.xfig_coords (Double_Type x, );}
+%\altusage{Double_Type yXfig = xfig_plot.xfig_coords (, Double_Type y);}
 %}
 %\qualifiers
 % % qualifiers to specify the world coordinate system,
@@ -1915,8 +1937,8 @@ private define xfig_coords_method(p, x, y) %{{{
    p = p.plot_data;
    variable ax, ay;
    (ax, ay) = get_world_axes (p;; __qualifiers);
-   if(y!=NULL)  p.X.y + scale_coords_for_axis (ay, p.plot_height, y);  % left on stack
    if(x!=NULL)  p.X.x + scale_coords_for_axis (ax, p.plot_width,  x);  % left on stack
+   if(y!=NULL)  p.X.y + scale_coords_for_axis (ay, p.plot_height, y);  % left on stack
 }
 %}}}
 
@@ -2004,12 +2026,8 @@ private define pop_plot_err_parms (nargs) %{{{
 	y = y[i];
 	if (typeof(dy_neg) == Array_Type)
 	  dy_neg = dy_neg[i];
-
-	if (is_asymmetric)
-	  {
-	     if (typeof(dy_pos) == Array_Type)
-	       dy_pos = dy_pos[i];
-	  }	     
+	if (typeof(dy_pos) == Array_Type)
+	  dy_pos = dy_pos[i];
      }
    return p.plot_data, x, y, dy_neg, dy_pos;
 }
@@ -2017,12 +2035,10 @@ private define pop_plot_err_parms (nargs) %{{{
 
 private define insert_errbar_list (p, lines) %{{{
 {
-   variable depth = qualifier ("depth", p.line_depth);
-   variable width = qualifier ("width", p.thickness);
-   variable color = qualifier ("color", p.line_color);
-   variable style = qualifier ("eb_line", p.line_style);
-   color = qualifier ("eb_color", color);
-   width = qualifier ("eb_width", width);
+   variable depth = qualifier ("eb_depth", qualifier ("depth",   p.line_depth));
+   variable width = qualifier ("eb_width", qualifier ("width",   p.thickness ));
+   variable color = qualifier ("eb_color", qualifier ("color",   p.line_color));
+   variable style = qualifier ("eb_line",                        p.line_style );
 
    lines.translate(p.X);
    lines.set_depth(depth);
@@ -2530,8 +2546,8 @@ private define initialize_plot (p, x, y) %{{{
 private define plot_method () %{{{
 %!%+
 %\function{xfig_plot.plot}
-%\usage{xfig_plot.plot([x,] y);
-%\altusage{xfig_plot.plot(x, y, [dx,] dy);}
+%\usage{xfig_plot.plot ([x,] y);
+%\altusage{xfig_plot.plot (x, y, [dx,] dy);}
 %}
 %\qualifiers
 % % qualifiers to initialize the first plot only,
@@ -2550,6 +2566,8 @@ private define plot_method () %{{{
 %\qualifier{eb_line=intval}{line style for error bars [precendence over line]}
 %\qualifier{eb_color=intval}{color of error bars [precedence over color]}
 %\qualifier{eb_width=intval}{thickness of error bars [precedence over width]}
+%\qualifier{eb_depth=intval}{Xfig depth of error bars [precedence over depth]}
+%\qualifier{[x,y]eb_factor=intval}{terminal size of error bars}{1}
 %
 % % qualifiers for symbols:
 %\qualifier{sym=strval}{symbol, see xfig_plot_get_symbol_names}
@@ -2660,13 +2678,6 @@ private define plot_shaded_histogram (p, x, y) %{{{
    x = scale_coords_for_axis (ax, w, x);
    y = scale_coords_for_axis (ay, h, y);
 
-   variable depth = qualifier ("depth", p.line_depth);
-   variable thickness = qualifier ("width", p.thickness);
-   variable color = qualifier ("color", p.line_color);
-   variable linestyle = qualifier ("line", p.line_style);
-   variable area_fill = qualifier ("fill", 20);
-   variable fillcolor = qualifier ("fillcolor", color);
-
    variable y0 = scale_coords_for_axis (ay, h, 0.0);
    if (y0 < 0.0) y0 = 0.0;
 
@@ -2685,9 +2696,8 @@ private define plot_shaded_histogram (p, x, y) %{{{
    y[where (y > h)] = h;
 
    variable list = xfig_new_polyline_list ();
-   _for (0, length (x)-2, 1)
+   _for i (0, length (x)-2, 1)
      {
-	i = ();
 	variable x0 = x[i];
 	variable x1 = x[i+1];
 	variable y1 = y[i];
@@ -2695,10 +2705,14 @@ private define plot_shaded_histogram (p, x, y) %{{{
 	list.insert (vector([x0, x0, x1, x1], [y0,y1,y1,y0], [0.0,0.0,0.0,0.0]));
      }
    list.translate (p.X);
-   list.set_depth (p.line_depth+1);
+   list.set_depth (qualifier ("depth", p.line_depth+1));
+   list.set_thickness (qualifier ("width", p.thickness));
+   variable color = qualifier ("color", p.line_color);
    list.set_pen_color (color);
-   list.set_line_style (linestyle);
-   list.set_fill_color (fillcolor);
+   list.set_line_style (qualifier ("line", p.line_style));
+   list.set_fill_color (qualifier ("fillcolor", color));
+   variable area_fill = qualifier ("fill");
+   if(area_fill==NULL)  area_fill = 20;
    list.set_area_fill (area_fill);
    p.object_list.insert (list);
 }
@@ -2707,8 +2721,8 @@ private define plot_shaded_histogram (p, x, y) %{{{
 private define hplot_method () %{{{
 %!%+
 %\function{xfig_plot.hplot}
-%\usage{xfig_plot.hplot([x,] y);
-%\altusage{xfig_plot.hplot(x, y[, dy]);}
+%\usage{xfig_plot.hplot ([x,] y);
+%\altusage{xfig_plot.hplot (x, y[, dy]);}
 %}
 %\qualifiers
 % % qualifiers to initialize the first plot only,
@@ -2756,7 +2770,7 @@ private define hplot_method () %{{{
      }
    p = ();
 
-   if (NULL != qualifier ("fill"))
+   if (qualifier_exists ("fill"))
      plot_shaded_histogram (p, x, y;; __qualifiers);
    else
      plot_histogram (p, x, y;; __qualifiers);
@@ -3022,14 +3036,14 @@ private define y2label_method () %{{{
 %!%+
 %\function{xfig_plot.y2label}
 %\synopsis{Add a label for the second y-axis to a plot}
-%\usage{xfig_plot.y2label(String_Type y2label);}
+%\usage{xfig_plot.y2label (String_Type y2label);}
 %\description
 %  The y2label is created from the string with the
 %  \sfun{xfig_new_text} function using all applied qualifiers.
 %\seealso{xfig_new_text}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.xylabel")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.y2label")) return;
    if (_NARGS != 2)  usage (".y2label (label [; qualifiers])");
    variable p, label;
    (p, label) = ();
@@ -3043,7 +3057,7 @@ private define title_method (w, title) %{{{
 %\function{xfig_plot.title}
 %\synopsis{Add a title to a plot}
 %\usage{xfig_plot.title (String_Type title);
-%\altusage{xfig_plot.title(XFig_Object title);}
+%\altusage{xfig_plot.title (XFig_Object title);}
 %}
 %\description
 %  The title is created from the string with the
@@ -3147,7 +3161,7 @@ private define plot_pict_method () %{{{
 private define shade_region_method () %{{{
 %!%+
 %\function{xfig_plot.shade_region}
-%\usage{xfig_plot.shade_region(x[], y[]);
+%\usage{xfig_plot.shade_region (x[], y[]);
 %\altusage{xfig_plot.shade_region (xmin, xmax, ymin, ymax);}
 %}
 %\qualifiers
@@ -3156,6 +3170,8 @@ private define shade_region_method () %{{{
 %\seealso{xfig_plot--initialize_plot, xfig_plot--wcs}
 %!%-
 {
+   if (_xfig_check_help (_NARGS, "xfig_plot.shade_region")) return;
+
    variable p, w, xs, ys, xmin, xmax, ymin, ymax;
 
    switch (_NARGS)
@@ -3210,9 +3226,18 @@ private define shade_region_method () %{{{
 }
 %}}}
 
-% Usage: [xmin,xmax,ymin,ymax] = w.get_world();
 private define get_world_method (w)
+%!%+
+%\function{xfig_plot.get_world}
+%\synopsis{Get the world coordinates of a plot}
+%\usage{[xmin,xmax,ymin,ymax] = xfig_plot.get_world ();}
+%\qualifiers
+% % qualifiers to specifiy the world coordinate system
+%\seealso{xfig_plot--wcs}
+%!%-
 {
+   if (_xfig_check_help (_NARGS, "xfig_plot.get_world")) return;
+
    variable p = w.plot_data;
 
    variable ax, ay;
@@ -3395,38 +3420,162 @@ define xfig_multiplot () %{{{
 %!%+
 %\function{xfig_multiplot}
 %\synopsis{Create a multiplot from individual panels that share the same x-axes}
-%\usage{compound = xfig_multiplot(xfig_plot p1, p2, ...);}
-%\description
-%  The function switches the appropriate labels and ticmark labels off and
-%  returns a compound object consisting of the accordingly translated plots.
+%\usage{compound = xfig_multiplot (xfig_plot p1[], p2[], ...);}
 %\qualifiers
-%\qualifier{title=strval}{title for top panel}
-%\qualifier{xlabel=strval}{xlabel for bottom panel}
-%\qualifier{x2label=strval}{x2label for top panel}
+%\qualifier{cols=intval}{number of columns}{1}
+%\qualifier{title=strval}{overall title on top of the multiplot}
+%\qualifier{xlabel=strval}{overall xlabel below the multiplot}
+%\qualifier{x2label=strval}{overall x2label on top of the multiplot}
+%\qualifier{ylabel=strval}{overall ylabel left of the multiplot}
+%\qualifier{y2label=strval}{overall y2label right of the multiplot}
+%\qualifier{align_ylabels=intval}{align all y1axis-labels and all y2axis-labels}{1}
+%\description
+%  \var{p1}, \var{p2}, ... can be single plot objects or arrays of them.
+%  \sfun{xfig_multiplot} arranges a multi-panel plot with \var{cols} columns.
+%  It may thus be desirable to have common sizes of the plot windows,
+%  as well as common ranges and coordinate systems on adjoining axes.
+%  The plot windows are aligned in left-right, top-down order.
+%  \sfun{xfig_multiplot} switches off titles, axis- and ticmark labels
+%  of those plots for which those would overlap with other plots.
+%
+%  The return value is a compound object containing all plots in the
+%  multiplot (note that their number has to be a multiple of \var{cols}).
+%  If the \var{title} or \var{x(2)label} qualifiers are specified and \var{cols>1},
+%  additional text objects are added above and below the multiplot.
+%  (For \var{cols==1}, the title/x(2)label of the first/last plot are set.)
+%  The same holds for the \var{y(2)label} qualifiers, for which it depends
+%  on the resulting number of rows whether additional text is added
+%  on the left or right of the multiplot or whether the corresponding
+%  labels of the first or last plot are set (possibly overwritten).
 %!%-
 {
-   variable i, dy = 0., args = __pop_list(_NARGS);
-   _for i (1, _NARGS-1, 1)
-     {
-	dy -= args[i].plot_data.plot_height;
-	args[i].translate( vector(0, dy, 0) );
-	args[i].x2axis(; ticlabels=0);
-	args[i].plot_data.x2axis.axis_label = NULL;
-	args[i].plot_data.title_object = NULL;
-     }
-   _for i (0, _NARGS-2, 1)
-     {
-	args[i].x1axis(; ticlabels=0);
-	args[i].plot_data.x1axis.axis_label = NULL;
-     }
+  variable args = __pop_list(_NARGS), element, plots={};
+  loop(_NARGS)
+    foreach element ( list_pop(args) )
+      list_append(plots, element);
 
-   if(qualifier_exists("title"))
-     args[0].title(qualifier("title"));
-   if(qualifier_exists("x2label"))
-     args[0].x2label(qualifier("x2label"));
-   if(qualifier_exists("xlabel"))
-     args[-1].xlabel(qualifier("xlabel"));
-   
-   return xfig_new_compound( __push_list(args) );
+  variable cols = qualifier("cols", 1);
+
+  variable ix, iy, last_ix=cols-1, last_iy=length(plots)/cols-1;
+  variable dy=0., y1label_x=1./0, y2label_x=-1./0;
+  _for iy (0, last_iy, 1)
+  {
+    dy -= plots[0].plot_data.plot_height;
+    variable dx=0.;
+    _for ix (0, last_ix, 1)
+    {
+      variable p = list_pop(plots);
+      p.translate( vector(dx-p.plot_data.X.x, dy-p.plot_data.X.y, -p.plot_data.X.z) );
+      if(ix)
+      { p.y1axis(; ticlabels=0);
+        p.plot_data.y1axis.axis_label = NULL;
+      }
+      else
+        if(p.plot_data.y1axis.axis_label!=NULL)
+          y1label_x = _min(y1label_x, p.plot_data.y1axis.axis_label.X.x);
+      if(ix<last_ix)
+      { p.y2axis(; ticlabels=0);
+        p.plot_data.y2axis.axis_label = NULL;
+      }
+      else
+        if(p.plot_data.y2axis.axis_label!=NULL)
+          y2label_x = _max(y2label_x, p.plot_data.y2axis.axis_label.X.x);
+      if(iy)
+      { p.x2axis(; ticlabels=0);
+        p.plot_data.x2axis.axis_label = NULL;
+        p.plot_data.title_object = NULL;
+      }
+      if(iy<last_iy)
+      { p.x1axis(; ticlabels=0);
+        p.plot_data.x1axis.axis_label = NULL;
+      }
+      list_append(args, p);
+      dx += p.plot_data.plot_width;
+    }
+  }
+  if(qualifier("align_ylabels", 1))
+    _for iy (0, last_iy, 1)
+    {
+      variable label = args[iy*cols].plot_data.y1axis.axis_label;
+      if(label!=NULL)  label.X.x = y1label_x;
+      label = args[iy*cols+last_ix].plot_data.y2axis.axis_label;
+      if(label!=NULL)  label.X.x = y2label_x;
+    }
+
+  if(length(plots))
+    vmessage("warning (%s): %d plots left over when using cols=%d", _function_name(), length(plots), cols);
+
+  plots = xfig_new_compound( __push_list(args) );
+
+  variable xmin, xmax, ymin, ymax;
+  (xmin,xmax, ymin,ymax, ,) = plots.get_bbox();
+
+  variable q, txt;
+  q = qualifier("x2label");
+  if(q!=NULL)
+  {
+    if(cols==1)
+      args[0].x2label(q);
+    else
+    {
+      txt = xfig_new_text(q);
+      xfig_justify_object(txt, vector(.5*dx, ymax, 0), vector(0, -1, 0));
+      plots.append(txt);
+    }
+  }
+  q = qualifier("xlabel");
+  if(q!=NULL)
+  {
+    if(cols==1)
+      args[-1].xlabel(q);
+    else
+    {
+      txt = xfig_new_text(q);
+      xfig_justify_object(txt, vector(.5*dx, ymin, 0), vector(0, 1, 0));
+      plots.append(txt);
+    }
+  }
+  q = qualifier("ylabel");
+  if(q!=NULL)
+  {
+    if(last_iy==0)
+      args[0].ylabel(q);
+    else
+    {
+      txt = xfig_new_text(q);
+      txt.rotate_pict(90);
+      xfig_justify_object(txt, vector(xmin, .5*dy, 0), vector(1, 0, 0));
+      plots.append(txt);
+    }
+  }
+  q = qualifier("y2label");
+  if(q!=NULL)
+  {
+    if(last_iy==0)
+      args[-1].y2label(q);
+    else
+    {
+      txt = xfig_new_text(q);
+      txt.rotate_pict(270);
+      xfig_justify_object(txt, vector(xmax, .5*dy, 0), vector(0, -1, 0));
+      plots.append(txt);
+    }
+  }
+
+  (xmin,xmax, ymin,ymax, ,) = plots.get_bbox();
+  q = qualifier("title");
+  if(q!=NULL)
+  {
+    if(cols==1)
+      args[0].title(q);
+    else
+    {
+      txt = xfig_new_text(q);
+      xfig_justify_object(txt, vector(.5*dx, ymax, 0), vector(0, -1, 0));
+      plots.append(txt);
+    }
+  }
+
+  return plots;
 }
 %}}}

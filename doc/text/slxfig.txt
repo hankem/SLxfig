@@ -1,6 +1,6 @@
   SLxfig Reference
-  John E. Davis and Manfred Hanke
-  Jun 6, 2010
+  John E. Davis, with small contributions from Manfred Hanke
+  Aug 22, 2010
   ____________________________________________________________
 
   Table of Contents
@@ -23,36 +23,38 @@
      2.11 xfig_plot--wcs
      2.12 xfig_plot.add_object
      2.13 xfig_plot.axis
-     2.14 xfig_plot.hplot
-     2.15 xfig_plot.plot
-     2.16 xfig_plot.plot_pict
-     2.17 xfig_plot.plot_png
-     2.18 xfig_plot.shade_region
-     2.19 xfig_plot.title
-     2.20 xfig_plot.world
-     2.21 xfig_plot.world1
-     2.22 xfig_plot.world2
-     2.23 xfig_plot.x1axis
-     2.24 xfig_plot.x2axis
-     2.25 xfig_plot.x2label
-     2.26 xfig_plot.xaxis
-     2.27 xfig_plot.xfig_coords
-     2.28 xfig_plot.xlabel
-     2.29 xfig_plot.xylabel
-     2.30 xfig_plot.y1axis
-     2.31 xfig_plot.y2axis
-     2.32 xfig_plot.y2label
-     2.33 xfig_plot.yaxis
-     2.34 xfig_plot.ylabel
-     2.35 xfig_plot_add_symbol
-     2.36 xfig_plot_add_transform
-     2.37 xfig_plot_get_symbol_names
-     2.38 xfig_plot_new
-     2.39 xfig_plot_new_png
-     2.40 xfig_plot_text
-     2.41 xfig_render_object
-     2.42 xfig_scale_pict
-     2.43 xfig_set_output_driver
+     2.14 xfig_plot.get_world
+     2.15 xfig_plot.hplot
+     2.16 xfig_plot.plot
+     2.17 xfig_plot.plot_pict
+     2.18 xfig_plot.plot_png
+     2.19 xfig_plot.shade_region
+     2.20 xfig_plot.title
+     2.21 xfig_plot.world
+     2.22 xfig_plot.world1
+     2.23 xfig_plot.world2
+     2.24 xfig_plot.x1axis
+     2.25 xfig_plot.x2axis
+     2.26 xfig_plot.x2label
+     2.27 xfig_plot.xaxis
+     2.28 xfig_plot.xfig_coords
+     2.29 xfig_plot.xlabel
+     2.30 xfig_plot.xylabel
+     2.31 xfig_plot.y1axis
+     2.32 xfig_plot.y2axis
+     2.33 xfig_plot.y2label
+     2.34 xfig_plot.yaxis
+     2.35 xfig_plot.ylabel
+     2.36 xfig_plot_add_symbol
+     2.37 xfig_plot_add_transform
+     2.38 xfig_plot_get_symbol_names
+     2.39 xfig_plot_new
+     2.40 xfig_plot_new_png
+     2.41 xfig_plot_text
+     2.42 xfig_render_object
+     2.43 xfig_scale_pict
+     2.44 xfig_set_latex_verbosity
+     2.45 xfig_set_output_driver
 
 
   ______________________________________________________________________
@@ -66,7 +68,6 @@
   via S-Lang functions that automatically run Xfig's fig2dev and LaTeX
   to produce the desired output format. See the examples page for some
   sample publication-quality plots and the code that produced them.
-
 
   1.1.  History
 
@@ -103,7 +104,6 @@
 
   2.  Function Reference
 
-
   2.1.  xfig_center_pict_in_box
 
 
@@ -122,8 +122,6 @@
 
       See Also
         ``xfig_translate_object''
-
-
 
   2.2.  xfig_clip_polyline2d
 
@@ -147,8 +145,6 @@
 
       See Also
         ``xfig_clip_polygon2d'', ``xfig_new_polyline_list''
-
-
 
   2.3.  xfig_justify_object
 
@@ -206,19 +202,38 @@
         axes
 
       Usage
-        compound = xfig_multiplot(xfig_plot p1, p2, ...);
-
-      Description
-        The function switches the appropriate labels and ticmark labels
-        off and returns a compound object consisting of the accordingly
-        translated plots.
+        compound = xfig_multiplot (xfig_plot p1[], p2[], ...);
 
       Qualifiers
-        ; title=strval: title for top panel
-        ; xlabel=strval: xlabel for bottom panel
-        ; x2label=strval: x2label for top panel
+        ; cols=intval: number of columns (default: 1)
+        ; title=strval: overall title on top of the multiplot
+        ; xlabel=strval: overall xlabel below the multiplot
+        ; x2label=strval: overall x2label on top of the multiplot
+        ; ylabel=strval: overall ylabel left of the multiplot
+        ; y2label=strval: overall y2label right of the multiplot
+        ; align_ylabels=intval: align all y1axis-labels and all y2axis-
+        labels (default: 1)
 
+      Description
+        p1, p2, ... can be single plot objects or arrays of them.
+        xfig_multiplot arranges a multi-panel plot with cols columns.
+        It may thus be desirable to have common sizes of the plot
+        windows, as well as common ranges and coordinate systems on
+        adjoining axes.  The plot windows are aligned in left-right,
+        top-down order.  xfig_multiplot switches off titles, axis- and
+        ticmark labels of those plots for which those would overlap with
+        other plots.
 
+        The return value is a compound object containing all plots in
+        the multiplot (note that their number has to be a multiple of
+        cols).  If the title or x(2)label qualifiers are specified and
+        cols>1, additional text objects are added above and below the
+        multiplot.  (For cols==1, the title/x(2)label of the first/last
+        plot are set.)  The same holds for the y(2)label qualifiers, for
+        which it depends on the resulting number of rows whether
+        additional text is added on the left or right of the multiplot
+        or whether the corresponding labels of the first or last plot
+        are set (possibly overwritten).
 
   2.6.  xfig_new_color
 
@@ -229,7 +244,6 @@
       Usage
         xfig_new_color (name, RGB [,&id]
 
-
       Description
         This function may be used to add a new color called name with
         the specified RGB (24 bit integer) value. If the optional third
@@ -239,8 +253,6 @@
 
       See Also
         ``xfig_lookup_color_rgb'', ``xfig_lookup_color''
-
-
 
   2.7.  xfig_new_legend
 
@@ -260,8 +272,6 @@
         The xfig_new_legend function creates a legend object suitable
         for adding to a plot. The legend will consist of ...
 
-
-
   2.8.  xfig_new_pict
 
 
@@ -277,7 +287,6 @@
         resulting object containing the image will be centered at
         (0,0,0).
 
-
       Qualifiers
         The just qualifier may be used to indicate how the object is to
         be justified with respect to the origin. Its value must be a 2d
@@ -285,16 +294,18 @@
         image scaled with respect to the bounding box. Examples include:
 
 
-              just=[0,0]           Center object upon the origin (default)
-              just=[-0.5,-0.5]     Put the lower-left corner at the origin
-              just=[0.5,-0.5]      Put the lower-right corner at the origin
-              just=[0.5,0.5]       Put the upper-right corner at the origin
-              just=[-0.5,-0.5]     Put the upper-left corner at the origin
+
+         just=[0,0]           Center object upon the origin (default)
+         just=[-0.5,-0.5]     Put the lower-left corner at the origin
+         just=[0.5,-0.5]      Put the lower-right corner at the origin
+         just=[0.5,0.5]       Put the upper-right corner at the origin
+         just=[-0.5,-0.5]     Put the upper-left corner at the origin
 
 
 
       See Also
         ``xfig_new_text'', ``xfig_justify_object''
+
   2.9.  xfig_new_text
 
 
@@ -314,8 +325,6 @@
 
       See Also
         ``xfig_font_new''
-
-
 
   2.10.  xfig_plot--initialize_plot
 
@@ -339,8 +348,6 @@
         ``xfig_plot.plot'', ``xfig_plot.hplot'', ``xfig_plot.plot_png'',
         ``xfig_plot.plot_pict'', ``xfig_plot.shade_region''
 
-
-
   2.11.  xfig_plot--wcs
 
 
@@ -353,7 +360,6 @@
         ; world2: use second coordinate system for x- and y-axes
         ; world{a}{b}: use a-th WCS for x-axis and b-th WCS for y-axis,
         where 0 <= a, b <= 2
-
       Description
         If none of these qualifiers is specified, world1 is assumed.
 
@@ -367,13 +373,12 @@
 
         The WCS qualifiers apply to the following functions:
         xfig_plot.plot, xfig_plot.hplot, xfig_plot.shade_region,
-        xfig_plot.add_object, xfig_plot.xylabel, xfig_plot.xfig_coords
+        xfig_plot.add_object, xfig_plot.xylabel, xfig_plot.get_world,
+        xfig_plot.xfig_coords
 
       See Also
         ``xfig_plot.world'', ``xfig_plot.world1'', ``xfig_plot.world2'',
         ``xfig_plot--initialize_plot''
-
-
 
   2.12.  xfig_plot.add_object
 
@@ -395,8 +400,6 @@
 
       See Also
         ``xfig_plot--wcs''
-
-
 
   2.13.  xfig_plot.axis
 
@@ -449,15 +452,28 @@
         ``xfig_plot.xaxis'', ``xfig_plot.x1axis'', ``xfig_plot.x2axis'',
         ``xfig_plot.yaxis'', ``xfig_plot.y1axis'', ``xfig_plot.y2axis''
 
+  2.14.  xfig_plot.get_world
 
 
-  2.14.  xfig_plot.hplot
+      Synopsis
+        Get the world coordinates of a plot
+
+      Usage
+        [xmin,xmax,ymin,ymax] = xfig_plot.get_world ();
+
+      Qualifiers
+        % qualifiers to specifiy the world coordinate system
+
+      See Also
+        ``xfig_plot--wcs''
+
+  2.15.  xfig_plot.hplot
 
 
       Usage
-        xfig_plot.hplot([x,] y);
+        xfig_plot.hplot ([x,] y);
         % or
-        xfig_plot.hplot(x, y[, dy]);
+        xfig_plot.hplot (x, y[, dy]);
 
       Qualifiers
         % qualifiers to initialize the first plot only, see
@@ -476,23 +492,21 @@
 
       Description
         If no x values are given, x = [1:length(y)] is assumed.
-
       See Also
         ``xfig_plot--initialize-plot'', ``xfig_plot--wcs''
 
-
-
-  2.15.  xfig_plot.plot
+  2.16.  xfig_plot.plot
 
 
       Usage
-        xfig_plot.plot([x,] y);
+        xfig_plot.plot ([x,] y);
         % or
-        xfig_plot.plot(x, y, [dx,] dy);
+        xfig_plot.plot (x, y, [dx,] dy);
 
       Qualifiers
         % qualifiers to initialize the first plot only, see
         xfig_plot--initialize_plot
+
         % qualifiers to specifiy the world coordinate system, see
         xfig_plot--wcs
 
@@ -508,6 +522,10 @@
         ; eb_color=intval: color of error bars [precedence over color]
         ; eb_width=intval: thickness of error bars [precedence over
         width]
+        ; eb_depth=intval: Xfig depth of error bars [precedence over
+        depth]
+        ; [x,y]eb_factor=intval: terminal size of error bars (default:
+        1)
 
         % qualifiers for symbols: ; sym=strval: symbol, see
         xfig_plot_get_symbol_names
@@ -528,9 +546,7 @@
       See Also
         ``xfig_plot--initialize-plot'', ``xfig_plot--wcs''
 
-
-
-  2.16.  xfig_plot.plot_pict
+  2.17.  xfig_plot.plot_pict
 
 
       Usage
@@ -542,7 +558,7 @@
 
 
 
-  2.17.  xfig_plot.plot_png
+  2.18.  xfig_plot.plot_png
 
 
       Synopsis
@@ -555,13 +571,11 @@
         % qualifiers to initialize the first plot only, see
         xfig_plot--initialize_plot
 
-
-
-  2.18.  xfig_plot.shade_region
+  2.19.  xfig_plot.shade_region
 
 
       Usage
-        xfig_plot.shade_region(x[], y[]);
+        xfig_plot.shade_region (x[], y[]);
         % or
         xfig_plot.shade_region (xmin, xmax, ymin, ymax);
 
@@ -572,9 +586,7 @@
       See Also
         ``xfig_plot--initialize_plot'', ``xfig_plot--wcs''
 
-
-
-  2.19.  xfig_plot.title
+  2.20.  xfig_plot.title
 
 
       Synopsis
@@ -583,7 +595,7 @@
       Usage
         xfig_plot.title (String_Type title);
         % or
-        xfig_plot.title(XFig_Object title);
+        xfig_plot.title (XFig_Object title);
 
       Description
         The title is created from the string with the xfig_new_text
@@ -592,18 +604,16 @@
         The title is centered above the plot area.  Any previously
         existing title object is removed.
 
-
-
-  2.20.  xfig_plot.world
+  2.21.  xfig_plot.world
 
 
       Synopsis
         define a plot's world coordinate system
 
       Usage
-        xfig_plot.world(Double_Type xdata[], ydata[]);
+        xfig_plot.world (Double_Type xdata[], ydata[]);
         % or
-        xfig_plot.world(Double_Type x0, x1, y0, y1);
+        xfig_plot.world (Double_Type x0, x1, y0, y1);
 
       Qualifiers
         ; xlog: use a logarithmic x-axis
@@ -617,10 +627,7 @@
       See Also
         ``xfig_plot.world1'', ``xfig_plot.world2''
 
-
-
-  2.21.  xfig_plot.world1
-
+  2.22.  xfig_plot.world1
 
 
       Synopsis
@@ -629,9 +636,7 @@
       See Also
         ``xfig_plot.world''
 
-
-
-  2.22.  xfig_plot.world2
+  2.23.  xfig_plot.world2
 
 
       Synopsis
@@ -640,9 +645,7 @@
       See Also
         ``xfig_plot.world''
 
-
-
-  2.23.  xfig_plot.x1axis
+  2.24.  xfig_plot.x1axis
 
 
       Usage
@@ -655,9 +658,7 @@
       See Also
         ``xfig_plot.axis''
 
-
-
-  2.24.  xfig_plot.x2axis
+  2.25.  xfig_plot.x2axis
 
 
       Usage
@@ -670,9 +671,7 @@
       See Also
         ``xfig_plot.axis''
 
-
-
-  2.25.  xfig_plot.x2label
+  2.26.  xfig_plot.x2label
 
 
       Synopsis
@@ -689,7 +688,8 @@
         ``xfig_new_text''
 
 
-  2.26.  xfig_plot.xaxis
+
+  2.27.  xfig_plot.xaxis
 
 
       Usage
@@ -702,18 +702,16 @@
       See Also
         ``xfig_plot.axis''
 
-
-
-  2.27.  xfig_plot.xfig_coords
+  2.28.  xfig_plot.xfig_coords
 
 
       Usage
-        (Double_Type xXfig, yXfig) = xfig_plot.xfig_coords(Double_Type
+        (Double_Type xXfig, yXfig) = xfig_plot.xfig_coords (Double_Type
         x, y);
         % or
-        Double_Type xXfig = xfig_plot.xfig_coords(Double_Type x, );
+        Double_Type xXfig = xfig_plot.xfig_coords (Double_Type x, );
         % or
-        Double_Type yXfig = xfig_plot.xfig_coords(, Double_Type y);
+        Double_Type yXfig = xfig_plot.xfig_coords (, Double_Type y);
 
       Qualifiers
         % qualifiers to specify the world coordinate system,
@@ -721,9 +719,7 @@
       See Also
         ``xfig_plot--wcs''
 
-
-
-  2.28.  xfig_plot.xlabel
+  2.29.  xfig_plot.xlabel
 
 
       Synopsis
@@ -739,9 +735,7 @@
       See Also
         ``xfig_new_text''
 
-
-
-  2.29.  xfig_plot.xylabel
+  2.30.  xfig_plot.xylabel
 
 
       Usage
@@ -751,9 +745,7 @@
       See Also
         ``xfig_plot_text'', ``xfig_plot--wcs''
 
-
-
-  2.30.  xfig_plot.y1axis
+  2.31.  xfig_plot.y1axis
 
 
       Usage
@@ -766,9 +758,7 @@
       See Also
         ``xfig_plot.axis''
 
-
-
-  2.31.  xfig_plot.y2axis
+  2.32.  xfig_plot.y2axis
 
 
       Usage
@@ -781,16 +771,14 @@
       See Also
         ``xfig_plot.axis''
 
-
-
-  2.32.  xfig_plot.y2label
+  2.33.  xfig_plot.y2label
 
 
       Synopsis
         Add a label for the second y-axis to a plot
 
       Usage
-        xfig_plot.y2label(String_Type y2label);
+        xfig_plot.y2label (String_Type y2label);
 
       Description
         The y2label is created from the string with the xfig_new_text
@@ -799,9 +787,7 @@
       See Also
         ``xfig_new_text''
 
-
-
-  2.33.  xfig_plot.yaxis
+  2.34.  xfig_plot.yaxis
 
 
       Usage
@@ -814,9 +800,7 @@
       See Also
         ``xfig_plot.axis''
 
-
-
-  2.34.  xfig_plot.ylabel
+  2.35.  xfig_plot.ylabel
 
 
       Synopsis
@@ -832,14 +816,11 @@
       See Also
         ``xfig_new_text''
 
-
-
-  2.35.  xfig_plot_add_symbol
+  2.36.  xfig_plot_add_symbol
 
 
       Synopsis
         Add a plot symbol
-
       Usage
         xfig_plot_add_symbol (String_Type name, Ref_Type funct)
 
@@ -854,9 +835,7 @@
         polygon is required to represent the object, an array of arrays
         may be returned.
 
-
-
-  2.36.  xfig_plot_add_transform
+  2.37.  xfig_plot_add_transform
 
 
       Usage
@@ -877,9 +856,7 @@
         arguments: xmin, xmax, maxtics, and client_data.  It is supposed
         to return two arrays of major and minor tic marks.
 
-
-
-  2.37.  xfig_plot_get_symbol_names
+  2.38.  xfig_plot_get_symbol_names
 
 
       Usage
@@ -888,9 +865,7 @@
       See Also
         ``xfig_plot.plot''
 
-
-
-  2.38.  xfig_plot_new
+  2.39.  xfig_plot_new
 
 
       Synopsis
@@ -912,13 +887,10 @@
              w = xfig_plot_new ();
 
 
-
       See Also
         ``xfig_plot_define_world'', ``xfig_render_object''
 
-
-
-  2.39.  xfig_plot_new_png
+  2.40.  xfig_plot_new_png
 
 
       Synopsis
@@ -936,9 +908,7 @@
       See Also
         ``xfig_new_object''
 
-
-
-  2.40.  xfig_plot_text
+  2.41.  xfig_plot_text
 
 
       Synopsis
@@ -973,9 +943,7 @@
       See Also
         ``xfig_plot_add_object'', ``xfig_new_text''
 
-
-
-  2.41.  xfig_render_object
+  2.42.  xfig_render_object
 
 
       Synopsis
@@ -983,7 +951,6 @@
 
       Usage
         xfig_render_object (obj, device)
-
       Description
         This function renders the specified object to a specified
         device.  If the device parameter is a string, then a device will
@@ -992,9 +959,7 @@
       See Also
         ``xfig_create_file'', ``xfig_close_file''
 
-
-
-  2.42.  xfig_scale_pict
+  2.43.  xfig_scale_pict
 
 
       Synopsis
@@ -1008,12 +973,25 @@
 
       Example
         TBD
+
       See Also
         ``xfig_new_pict''
 
+  2.44.  xfig_set_latex_verbosity
 
 
-  2.43.  xfig_set_output_driver
+      Synopsis
+        Set how output of external programs run by the latex/eps
+        interface is shown.
+
+      Usage
+        xfig_set_latex_verbosity(Integer_Type verbosity);
+
+      Description
+        If verbosity is positive, the full output is displayed.  If
+        verbosity is zero, only the running command is shown.
+
+  2.45.  xfig_set_output_driver
 
 
       Synopsis
@@ -1038,8 +1016,6 @@
              %O    Output file
              %P    paper-size
              %B    basename of the file
-
-
 
       Example
         The default driver for postscript output is given by:
