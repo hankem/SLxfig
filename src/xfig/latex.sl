@@ -1,13 +1,15 @@
 % -*- mode: slang; mode: fold -*-
 % LaTeX and EPS interface
 
-%{{{ Tmpfile and Dir handling Functions 
+%{{{ Tmpfile and Dir handling Functions
 
 private variable Latex_Tmp_Dir = NULL;
-private variable Latex_Packages = {"amsmath", "bm", "color", "graphicx"};
+private variable Latex_Packages = {"amsmath", "bm", "color"};
 private variable Latex_Font_Size = 12;
 private variable Latex_Default_Color = "black";
 private variable Latex_Default_Font_Style = "\bf\boldmath"R;
+private variable Use_Eps2Eps = 0;
+
 private variable Supported_Font_Sizes =
 [
    "\\tiny", "\\scriptsize", "\\footnotesize", "\\small", "\\normalsize",
@@ -24,7 +26,7 @@ private define mkdir_recurse (dir)
 
    if (NULL == stat_file (topdir))
      mkdir_recurse (topdir);
-   
+
    if ((-1 == mkdir (dir, 0777))
        and (errno != EEXIST))
      verror ("Unable to mkdir(%s): %s", dir, errno_string(errno));
@@ -35,7 +37,7 @@ private define make_tmp_filename (base, ext)
    base = sprintf ("%s_%d", base, getpid ());
    variable file = strcat (base, ext);
    variable count = 0;
-   
+
    while (NULL != stat_file (file))
      {
 	file = sprintf ("%s_%X%s", base, count, ext);
@@ -74,7 +76,7 @@ define xfig_get_autoeps_dir ()
 {
    if (EPS_Dir == NULL)
      xfig_set_autoeps_dir ("autoeps");
-   
+
    return EPS_Dir;
 }
 
@@ -92,59 +94,61 @@ private define make_tmp_latex_file (base)
 
 %}}}
 
-%{{{ Running LaTeX and dvips 
+%{{{ Running LaTeX and dvips
 
-private variable LaTeX_Pgm = "latex -halt-on-error";
+private variable LaTeX_Pgm = "latex -halt-on-error -interaction=batchmode";
+private variable LaTeX_Pgm = "latex -interaction=batchmode";
+private variable LaTeX_Pgm = "latex";
 private variable Dvips_Pgm = "dvips -E";
-private variable Verbosity = 0;
+private variable Eps2eps_Pgm = "ps2epsi";
 
-private define run_cmd (cmd)
+private define run_cmd (do_error, cmd)
 {
-   if (-1 == system_intr (cmd))
-     vmessage ("****WARNING: %s failed\n", cmd);
-}
+   variable verbose = qualifier("verbose", _XFig_Verbose);
+   if (verbose <= 0)
+     cmd += " >/dev/null 2>&1";
 
-define xfig_set_latex_verbosity(v) %{{{
-%!%+
-%\function{xfig_set_latex_verbosity}
-%\synopsis{Set how output of external programs run by the latex/eps interface is shown.}
-%\usage{xfig_set_latex_verbosity(Integer_Type verbosity);}
-%\description
-%    If \svar{verbosity} is positive, the full output is displayed.
-%    If \svar{verbosity} is zero, only the running command is shown.
-%!%-
-{
-   Verbosity = v;
-}
-%}}}
+   if (verbose >= 0) message("$ "+cmd);
+   variable status = system_intr (cmd);
 
-private define run_quiet_cmd(cmd)
-{
-   if(Verbosity<=0)
-   {
-#ifdef UNIX
-     cmd += " > /dev/null 2>&1";
-#endif
-   }
-   if(Verbosity==0)  message("$ "+cmd);
-   run_cmd(cmd);
+   if (status != 0)
+     {
+	variable msg = sprintf ("%s returned a non-zero status=%d\n", cmd, status);
+	if (do_error)
+	  throw OSError, msg;
+
+	vmessage ("****WARNING: %s", msg);
+     }
+   return status;
 }
 
 private define run_latex (file)
 {
-   run_quiet_cmd (sprintf ("cd %s; %s %s",
-			   path_dirname (file), LaTeX_Pgm, path_basename (file)));
+   variable switches = "-interaction=batchmode";
+   variable dir = path_dirname (file);
+   variable base = path_basename (file);
+   if (0 == run_cmd (0, sprintf ("cd '%s'; %s %s '%s'",
+				 dir, LaTeX_Pgm, switches, base)))
+     return;
+
+   switches = "";
+   () = run_cmd (1, sprintf ("cd '%s'; %s %s '%s'",
+			     dir, LaTeX_Pgm, switches, base)
+		 ; verbose=0
+		);
 }
 
 private define run_dvips (dvi, eps)
 {
-   run_quiet_cmd (sprintf ("%s %s -o %s", Dvips_Pgm, dvi, eps));
-}
-
-private define run_eps2eps(eps)
-{
-   % run_cmd (sprintf ("cat %s | eps2eps - %s", eps, eps));
-   run_cmd (sprintf ("ps2epsi %s tmp_ps2epsi; mv tmp_ps2epsi %s", eps, eps));
+   if (qualifier_exists("eps2eps") || Use_Eps2Eps)
+     {
+	variable tmp_eps = xfig_make_tmp_file (path_basename_sans_extname(eps), ".eps");
+	() = run_cmd (1, sprintf ("%s %s -o %s", Dvips_Pgm, dvi, tmp_eps));
+	() = run_cmd (1, sprintf ("%s '%s' '%s'", Eps2eps_Pgm, tmp_eps, eps));
+	() = remove (tmp_eps);
+	return;
+     }
+   () = run_cmd (1, sprintf ("%s '%s' -o '%s'", Dvips_Pgm, dvi, eps));
 }
 
 %}}}
@@ -155,15 +159,15 @@ define xfig_get_eps_bbox (file)
    variable fp = fopen (file, "r");
    if (fp == NULL)
      verror ("Unable to open %s", file);
-   
+
    variable inside = 0;
    foreach (fp) using ("line")
      {
 	variable line = ();
-	
+
 	if (line[0] != '%')
 	  continue;
-	    
+
 	if (0 == strncmp ("%%Begin", line, 7))
 	  {
 	     inside++;
@@ -188,12 +192,11 @@ define xfig_get_eps_bbox (file)
 	line = strchop (line, ':', 0)[1];
 	if (4 != sscanf (line, "%f %f %f %f", &x0, &y0, &x1, &y1))
 	  break;
-	
+
 	return (x0, y0, x1, y1);
      }
    verror ("Bad or no bounding box in EPS file %s", file);
 }
-
 
 private variable Equation_Number = 0;
 
@@ -208,7 +211,7 @@ private define open_latex_file (file)
    variable fp = fopen (file, "w");
    if (fp == NULL)
      verror ("Unable to open %s", file);
-   
+
    return fp;
 }
 
@@ -216,17 +219,17 @@ private define check_font_struct (s)
 {
    variable f = s.size;
    if (f == NULL)
-     f = "\\normalsize";   
+     f = "\\normalsize";
    if (f[0] != '\\')
      f = strcat ("\\", f);
-   
+
    if (0 == length (where (f == Supported_Font_Sizes)))
      {
 	() = fprintf (stderr, "*** Warning: font size %s not supported\n", f);
 	f = "\\normalsize";
      }
    s.size = f;
-   
+
    f = s.color;
    if (f == NULL)
      f = 0;
@@ -237,7 +240,7 @@ private define check_font_struct (s)
 	f = xfig_lookup_color_rgb (f);
      }
    s.color = f;
-   
+
    f = s.style;
    if (f != NULL)
      {
@@ -269,12 +272,12 @@ define xfig_make_font ()
    variable s = make_font_struct (;;__qualifiers);
    if (_NARGS == 0)
      return s;
-   
+
    if (_NARGS != 3)
      {
 	usage ("font = %s (style, size, color)", _function_name ());
      }
-   
+
    variable style, size, color;
    if (style != NULL) s.style = style;
    if (size != NULL) s.size = size;
@@ -283,12 +286,38 @@ define xfig_make_font ()
    return s;
 }
 
-   
+private define add_unique_packages (list, dlist)
+{
+   variable p, l;
+   foreach p (dlist)
+     {
+	foreach l (list)
+	  {
+	     if (l == p)
+	       break;
+	  }
+	then list_append (list, p);
+     }
+}
+
+private define get_package_list (extra)
+{
+   variable packages = {};
+   add_unique_packages (packages, Latex_Packages);
+   if (extra != NULL)
+     {
+	if ((typeof(extra) != List_Type) && (typeof(extra) != Array_Type))
+	  extra = {extra};
+	add_unique_packages (packages, extra);
+     }
+   return packages;
+}
+
 private define make_preamble (font)
 {
    variable str;
    str = sprintf ("\\documentclass[%dpt]{article}\n", Latex_Font_Size);
-   foreach (Latex_Packages)
+   foreach (get_package_list (qualifier("extra_packages")))
      {
 	variable package = ();
 	str = strcat (str, sprintf ("\\usepackage{%s}\n", package));
@@ -308,10 +337,10 @@ private define make_preamble (font)
 		       str, r / 255.0, g/255.0, b/255.0);
 	str = strcat (str, "\\color{defaultcolor}\n");
      }
-   
+
    if (Preamble_Commands != NULL)
      str = strcat (str, Preamble_Commands, "\n");
-   
+
    variable preamble = qualifier ("preamble", NULL);
    if (preamble != NULL)
      {
@@ -342,7 +371,7 @@ private define close_latex_file (fp)
 private define make_latex_env (env, envargs, body)
 {
    if (env != NULL)
-     body = sprintf ("\\begin{%s}%s\n%s\n\\end{%s}", 
+     body = sprintf ("\\begin{%s}%s\n%s\n\\end{%s}",
 		     env, envargs, body, env);
    return body;
 }
@@ -366,7 +395,7 @@ private define escape_latex_string (str)
 {
    return strtrans (str, "\n\t", "\001\002");
 }
-   
+
 private define add_to_cache (epsfile, escaped_str)
 {
    if (NULL == stat_file (epsfile))
@@ -437,7 +466,13 @@ private define find_cached_file (str)
    ifnot (assoc_key_exists (Latex_Cache, str))
      return NULL;
 
-   return Latex_Cache[str];
+   variable file = Latex_Cache[str];
+   if (-1 == access (file, R_OK))
+     {
+	assoc_delete_key (Latex_Cache, str);
+	file = NULL;
+     }
+   return file;
 }
 
 private define latex_xxx2eps (env, envargs, xxx, base, fontstruct)
@@ -447,7 +482,13 @@ private define latex_xxx2eps (env, envargs, xxx, base, fontstruct)
    variable epsfile = find_cached_file (hash);
 
    if (epsfile != NULL)
-     return epsfile;
+     {
+	if (_XFig_Verbose > 0)
+	  {
+	     vmessage ("Using cached file %s", epsfile);
+	  }
+	return epsfile;
+     }
 
    variable tex = make_tmp_latex_file (base);
    epsfile = make_autoeps_file (base);
@@ -455,9 +496,8 @@ private define latex_xxx2eps (env, envargs, xxx, base, fontstruct)
    write_latex_file (tex, str);
 
    run_latex (tex);
-   run_dvips (path_sans_extname (tex) + ".dvi", epsfile);
-   if(qualifier_exists("eps2eps"))  run_eps2eps(epsfile);
-   
+   run_dvips (path_sans_extname (tex) + ".dvi", epsfile ;; __qualifiers);
+
    add_to_cache (epsfile, hash);
    save_cache ();
 
@@ -524,7 +564,6 @@ define xfig_new_eq (eq)
    do_xfig_new_xxx (&xfig_eq2eps, eq, fontstruct;; __qualifiers);
 }
 
-
 %!%+
 %\function{xfig_new_text}
 %\synopsis{Create a text object by running LaTeX}
@@ -546,12 +585,13 @@ define xfig_new_text ()
      fontstruct = make_font_struct (;;__qualifiers);
    variable text = ();
    variable q = __qualifiers();
-   variable rotate =  qualifier("rotate");
-   if(rotate!=NULL  &&  0 < __is_datatype_numeric(typeof(rotate)) < 3)
-   {
-     text = sprintf("\\rotatebox{%S}{%s}", rotate, text);
-     q = struct_combine(q, "eps2eps");
-   }
+   variable rotate = qualifier("rotate");
+   if ((rotate!=NULL)
+       && (0 < __is_datatype_numeric(typeof(rotate)) < 3))
+     {
+	text = sprintf ("\\rotatebox{%S}{%s}", rotate, text);
+	q = struct_combine (q, struct{extra_packages="graphicx", eps2eps=1});
+     }
    do_xfig_new_xxx (&xfig_text2eps, text, fontstruct;; q);
 }
 
@@ -573,4 +613,9 @@ define xfig_set_latex_preamble (preamble)
 define xfig_get_latex_preamble (preamble)
 {
    return Preamble_Commands;
+}
+
+define xfig_use_eps2eps (enable)
+{
+   Use_Eps2Eps = enable;
 }

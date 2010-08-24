@@ -129,3 +129,7 @@ Changes since 0.1.0
 	 xfig_set_latex_verbosity function, ...
        * plot.sl: fixes to the plot_scale method. depth qualifiers for
 	 error bars, etc,
+71. xfig/latex.sl: Changed the way verbose is handled.  Also if latex
+    fails, run it again in interactive mode so that the error message
+    gets displayed.
+72. src/tests/: Renamed and modified the test scripts.
