@@ -1498,7 +1498,7 @@ private define xaxis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.xaxis")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.xaxis";; __qualifiers)) return;
    variable args = __pop_args (_NARGS);
    do_axis_method (__push_args (args), "x1axis", 1 ;; __qualifiers);
    do_axis_method (__push_args (args), "x2axis", 0 ;; __qualifiers);
@@ -1515,7 +1515,7 @@ private define yaxis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.yaxis")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.yaxis";; __qualifiers)) return;
    variable args = __pop_args (_NARGS);
    do_axis_method (__push_args (args), "y1axis", 2 ;; __qualifiers);
    do_axis_method (__push_args (args), "y2axis", 0 ;; __qualifiers);
@@ -1532,7 +1532,7 @@ private define x1axis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.x1axis")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.x1axis";; __qualifiers)) return;
    variable args = __pop_args (_NARGS);
    do_axis_method (__push_args (args), "x1axis", 1 ;; __qualifiers);
 }
@@ -1548,7 +1548,7 @@ private define x2axis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.x2axis")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.x2axis";; __qualifiers)) return;
    variable args = __pop_args (_NARGS);
    do_axis_method (__push_args (args), "x2axis", 1 ;; __qualifiers);
 }
@@ -1564,7 +1564,7 @@ private define y1axis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.y1axis")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.y1axis";; __qualifiers)) return;
    variable args = __pop_args (_NARGS);
    do_axis_method (__push_args (args), "y1axis", 2 ;; __qualifiers);
 }
@@ -1580,7 +1580,7 @@ private define y2axis_method () %{{{
 %\seealso{xfig_plot.axis}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.y2axis")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.y2axis";; __qualifiers)) return;
    variable args = __pop_args (_NARGS);
    do_axis_method (__push_args (args), "y2axis", 2 ;; __qualifiers);
 }
@@ -1624,7 +1624,7 @@ private define axis_method () %{{{
 %\seealso{xfig_plot.xaxis, xfig_plot.x1axis, xfig_plot.x2axis, xfig_plot.yaxis, xfig_plot.y1axis, xfig_plot.y2axis}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.axis")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.axis";; __qualifiers)) return;
    variable args = __pop_args (_NARGS);
    xaxis_method (__push_args (args);; __qualifiers);
    yaxis_method (__push_args (args);; __qualifiers);
@@ -1748,7 +1748,7 @@ private define world1_method () %{{{
 %\seealso{xfig_plot.world}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.world1")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.world1";; __qualifiers)) return;
    return do_world_method (1, _NARGS ;; __qualifiers);
 }
 %}}}
@@ -1762,7 +1762,7 @@ private define world2_method () %{{{
 %\seealso{xfig_plot.world}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.world2")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.world2";; __qualifiers)) return;
    variable w, args;
    args = __pop_args (_NARGS-1);
    w = ();
@@ -1789,7 +1789,7 @@ private define world_method () %{{{
 %\seealso{xfig_plot.world1, xfig_plot.world2}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.world")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.world";; __qualifiers)) return;
    variable args = __pop_args (_NARGS);
    do_world_method (__push_args (args), 1, _NARGS ;; __qualifiers);
    do_world_method (__push_args (args), 2, _NARGS ;; __qualifiers);
@@ -1882,7 +1882,7 @@ private define xfig_coords_method(p, x, y) %{{{
 %\seealso{xfig_plot--wcs}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.xfig_coords")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.xfig_coords";; __qualifiers)) return;
    p = p.plot_data;
    variable ax, ay;
    (ax, ay) = get_world_axes (p;; __qualifiers);
@@ -2534,7 +2534,7 @@ private define plot_method () %{{{
 %\seealso{xfig_plot--initialize-plot, xfig_plot--wcs}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.plot")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.plot";; __qualifiers)) return;
    variable x, y, dx = NULL, dy = NULL, p;
 
    switch (_NARGS)
@@ -2692,7 +2692,7 @@ private define hplot_method () %{{{
 %\seealso{xfig_plot--initialize-plot, xfig_plot--wcs}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.hplot")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.hplot";; __qualifiers)) return;
 
    variable x, y, dy = NULL, p;
 
@@ -2826,7 +2826,7 @@ private define add_object_method () %{{{
 %\seealso{xfig_plot--wcs}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.add_object")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.add_object";; __qualifiers)) return;
 
    variable p, obj, x=NULL, y=NULL, dx=0, dy=0;
    switch (_NARGS)
@@ -2903,7 +2903,7 @@ private define xylabel_method () %{{{
 %\seealso{xfig_plot_text, xfig_plot--wcs}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.xylabel")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.xylabel";; __qualifiers)) return;
 
    variable w, text, x, y, dx = 0, dy = 0;
    if (_NARGS == 6)
@@ -2927,7 +2927,7 @@ private define xlabel_method () %{{{
 %\seealso{xfig_new_text}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.xlabel")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.xlabel";; __qualifiers)) return;
    if (_NARGS != 2)  usage (".xlabel (label [; qualifiers])");
 
    variable p, label;
@@ -2948,7 +2948,7 @@ private define ylabel_method () %{{{
 %\seealso{xfig_new_text}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.ylabel")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.ylabel";; __qualifiers)) return;
    if (_NARGS != 2)  usage (".ylabel (label [; qualifiers])");
    variable p, label;
    (p, label) = ();
@@ -2968,7 +2968,7 @@ private define x2label_method () %{{{
 %\seealso{xfig_new_text}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.x2label")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.x2label";; __qualifiers)) return;
    if (_NARGS != 2)  usage (".x2label (label [; qualifiers])");
    variable w, p, label;
    (w, label) = ();
@@ -2992,7 +2992,7 @@ private define y2label_method () %{{{
 %\seealso{xfig_new_text}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.y2label")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.y2label";; __qualifiers)) return;
    if (_NARGS != 2)  usage (".y2label (label [; qualifiers])");
    variable p, label;
    (p, label) = ();
@@ -3017,7 +3017,7 @@ private define title_method (w, title) %{{{
 %  Any previously existing title object is removed.
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.title")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.title";; __qualifiers)) return;
 
    variable x0, x1, y, z;
    variable p = w.plot_data;
@@ -3063,7 +3063,7 @@ define plot_png_method () %{{{
 %   see \sfun{xfig_plot--initialize_plot}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.plot_png")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.plot_png";; __qualifiers)) return;
 
    variable w, png;
    if (_NARGS != 2)
@@ -3085,7 +3085,7 @@ private define plot_pict_method () %{{{
 %   see \sfun{xfig_plot--initialize_plot}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.plot_pict")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.plot_pict";; __qualifiers)) return;
 
    variable w, img;
    if (_NARGS != 2)
@@ -3119,7 +3119,7 @@ private define shade_region_method () %{{{
 %\seealso{xfig_plot--initialize_plot, xfig_plot--wcs}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.shade_region")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.shade_region";; __qualifiers)) return;
 
    variable p, w, xs, ys, xmin, xmax, ymin, ymax;
 
@@ -3185,7 +3185,7 @@ private define get_world_method (w)
 %\seealso{xfig_plot--wcs}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.get_world")) return;
+   if (_xfig_check_help (_NARGS, "xfig_plot.get_world";; __qualifiers)) return;
 
    variable p = w.plot_data;
 
