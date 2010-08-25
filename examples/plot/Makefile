@@ -9,13 +9,13 @@ PNG_FILES = \
   image.png \
   multiplot.png \
   multiplot2.png \
+  overlay.png \
   scatter.png \
   simple.png \
   subplot.png \
   symbol.png \
   ticlabels.png \
   world.png
-# overlay.png \
 # project.png \
 
 png: $(PNG_FILES)

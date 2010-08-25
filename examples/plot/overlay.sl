@@ -1,15 +1,23 @@
 require ("xfig");
 require ("png");
-require ("gslrand");
-require ("histogram");
+require ("rand");
+try
+{
+   require ("histogram");
+}
+catch IOError:
+{
+   () = fprintf (stderr, "This example requires the histogram module\n");
+   exit (0);
+}
 
 private define make_hist_image (x, h, xmin, xmax, ymin, ymax, color)
 {
    variable w = xfig_plot_new ();
    w.world (xmin, xmax, ymin, ymax);
-   xfig_plot_set_line_color (w, color);
-   xfig_plot_shaded_histogram (w, x, h, color, 20);
-   w.plot ([xmin, xmax], [ymin, ymax]; line=0, sym="point");
+   w.axes (; off);
+   w.hplot (x, h; fill=20, color=color);
+   w.plot ([xmin, xmax], [ymin, ymax]; sym="point");
    variable tmp = "tmp.png";
    w.render (tmp);
    variable img = png_read (tmp);
@@ -17,18 +25,17 @@ private define make_hist_image (x, h, xmin, xmax, ymin, ymax, color)
    return img;
 }
 
-   
 public define slsh_main ()
 {
    variable mu = 100, sigma = 15;
-   variable data = mu + ran_gaussian (sigma, 10000);
+   variable data = mu + rand_gauss (sigma, 10000);
    variable x = [int(min(data)):1+int(max(data)):1];
    variable h = hist1d (data, x)/(1.0*length(data));
    variable xmin = min(x), xmax = max(x), ymin = 0, ymax = max(h);
 
    variable img1 = make_hist_image (x, h, xmin, xmax, ymin, ymax, "red");
 
-   data = 10 + mu + ran_gaussian (sigma, 10000);
+   data = 10 + mu + rand_gauss (sigma, 10000);
    x = [int(min(data)):1+int(max(data)):1];
    h = hist1d (data, x)/(1.0*length(data));
    variable img2 = make_hist_image (x, h, xmin, xmax, ymin, ymax, "blue");
@@ -39,7 +46,7 @@ public define slsh_main ()
    variable img2_r = png_rgb_get_r (img2);
    variable img2_g = png_rgb_get_g (img2);
    variable img2_b = png_rgb_get_b (img2);
-   
+
    variable w1 = 0.5 + img1_r*0.0;
    variable i = where ((img1 == 0xFFFFFF) and (img2 != 0xFFFFFF));
    w1[i] = 0.0;
@@ -55,10 +62,11 @@ public define slsh_main ()
    png_write (png, img12);
 
    variable w = xfig_plot_new ();
-   w.world (xmin, ymin, xmax, ymax);
-   xfig_plot_png (w, png);
+   w.world (xmin, xmax, ymin, ymax);
+   w.plot_png (png);
    w.xlabel ("IQ");
    w.ylabel ("Probability [bin$^{-1}$]");
-   w.title ("IQ; $\sigma=100;\mu=15$"R);
+   w.title (`$\mu=100;\sigma=15$ vs. $\mu=110;\sigma=15$`);
    w.render("overlay.png");
+   ()=remove (png);
 }

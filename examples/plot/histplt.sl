@@ -28,6 +28,6 @@ public define slsh_main ()
    w.plot (x,h; color="blue");
    w.xlabel ("IQ");
    w.ylabel ("Probability [bin$^{-1}$]");
-   w.title ("IQ; $\sigma=100;\mu=15$"R);
+   w.title (`$\mu=100;\sigma=15$`);
    w.render ("histplt.png");
 }
