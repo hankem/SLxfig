@@ -15,6 +15,32 @@ private define intersect (x0, dx, y0, dy, a, da, b, db)
    return s, t;
 }
 
+private define project_to_boundary (x0, x1, xmin, xmax, delta_is_zero)
+{
+   variable i = where (isinf(x0) and (delta_is_zero));
+   ifnot (length (i))
+     return;
+
+   variable j = where ((x0[i] < xmin) and (x1[i] > xmin));
+   x0[i[j]] = xmin;
+   j = where ((x0[i] > xmax) and (x1[i] < xmax));
+   x0[i[j]] = xmax;
+}
+
+% Here the line segment is represented by (x0,y0) -> (x1,y1).  These
+% coordinates can be infinite.  Since we are interested in where these
+% segments intersect within the box defined by (xmin,xmax,ymin,ymax),
+% project the line segment to the box.
+private define project_infinite_values (x0, x1, y0, y1, xmin, xmax, ymin, ymax)
+{
+   variable delta_is_zero = abs((y1-y0) < 1e-6*(ymax-ymin));
+   project_to_boundary (x0, x1, xmin, xmax, delta_is_zero);
+   project_to_boundary (x1, x0, xmin, xmax, delta_is_zero);
+   delta_is_zero = abs((x1-x0) < 1e-6*(xmax-xmin));
+   project_to_boundary (y0, y1, ymin, ymax, delta_is_zero);
+   project_to_boundary (y1, y0, ymin, ymax, delta_is_zero);
+}
+
 
 %!%+
 %\function{xfig_clip_polyline2d}
@@ -41,7 +67,7 @@ define xfig_clip_polyline2d (x, y, xmin, xmax, ymin, ymax)
    variable list = xfig_new_polyline_list ();
    % Suppose is_outside looks like:
    %   00001000110000111
-   % Separate the line segments into those that lie in the region and those 
+   % Separate the line segments into those that lie in the region and those
    % that are outside.
    variable len = length (x);
    if (len < 2)
@@ -70,7 +96,7 @@ define xfig_clip_polyline2d (x, y, xmin, xmax, ymin, ymax)
 	     list.insert (vector(x[j],y[j],0.0*j));
 	  }
      }
-   
+
    % Now deal with the segments that involve outside points
    i = [0:len-2];
    variable x0 = x[i], y0 = y[i];
@@ -90,6 +116,8 @@ define xfig_clip_polyline2d (x, y, xmin, xmax, ymin, ymax)
    y0 = y0[bad]; y1 = y1[bad];
    is_outside0 = is_outside0[bad];
    is_outside1 = is_outside1[bad];
+
+   project_infinite_values (x0, x1, y0, y1, xmin, xmax, ymin, ymax);
 
 #iffalse
    % swap 0 <--> 1 such that 0 represents the inside point
@@ -114,12 +142,12 @@ define xfig_clip_polyline2d (x, y, xmin, xmax, ymin, ymax)
 	s[i] = ss;
 	t[i] = tt;
      }
-   
+
    _for (0, length(x0)-1, 1)
      {
 	i = ();
 	variable min_t = 2, max_t = -1;
-	
+
 	if (is_outside0[i] == 0)
 	  min_t = 0;
 	if (is_outside1[i] == 0)
@@ -151,7 +179,7 @@ define xfig_clip_polyline2d (x, y, xmin, xmax, ymin, ymax)
 	variable y1_i = y0_i + dy_i*max_t;
 	x0_i += dx_i*min_t;
 	y0_i += dy_i*min_t;
-	
+
 	if (x0_i > xmax) x0_i = xmax;
 	if (x0_i < xmin) x0_i = xmin;
 	if (y0_i > ymax) y0_i = ymax;
@@ -173,10 +201,9 @@ define xfig_clip_polyline2d (x, y, xmin, xmax, ymin, ymax)
 	     vmessage ("Orig coords: %g,%g -> %g,%g",x0[i],y0[i],x1[i],y1[i]);
 	  }
 
-
 	list.insert (vector ([x0_i, x1_i], [y0_i, y1_i], [0,0]));
      }
-   
+
    return list;
 }
 
@@ -204,7 +231,7 @@ private define intersect_y (x0, y0, x1, y1, y)
 private define clip_1 (x, y, is_outside, intersect, a)
 {
    variable fx, fy, sx, sy, xi, yi, xx, yy;
-   
+
    variable n = length (x);
    if (n == 0)
      return x, y;
@@ -240,7 +267,7 @@ private define clip_1 (x, y, is_outside, intersect, a)
 	     list_append (new_y, sy);
 	  }
      }
-   
+
    if (length (new_x) and (last_outside != is_outside[0]))
      {
 	(xx, yy) = (@intersect) (sx, sy, fx, fy, a);

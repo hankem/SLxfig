@@ -73,7 +73,7 @@ xfig.sl: ../changes.txt
 test:
 	@for X in tests/test_*.sl; \
 	do \
-		slsh $$X; \
+		slsh $$X '/tmp/slxfig-$$uid/$$ppid'; \
 	done
 #---------------------------------------------------------------------------
 # Installation Rules

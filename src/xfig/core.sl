@@ -1126,6 +1126,20 @@ define xfig_set_paper_size (paper)
    XFig_Header.papersize = paper;
 }
 
+%!%+
+%\function{xfig_set_verbose}
+%\synopsis{Control the level of chattiness}
+%\usage{xfig_set_verbose(Integer_Type level)}
+%\description
+%  This function may be used to control the verbosity level of the
+%  xfig functions that display informational messages.
+%\notes
+%  It is not always possible to control the verbosity level of
+%  external programs.  For the LaTeX/eps interface, if the level is 0,
+%  then only the running command will be displayed and any output will
+%  be redirected to \file{/dev/null}.  Otherwise if level > 0, then
+%  the output will not be redirected.
+%!%-
 define xfig_set_verbose (n)
 {
    _XFig_Verbose = n;

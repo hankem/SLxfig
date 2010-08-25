@@ -224,9 +224,11 @@ private define round_generic_tic (x)
 
 private define generic_compute_tics (wcs, xmin, xmax, ntics)
 {
-   ifnot (ntics mod 2) ntics--;
-   variable c = [0:1:#ntics];
-   variable dc = (c[1] - c[0])*0.75;
+   % Increase the density a bit
+   variable ntics1 = ntics * 2;
+   ifnot (ntics1 mod 2) ntics1++;
+   variable c = [0:1:#ntics1];
+   variable dc = 0.501*(c[1]-c[0]);%((0.5*ntics1)/ntics);
    variable tics = normalized_to_world (wcs, c, xmin, xmax);
    variable s = sign(tics);
    tics *= s;
@@ -247,8 +249,10 @@ private define generic_compute_tics (wcs, xmin, xmax, ntics)
    tics = a * 10^b;
    variable n = length (tics);
    variable ok = Char_Type[n];
+   variable loop_num = 0;
    loop (5)
      {
+	loop_num++;
 	_for i (0, n-1, 1)
 	  {
 	     if (ok[i])
@@ -265,10 +269,11 @@ private define generic_compute_tics (wcs, xmin, xmax, ntics)
 		  if (dc1 < dc)
 		    {
 		       tics[i] = tic_1;
-		       ok[i] = 1;
+		       ok[i] = loop_num;
 		       continue;
 		    }
 	       }
+
 	     tic_1 = int(a_i)*b_i;
 	     tic_2 = nint(a_i)*b_i;
 	     dc1 = abs(c_i-world_to_normalized (wcs, s[i]*tic_1, xmin, xmax));
@@ -278,7 +283,7 @@ private define generic_compute_tics (wcs, xmin, xmax, ntics)
 		  if (dc1 < dc)
 		    {
 		       tics[i] = tic_1;
-		       ok[i] = 1;
+		       ok[i] = loop_num;
 		       continue;
 		    }
 	       }
@@ -287,7 +292,7 @@ private define generic_compute_tics (wcs, xmin, xmax, ntics)
 		  if (dc2 < dc)
 		    {
 		       tics[i] = tic_2;
-		       ok[i] = 1;
+		       ok[i] = loop_num;
 		       continue;
 		    }
 	       }
@@ -306,23 +311,52 @@ private define generic_compute_tics (wcs, xmin, xmax, ntics)
    while (i < n)
      {
 	variable t1 = tics[i];
+	variable ok1 = ok[i];
 	i++;
 	if (t1 == t0)
 	  continue;
 	j++;
 	tics[j] = t1;
+	ok[j] = ok1;
 	t0 = t1;
      }
    tics = tics[[0:j]];
+   ok = ok[[0:j]];
    n = length(tics);
    if (n <= 1)
      return NULL, NULL;
+
+   tics = tics[where(xmin <= tics <= xmax)];
 
    t0 = tics[0];
    t1 = tics[-1];
    if (t0 < 0.0 < t1)
      tics[wherefirst (minabs(tics) == abs(tics))] = 0;
 
+   if (length(tics) > ntics)
+     {
+	% Prune the tics to the desired number.
+	c = world_to_normalized (wcs, tics, xmin, xmax);
+	while (length(tics) > ntics)
+	  {
+	     dc = shift (c, 1) - c;
+	     dc[-1] = 10;
+	     i = wherefirst (dc == min(dc));
+	     % We can eliminate tics[i] or tics[i+1].
+	     %   |---------|-----|---------|
+	     %     dc[i-1]  dc[i]  dc[i+1]
+	     if ((tics[i] == 0)
+		 || ((tics[i+1] != 0)
+		     && (ok[i+1]>=ok[i])
+		     && ((i == 0)
+			 || (dc[i-1] > dc[i+1]))))
+	       i++;
+	     j = [[0:i-1],[i+1:length(tics)-1]];
+	     tics = tics[j];
+	     c = c[j];
+	     ok = ok[j];
+	  }
+     }
    return tics, NULL;
 }
 
@@ -680,10 +714,27 @@ private define format_labels_using_scientific_notation (tics) %{{{
    variable b = int (log10_tics);
    variable a = log10_tics - b;
    variable j = where (a < 0.0); a[j] += 1; b[j] -= 1;
-   a = nint(10^a);
-   j = where (a == 10); a[j] = 1; b[j] += 1;
-   a[where(tics<0)] *= -1;
-   return array_map (String_Type, &sprintf, "$\bm%g{\times}10^{%d}$"R, a, b);
+   if (max(b)-min(b) == 1)
+     {
+	j = where (b == max(b));
+	a[j] += 1;
+	b[j] -= 1;
+     }
+
+   variable mant_factor = 1.0;
+   loop (20)
+     {
+	variable mant = nint(10^a);
+	mant[where(tics<0)] *= -1;
+	ifnot (all(shift(mant,1)-mant))
+	  {
+	     mant_factor *= 0.1;
+	     a += 1;
+	  }
+     }
+   mant *= mant_factor;
+
+   return array_map (String_Type, &sprintf, "$\bm%g{\times}10^{%d}$"R, mant, b);
 }
 %}}}
 

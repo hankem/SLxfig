@@ -1,5 +1,5 @@
 require ("xfig");
-require ("gslrand");
+require ("rand");
 try
 {
    require ("histogram");
@@ -10,10 +10,15 @@ catch IOError:
    exit (0);
 }
 
+private define gaussian_pdf (x, sigma)
+{
+   return exp(-0.5*(x/sigma)^2)/sigma/sqrt(2*PI);
+}
+
 define slsh_main ()
 {
    variable mu = 5, sigma = 1;
-   variable data = mu + ran_gaussian (sigma, 100);
+   variable data = mu + rand_gauss (sigma, 100);
    variable dx = 0.4;
    variable x = [min(data):max(data):dx];
    variable y = hist1d (data, x);
