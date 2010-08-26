@@ -222,6 +222,36 @@ xfig_new_text
 
 --------------------------------------------------------------
 
+xfig_plot--errorbars
+
+ QUALIFIERS
+  ; eb_line=intval: line style for error bars (default: `line' qualifier)
+  ; eb_color=intval: color of error bars (default: `color' qualifier)
+  ; eb_width=intval: thickness of error bars (default: `width' qualifier)
+  ; eb_depth=intval: Xfig depth of error bars (default: `depth' qualifier)
+  ; [x,y]eb_factor=intval: terminal size of error bars (default: 1)
+  ; [x,y]min_max: Asymmetric error bars are already min/max values.
+
+ DESCRIPTION
+  Asymmetric error bars are specified as lists of negative and positive errors.
+  If the `min_max' qualifier (or the appropriate `{x,y}min_max' qualifier) is set,
+  then the elements of the list are considered as minimum and maximum values.
+
+ EXAMPLE
+
+  variable xfig_plot = xfig_plot_new();
+  xfig_plot.world(0, 10, 0, 10);
+  xfig_plot.plot(1, 5,          1    ; sym="x");           % y = 5 (+-1)
+  xfig_plot.plot(3, 5,         {2, 3}; sym="x");           % y = 5 (+3)(-2)
+  xfig_plot.plot(5, 5,         {3, 8}; sym="x",  minmax);  % y = 5 [3...8] (same as above)
+  xfig_plot.plot(7, 5, {1, 2}, {3, 8}; sym="x", yminmax);  % x = 8 (+1)(-2),  but y = 5 [3...8]
+
+
+ SEE ALSO
+  xfig_plot.plot, xfig_plot.hplot
+
+--------------------------------------------------------------
+
 xfig_plot--initialize_plot
 
  SYNOPSIS
@@ -375,13 +405,15 @@ xfig_plot.hplot
   ; color:
   ; line: linestyle
   ; width:
-  ; eb_factor: (default: 1)
+
+ % qualifiers for error bars:
+   see `xfig_plot--errorbars'
 
  DESCRIPTION
   If no `x' values are given, `x = [1:length(y)]' is assumed.
 
  SEE ALSO
-  xfig_plot--initialize-plot, xfig_plot--wcs
+  xfig_plot--initialize-plot, xfig_plot--wcs, xfig_plot--errorbars
 
 --------------------------------------------------------------
 
@@ -399,28 +431,24 @@ xfig_plot.plot
  % qualifiers to specifiy the world coordinate system,
    see `xfig_plot--wcs'
 
- %  general qualifiers:
+ % qualifiers for lines (defaults for error bars and symbols):
   ; color=strval: color of lines symbols and error bars
   ; width=intval: thickness of lines and error bars
   ; depth=intval: Xfig depth
-
- % qualifiers for lines and error bars:
   ; line=intval: line style for lines and error bars
-  ; eb_line=intval: line style for error bars [precendence over line]
-  ; eb_color=intval: color of error bars [precedence over color]
-  ; eb_width=intval: thickness of error bars [precedence over width]
-  ; eb_depth=intval: Xfig depth of error bars [precedence over depth]
-  ; [x,y]eb_factor=intval: terminal size of error bars (default: 1)
+
+ % qualifiers for error bars:
+   see `xfig_plot--errorbars'
 
  % qualifiers for symbols:
   ; sym=strval: symbol, see xfig_plot_get_symbol_names
-  ; symcolor=strval: color of symbols [precedence over color]
+  ; symcolor=strval: color of symbols (default: `color' qualifier)
   ; size=val: symbol point size
   ; fill=intval (from -1 to 20): area fill style
   ; fillcolor=strval: color for filled symbols
   ; symlinestyle=intval: line style to draw symbols
-  ; symwidth=intval: thickness of symbol lines [precedence over width]
-  ; symdepth=intval: Xfig depth of symbols [precedence over depth]
+  ; symwidth=intval: thickness of symbol lines (default: `width' qualifier)
+  ; symdepth=intval: Xfig depth of symbols (default: `depth' qualifier)
 
  DESCRIPTION
   If no `x' values are given, `x = [1:length(y)]' is assumed.
@@ -428,7 +456,7 @@ xfig_plot.plot
   unless the line qualifier is also specified.
 
  SEE ALSO
-  xfig_plot--initialize-plot, xfig_plot--wcs
+  xfig_plot--initialize-plot, xfig_plot--wcs, xfig_plot--errorbars
 
 --------------------------------------------------------------
 

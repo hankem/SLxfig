@@ -2002,46 +2002,66 @@ private define plot_lines (p, x, y) %{{{
 }
 %}}}
 
-private define pop_plot_err_parms (nargs) %{{{
+private define pop_plot_err_parms () %{{{
 {
-   variable p, x, y, dy;
-   (p, x, y, dy) = ();
+   variable p, x, y, err, is_x;
+           (p, x, y, err, is_x) = ();
 
-   variable 
-     i, dy_neg = dy, dy_pos = dy,
-     is_asymmetric = (typeof (dy) == List_Type);
-
-   if (is_asymmetric)
+   variable i, err_neg = err, err_pos = err;
+   if (typeof (err) == List_Type)  % asymmetric error bars
      {
         if(qualifier("minmax"))
 	  {
-	     dy_neg = y - dy[0];  % dy[0]  is actually  y - dy_neg
-	     dy_pos = dy[1] - y;  % dy[1]  is actually  dy_pos - y
+	     variable center = (is_x ? x : y);
+	     err_neg = center - err[0];
+	     err_pos = err[1] - center;
 	  }
         else
 	  {
-	     dy_neg = dy[0];
-	     dy_pos = dy[1];
+	     err_neg = err[0];
+	     err_pos = err[1];
 	  }
-	i = wherenot (isnan(x) or isnan(y) or isnan(dy_neg) or isnan(dy_pos));
+	i = wherenot (isnan(x) or isnan(y) or isnan(err_neg) or isnan(err_pos));
      }
    else
-     i = wherenot (isnan(x) or isnan(y) or isnan(dy_neg));
+     i = wherenot (isnan(x) or isnan(y) or isnan(err));
 
    if (length (i) != length (x))
      {
 	x = x[i];
 	y = y[i];
-	if (typeof(dy_neg) == Array_Type)
-	  dy_neg = dy_neg[i];
-	if (typeof(dy_pos) == Array_Type)
-	  dy_pos = dy_pos[i];
+	if (typeof(err_neg) == Array_Type)  err_neg = err_neg[i];
+	if (typeof(err_pos) == Array_Type)  err_pos = err_pos[i];
      }
-   return p.plot_data, x, y, dy_neg, dy_pos;
+   return p.plot_data, x, y, err_neg, err_pos;
 }
 %}}}
 
 private define insert_errbar_list (p, lines) %{{{
+%!%+
+%\function{xfig_plot--errorbars}
+%\qualifiers
+%\qualifier{eb_line=intval}{line style for error bars}{\exmp{line} qualifier}
+%\qualifier{eb_color=intval}{color of error bars}{\exmp{color} qualifier}
+%\qualifier{eb_width=intval}{thickness of error bars}{\exmp{width} qualifier}
+%\qualifier{eb_depth=intval}{Xfig depth of error bars}{\exmp{depth} qualifier}
+%\qualifier{[x,y]eb_factor=intval}{terminal size of error bars}{1}
+%\qualifier{[x,y]min_max}{Asymmetric error bars are already min/max values.}
+%\description
+%  Asymmetric error bars are specified as lists of negative and positive errors.
+%  If the \exmp{min_max} qualifier (or the appropriate \exmp{{x,y}min_max} qualifier) is set,
+%  then the elements of the list are considered as minimum and maximum values.
+%\example
+%#v+
+%  variable xfig_plot = xfig_plot_new();
+%  xfig_plot.world(0, 10, 0, 10);
+%  xfig_plot.plot(1, 5,          1    ; sym="x");           % y = 5 (+-1)
+%  xfig_plot.plot(3, 5,         {2, 3}; sym="x");           % y = 5 (+3)(-2)
+%  xfig_plot.plot(5, 5,         {3, 8}; sym="x",  minmax);  % y = 5 [3...8] (same as above)
+%  xfig_plot.plot(7, 5, {1, 2}, {3, 8}; sym="x", yminmax);  % x = 8 (+1)(-2),  but y = 5 [3...8]
+%#v-
+%\seealso{xfig_plot.plot, xfig_plot.hplot}
+%!%-
 {
    variable depth = qualifier ("eb_depth", qualifier ("depth",   p.line_depth));
    variable width = qualifier ("eb_width", qualifier ("width",   p.thickness ));
@@ -2060,7 +2080,7 @@ private define insert_errbar_list (p, lines) %{{{
 private define plot_erry () %{{{
 {
    variable p, x, y, dy_neg, dy_pos;
-   (p, x, y, dy_neg, dy_pos) = pop_plot_err_parms (_NARGS; minmax=qualifier_exists("minmax") || qualifier_exists("yminmax"));
+   (p, x, y, dy_neg, dy_pos) = pop_plot_err_parms (0; minmax=qualifier_exists("minmax") || qualifier_exists("yminmax"));
    variable ax, ay;
    (ax, ay) = get_world_axes (p ;; __qualifiers);
    variable term_factor = qualifier ("yeb_factor", qualifier ("eb_factor", 1));
@@ -2116,7 +2136,7 @@ private define plot_erry () %{{{
 private define plot_errx () %{{{
 {
    variable p, x, y, dx_neg, dx_pos;
-   (p, x, y, dx_neg, dx_pos) = pop_plot_err_parms (_NARGS; minmax=qualifier_exists("minmax") || qualifier_exists("xminmax"));
+   (p, x, y, dx_neg, dx_pos) = pop_plot_err_parms (1; minmax=qualifier_exists("minmax") || qualifier_exists("xminmax"));
    variable ax, ay;
    (ax, ay) = get_world_axes (p ;; __qualifiers);
    variable term_factor = qualifier ("xeb_factor", qualifier ("eb_factor", 1));
@@ -2564,33 +2584,29 @@ private define plot_method () %{{{
 % % qualifiers to specifiy the world coordinate system,
 %   see \sfun{xfig_plot--wcs}
 %
-% %  general qualifiers:
+% % qualifiers for lines (defaults for error bars and symbols):
 %\qualifier{color=strval}{color of lines symbols and error bars}
 %\qualifier{width=intval}{thickness of lines and error bars}
 %\qualifier{depth=intval}{Xfig depth}
-%
-% % qualifiers for lines and error bars:
 %\qualifier{line=intval}{line style for lines and error bars}
-%\qualifier{eb_line=intval}{line style for error bars [precendence over line]}
-%\qualifier{eb_color=intval}{color of error bars [precedence over color]}
-%\qualifier{eb_width=intval}{thickness of error bars [precedence over width]}
-%\qualifier{eb_depth=intval}{Xfig depth of error bars [precedence over depth]}
-%\qualifier{[x,y]eb_factor=intval}{terminal size of error bars}{1}
+%
+% % qualifiers for error bars:
+%   see \sfun{xfig_plot--errorbars}
 %
 % % qualifiers for symbols:
 %\qualifier{sym=strval}{symbol, see xfig_plot_get_symbol_names}
-%\qualifier{symcolor=strval}{color of symbols [precedence over color]}
+%\qualifier{symcolor=strval}{color of symbols}{\exmp{color} qualifier}
 %\qualifier{size=val}{symbol point size}
 %\qualifier{fill=intval (from -1 to 20)}{area fill style}
 %\qualifier{fillcolor=strval}{color for filled symbols}
 %\qualifier{symlinestyle=intval}{line style to draw symbols}
-%\qualifier{symwidth=intval}{thickness of symbol lines [precedence over width]}
-%\qualifier{symdepth=intval}{Xfig depth of symbols [precedence over depth]}
+%\qualifier{symwidth=intval}{thickness of symbol lines}{\exmp{width} qualifier}
+%\qualifier{symdepth=intval}{Xfig depth of symbols}{\exmp{depth} qualifier}
 %\description
 %  If no \exmp{x} values are given, \exmp{x = [1:length(y)]} is assumed.
 %  If a symbol is specified, no lines are drawn
 %  unless the line qualifier is also specified.
-%\seealso{xfig_plot--initialize-plot, xfig_plot--wcs}
+%\seealso{xfig_plot--initialize-plot, xfig_plot--wcs, xfig_plot--errorbars}
 %!%-
 {
    if (_xfig_check_help (_NARGS, "xfig_plot.plot";; __qualifiers)) return;
@@ -2630,21 +2646,13 @@ private define plot_method () %{{{
    variable sym = qualifier ("sym");
 
    if ((line != NULL) || (sym == NULL))
-     {
-	plot_lines (p, x, y ;; __qualifiers);
-     }
+     plot_lines (p, x, y ;; __qualifiers);
    if (sym != NULL)
-     {
-	plot_symbols (p, x, y ;; __qualifiers);
-     }
+     plot_symbols (p, x, y ;; __qualifiers);
    if (dx != NULL)
-     {
-	plot_errx (p, x, y, dx;; __qualifiers);
-     }
+     plot_errx (p, x, y, dx;; __qualifiers);
    if (dy != NULL)
-     {
-	plot_erry (p, x, y, dy;; __qualifiers);
-     }
+     plot_erry (p, x, y, dy;; __qualifiers);
 }
 
 %}}}
@@ -2745,10 +2753,12 @@ private define hplot_method () %{{{
 %\qualifier{color}{}
 %\qualifier{line}{linestyle}
 %\qualifier{width}{}
-%\qualifier{eb_factor}{}{1}
+%
+% % qualifiers for error bars:
+%   see \sfun{xfig_plot--errorbars}
 %\description
 %  If no \exmp{x} values are given, \exmp{x = [1:length(y)]} is assumed.
-%\seealso{xfig_plot--initialize-plot, xfig_plot--wcs}
+%\seealso{xfig_plot--initialize-plot, xfig_plot--wcs, xfig_plot--errorbars}
 %!%-
 {
    if (_xfig_check_help (_NARGS, "xfig_plot.hplot";; __qualifiers)) return;
