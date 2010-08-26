@@ -156,7 +156,6 @@ private variable XFig_Plot_Data_Type = struct
    line_depth, point_depth, axis_depth, image_depth,
    legend
 };
-
 %}}}
 
 %{{{ Coordinate transforms: linear, log, etc
@@ -517,7 +516,6 @@ private define resid_wcs_invfunc (y, n)
    return x*s;
 }
 xfig_plot_add_transform ("resid", &resid_wcs_func, &resid_wcs_invfunc, 2.0);
-
 %}}}
 
 private define compute_major_tics (xmin, xmax, maxtics, tic_intervals) %{{{
@@ -573,7 +571,6 @@ private define compute_major_tics (xmin, xmax, maxtics, tic_intervals) %{{{
    tic_intervals = [nmin:nmax]*tic_interval;
    return tic_intervals, nth_chosen;
 }
-
 %}}}
 
 private define get_major_tics (xmin, xmax, islog, maxtics) %{{{
@@ -615,7 +612,6 @@ private define get_major_tics (xmin, xmax, islog, maxtics) %{{{
 
    return ti, num_minor[n];
 }
-
 %}}}
 
 private define make_tic_objects (axis, tics, X, xmin, xmax, dX, dY, ticlen) %{{{
@@ -916,7 +912,6 @@ private define make_tic_label_objects (axis, tic_labels_just, tweakx, tweaky) %{
 
    position_tic_label_objects (axis, tics, tic_label_objects);
 }
-
 %}}}
 
 private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{{
@@ -1016,7 +1011,6 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
    axis.major_tics = major_tics[where ((major_tics >= xmin) and (major_tics <= xmax))];
    axis.minor_tics = minor_tics[where ((minor_tics >= xmin) and (minor_tics <= xmax))];
 }
-
 %}}}
 
 private define setup_axis_tics (p, axis) %{{{
@@ -1027,7 +1021,6 @@ private define setup_axis_tics (p, axis) %{{{
    %make_tic_marks_and_tic_labels (axis);
    make_tic_marks (axis);
 }
-
 %}}}
 
 % Usage: xfig_plot_set_*_tics (win, major_tics [,tic_labels,[minor_tics]])
@@ -1053,7 +1046,6 @@ private define pop_set_tic_args (fun, nargs) %{{{
    (win, major_tics) = ();
    return win, major_tics, tic_labels, minor_tics;
 }
-
 %}}}
 
 private define position_axis_label (axis) %{{{
@@ -1100,7 +1092,6 @@ private define add_axis (p, axis, wcs_type, major_tics, minor_tics) %{{{
    position_axis_label (axis);
    axis.needs_setup = 0;
 }
-
 %}}}
 
 private define render_tics_for_axis (axis, fp) %{{{
@@ -1120,7 +1111,6 @@ private define render_tics_for_axis (axis, fp) %{{{
      axis.axis_label.render (fp);
    %xfig_render_object (axis.axis_label, fp);
 }
-
 %}}}
 
 private define render_plot_axes (p, fp) %{{{
@@ -1144,7 +1134,6 @@ private define render_plot_axes (p, fp) %{{{
    axis = p.y2axis;
    render_tics_for_axis (axis, fp);
 }
-
 %}}}
 
 private define translate_axis (axis, X) %{{{
@@ -1161,7 +1150,6 @@ private define translate_axis (axis, X) %{{{
    if (axis.axis_label != NULL)
      axis.axis_label.translate(X);
 }
-
 %}}}
 
 private define plot_translate (p, X) %{{{
@@ -1191,7 +1179,6 @@ private define rotate_axis (axis, normal, theta)
    if (axis.axis_label != NULL)
      axis.axis_label.rotate(normal, theta);
 }
-
 %}}}
 
 private define plot_rotate (p, normal, theta) %{{{
@@ -1206,7 +1193,6 @@ private define plot_rotate (p, normal, theta) %{{{
    if (p.title_object != NULL)
      p.title_object.rotate(normal, theta);
 }
-
 %}}}
 
 private define plot_scale () %{{{
@@ -1237,7 +1223,6 @@ private define plot_scale () %{{{
      if(field != NULL)
        field.scale(sx, sy, sz);
 }
-
 %}}}
 
 private define plot_set_attr (p, attr, val)
@@ -1302,7 +1287,6 @@ private define plot_get_bbox (p) %{{{
 
    return xmin, xmax, ymin, ymax, zmin, zmax;
 }
-
 %}}}
 
 private define plot_render (p, fp) %{{{
@@ -1319,7 +1303,6 @@ private define plot_render (p, fp) %{{{
    % It looks better when the axes are rendered after the plot object
    render_plot_axes (p, fp);
 }
-
 %}}}
 
 % Axes Geometries %{{{
@@ -1358,7 +1341,6 @@ private define allocate_axis_type (len, maxtics, has_tic_labels, xpos, ypos, dir
    a.draw_tic_labels = has_tic_labels;
    return a;
 }
-
 %}}}
 
 private define get_log_qualifier (name) %{{{
@@ -1492,7 +1474,7 @@ private define do_axis_method (name, grid_axis) %{{{
        axis.draw_tic_labels = q;
        axis.user_specified_tic_labels = NULL;
      }
-   else if ((typeof (q) == Array_Type) 
+   else if ((typeof (q) == Array_Type)
 	    && ((_typeof(q) == String_Type) || __is_numeric(q)))
      {
 	if (major_tics == NULL)
@@ -1745,7 +1727,6 @@ private define get_world_min_max (axis, x0, x1, islog, pad) %{{{
 
    return x0, x1;
 }
-
 %}}}
 
 private define do_world_method (nth, nargs) %{{{
@@ -1797,7 +1778,6 @@ private define do_world_method (nth, nargs) %{{{
    xaxis.needs_setup = 1;
    set_struct_field (p, "world${nth}_inited"$, 1);
 }
-
 %}}}
 
 private define world1_method () %{{{
@@ -1918,15 +1898,11 @@ private define get_world_for_axis (a)
 
 private define scale_coords_for_axis (axis, axis_len, x) %{{{
 {
-   if (axis == NULL)
-     {
-	%  device coordinate, x runs from 0 to 1
-	return double(x*axis_len);
-     }
-   return axis_len * 
-     world_to_normalized (axis.wcs_transform, x, get_world_for_axis (axis));
+   return (axis == NULL
+	   ? double(x)  % device coordinate; x runs from 0 to 1
+	   : world_to_normalized (axis.wcs_transform, x, get_world_for_axis (axis))
+	  ) * axis_len;
 }
-
 %}}}
 
 private define xfig_coords_method(p, x, y) %{{{
@@ -2002,42 +1978,12 @@ private define plot_lines (p, x, y) %{{{
 }
 %}}}
 
-private define pop_plot_err_parms () %{{{
+private define insert_errbar(err_axis, lines, const, err)
 {
-   variable p, x, y, err, is_x;
-           (p, x, y, err, is_x) = ();
-
-   variable i, err_neg = err, err_pos = err;
-   if (typeof (err) == List_Type)  % asymmetric error bars
-     {
-        if(qualifier("minmax"))
-	  {
-	     variable center = (is_x ? x : y);
-	     err_neg = center - err[0];
-	     err_pos = err[1] - center;
-	  }
-        else
-	  {
-	     err_neg = err[0];
-	     err_pos = err[1];
-	  }
-	i = wherenot (isnan(x) or isnan(y) or isnan(err_neg) or isnan(err_pos));
-     }
-   else
-     i = wherenot (isnan(x) or isnan(y) or isnan(err));
-
-   if (length (i) != length (x))
-     {
-	x = x[i];
-	y = y[i];
-	if (typeof(err_neg) == Array_Type)  err_neg = err_neg[i];
-	if (typeof(err_pos) == Array_Type)  err_pos = err_pos[i];
-     }
-   return p.plot_data, x, y, err_neg, err_pos;
+  lines.insert (vector (err_axis=="x" ? (err, const) : (const, err), [0., 0.]));
 }
-%}}}
 
-private define insert_errbar_list (p, lines) %{{{
+private define plot_err (p, err_axis, val_const, val_err, err) %{{{
 %!%+
 %\function{xfig_plot--errorbars}
 %\qualifiers
@@ -2063,130 +2009,80 @@ private define insert_errbar_list (p, lines) %{{{
 %\seealso{xfig_plot.plot, xfig_plot.hplot}
 %!%-
 {
-   variable depth = qualifier ("eb_depth", qualifier ("depth",   p.line_depth));
-   variable width = qualifier ("eb_width", qualifier ("width",   p.thickness ));
-   variable color = qualifier ("eb_color", qualifier ("color",   p.line_color));
-   variable style = qualifier ("eb_line",                        p.line_style );
+   variable i, err_neg = err, err_pos = err;
+   if (typeof (err) == List_Type)  % asymmetric error bars
+     {
+	(err_neg, err_pos) = qualifier_exists ("minmax") || qualifier_exists (err_axis+"minmax")
+	                     ? (val_err-err[0], err[1]-val_err)
+	                     : (err[0], err[1]);
+	i = wherenot (isnan(val_const) or isnan(val_err) or isnan(err_neg) or isnan(err_pos));
+     }
+   else
+     i = wherenot (isnan(val_const) or isnan(val_err) or isnan(err));
+
+   if (length (i) != length (val_const))
+     {
+	val_const = val_const[i];
+	val_err   = val_err  [i];
+	if (typeof(err_neg) == Array_Type)  err_neg = err_neg[i];
+	if (typeof(err_pos) == Array_Type)  err_pos = err_pos[i];
+     }
+
+   p = p.plot_data;
+
+   get_world_axes (p ;; __qualifiers);  % (ax, ay) left on stack
+   if (err_axis=="x")  _stk_roll(2);    % (ay, ax) left on stack
+   variable a_err=(), a_const=();
+
+   p.plot_width, p.plot_height;         % (w, h) left on stack
+   if (err_axis=="x")  _stk_roll(2);    % (h, w) left on stack
+   variable len_err=(), len_const=();
+
+   val_const = scale_coords_for_axis (a_const, len_const, val_const);
+   variable val_err0 = scale_coords_for_axis (a_err, len_err, val_err - err_neg);
+   variable val_err1 = scale_coords_for_axis (a_err, len_err, val_err + err_pos);
+
+   variable term_factor = qualifier (err_axis+"eb_factor", qualifier ("eb_factor", 1));
+   variable dt = abs (ERRBAR_TERMINAL_SIZE * term_factor);
+   variable lines = xfig_new_polyline_list ();
+   _for i (0, length (val_const)-1, 1)
+     {
+	variable const_i = val_const[i];
+	variable const0_i = const_i - dt;
+	variable const1_i = const_i + dt;
+	variable err0_i = val_err0[i];
+	variable err1_i = val_err1[i];
+
+        if (   const1_i <= 0 || const0_i >= len_const
+	    ||   err1_i <= 0 ||   err0_i >= len_err)
+	  continue;
+
+	variable const_term = [_max (const0_i, 0), _min (const1_i, len_const)];
+	if (err1_i < len_err)
+	  {
+	     if (term_factor>0)
+	       insert_errbar(err_axis, lines, const_term, [err1_i, err1_i]);
+	  }
+	else
+	  err1_i = len_err;
+
+	if (err0_i > 0)
+	  {
+	     if (term_factor>0)
+	       insert_errbar(err_axis, lines, const_term, [err0_i, err0_i]);
+	  }
+	else
+	  err0_i = 0;
+
+	insert_errbar(err_axis, lines, [const_i, const_i], [err0_i, err1_i]);
+     }
 
    lines.translate(p.X);
-   lines.set_depth(depth);
-   lines.set_thickness (width);
-   lines.set_pen_color (color);
-   lines.set_line_style (style);
+   lines.set_depth      ( qualifier ("eb_depth", qualifier ("depth", p.line_depth)) );
+   lines.set_thickness  ( qualifier ("eb_width", qualifier ("width", p.thickness )) );
+   lines.set_pen_color  ( qualifier ("eb_color", qualifier ("color", p.line_color)) );
+   lines.set_line_style ( qualifier ("eb_line",                      p.line_style ) );
    p.object_list.insert(lines);
-}
-%}}}
-
-private define plot_erry () %{{{
-{
-   variable p, x, y, dy_neg, dy_pos;
-   (p, x, y, dy_neg, dy_pos) = pop_plot_err_parms (0; minmax=qualifier_exists("minmax") || qualifier_exists("yminmax"));
-   variable ax, ay;
-   (ax, ay) = get_world_axes (p ;; __qualifiers);
-   variable term_factor = qualifier ("yeb_factor", qualifier ("eb_factor", 1));
-   variable w = p.plot_width, h = p.plot_height;
-
-   x = scale_coords_for_axis (ax, w, x);
-   variable y0 = scale_coords_for_axis (ay, h, y-dy_neg);
-   variable y1 = scale_coords_for_axis (ay, h, y+dy_pos);
-
-   variable dt = abs (ERRBAR_TERMINAL_SIZE * term_factor);
-   variable dz = [0.0,0.0];
-   variable lines = xfig_new_polyline_list ();
-   variable i;
-   _for i (0, length (x)-1, 1)
-     {
-	variable x_i = x[i];
-	variable x0_i = x_i - dt;
-	variable x1_i = x_i + dt;
-	variable y0_i = y0[i];
-	variable y1_i = y1[i];
-
-	if (x1_i <= 0) continue;
-	if (x0_i >= w) continue;
-	if (y0_i >= h) continue;
-	if (y1_i <= 0) continue;
-
-	x0_i = _max (x0_i, 0);
-	x1_i = _min (x1_i, w);
-
-	variable obj;
-	variable dx = [x0_i, x1_i];
-
-	if (y1_i < h)
-	  {
-	     if (term_factor>0)
-	       lines.insert (vector (dx, [y1_i, y1_i], dz));
-	  }
-	else y1_i = h;
-
-	if (y0_i > 0)
-	  {
-	     if (term_factor>0)
-	       lines.insert (vector (dx, [y0_i, y0_i], dz));
-	  }
-	else y0_i = 0;
-
-	lines.insert (vector ([x_i, x_i], [y0_i,y1_i], dz));
-     }
-   insert_errbar_list (p, lines ;; __qualifiers);
-}
-%}}}
-
-private define plot_errx () %{{{
-{
-   variable p, x, y, dx_neg, dx_pos;
-   (p, x, y, dx_neg, dx_pos) = pop_plot_err_parms (1; minmax=qualifier_exists("minmax") || qualifier_exists("xminmax"));
-   variable ax, ay;
-   (ax, ay) = get_world_axes (p ;; __qualifiers);
-   variable term_factor = qualifier ("xeb_factor", qualifier ("eb_factor", 1));
-
-   variable w = p.plot_width, h = p.plot_height;
-
-   y = scale_coords_for_axis (ay, h, y);
-   variable x0 = scale_coords_for_axis (ax, w, x-dx_neg);
-   variable x1 = scale_coords_for_axis (ax, w, x+dx_pos);
-
-   variable dt = abs (ERRBAR_TERMINAL_SIZE * term_factor);
-   variable dz = [0.0,0.0];
-   variable lines = xfig_new_polyline_list ();
-   variable i;
-   _for i (0, length (x)-1, 1)
-     {
-	variable y_i = y[i];
-	variable y0_i = y_i - dt;
-	variable y1_i = y_i + dt;
-	variable x0_i = x0[i];
-	variable x1_i = x1[i];
-
-	if (x1_i <= 0) continue;
-	if (x0_i >= w) continue;
-	if (y0_i >= h) continue;
-	if (y1_i <= 0) continue;
-
-	y0_i = _max (y0_i, 0);
-	y1_i = _min (y1_i, h);
-
-	variable obj;
-	variable dy = [y0_i, y1_i];
-
-	if (x1_i < w)
-	  {
-	     if (term_factor>0)
-	       lines.insert (vector ([x1_i, x1_i], dy, dz));
-	  }
-	else x1_i = w;
-
-	if (x0_i > 0)
-	  {
-	     if (term_factor>0)
-	       lines.insert (vector ([x0_i, x0_i], dy, dz));
-	  }
-	else x0_i = 0;
-
-	lines.insert (vector ([x0_i, x1_i], [y_i,y_i], dz));
-     }
-   insert_errbar_list (p, lines ;; __qualifiers);
 }
 %}}}
 
@@ -2498,7 +2394,6 @@ private define plot_symbols (p, x, y) %{{{
    list.set_depth(depth);
    p.object_list.insert(list);
 }
-
 %}}}
 
 private define check_axis (p, axis, init_fun, ticlabels, has_log_qualifier) %{{{
@@ -2650,11 +2545,10 @@ private define plot_method () %{{{
    if (sym != NULL)
      plot_symbols (p, x, y ;; __qualifiers);
    if (dx != NULL)
-     plot_errx (p, x, y, dx;; __qualifiers);
+     plot_err (p, "x", y, x, dx;; __qualifiers);
    if (dy != NULL)
-     plot_erry (p, x, y, dy;; __qualifiers);
+     plot_err (p, "y", x, y, dy;; __qualifiers);
 }
-
 %}}}
 
 private define plot_histogram (w, xpts, ypts) %{{{
@@ -2797,8 +2691,12 @@ private define hplot_method () %{{{
      {
 	variable xhi = shift(x,1);
 	xhi[-1] = 2*x[-1] - x[-2];
-	x = 0.5*(x+xhi);  % FIX ME: for non-linear wcs, a more reasonable choice might have to be found
-	plot_erry (p, x, y, dy ;; __qualifiers);
+	variable ax; (ax,) = get_world_axes (p.plot_data;; __qualifiers);
+	variable x0, x1; (x0, x1) = get_world_for_axis(ax);
+	variable n = .5 * (  world_to_normalized(ax.wcs_transform, x  , x0, x1)
+			   + world_to_normalized(ax.wcs_transform, xhi, x0, x1) );
+	x = normalized_to_world(ax.wcs_transform, n, x0, x1);
+	plot_err (p, "y", x, y, dy ;; __qualifiers);
      }
 }
 %}}}
@@ -3260,8 +3158,8 @@ private define get_world_method (w)
 
    variable ax, ay;
    (ax, ay) = get_world_axes (p ;; __qualifiers);
-   
-   return [get_world_for_axis(ax), get_world_for_axis(ay)];   
+
+   return [get_world_for_axis(ax), get_world_for_axis(ay)];
 }
 
 private variable XFig_Plot_Type = struct %{{{
