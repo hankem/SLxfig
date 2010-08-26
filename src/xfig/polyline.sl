@@ -730,8 +730,22 @@ private define pict_translate (p, dX)
    p.X += dX;
 }
 
-define pict_rotate_pict (pict, theta_degrees)
+define pict_rotate_pict () %{{{
+%!%+
+%\function{pict.rotate_pict}
+%\usage{pict.rotate_pict (theta_degrees);}
+%\description
+%  A picture object can only be rotated by multiples of 90 degrees.
+%!%-
 {
+   if (_xfig_check_help (_NARGS, "pict.rotate_pict";; __qualifiers)) return;
+
+   variable pict, theta_degrees;
+   if (_NARGS == 2)
+     (pict, theta_degrees) = ();
+   else
+     usage(".rotate_pict (theta_degrees);");
+
    % The convention adopted here is that the location of the picture is
    % specified by the lower left corner of the box, rotated or
    % otherwise.  In fig units, this corner will have the largest y
@@ -752,9 +766,7 @@ define pict_rotate_pict (pict, theta_degrees)
    variable bbox_y = pict.bbox_y;
    theta_degrees = theta_degrees mod 360.0;
    if (theta_degrees < 0) theta_degrees += 360;
-   variable n = int(theta_degrees / 90.0 + 0.5);
-   
-   loop (n)
+   loop ( int(theta_degrees/90.0 + 0.5) )
      {
 	bbox_x[[0:3]] = bbox_x[[1:4]];  bbox_x[4] = bbox_x[0];
 	bbox_y[[0:3]] = bbox_y[[1:4]];  bbox_y[4] = bbox_y[0];
@@ -763,6 +775,7 @@ define pict_rotate_pict (pict, theta_degrees)
    pict.bbox_x = bbox_x;
    pict.bbox_y = bbox_y;
 }
+%}}}
 
 %!%+
 %\function{xfig_scale_pict}

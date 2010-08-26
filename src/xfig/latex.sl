@@ -586,13 +586,21 @@ define xfig_new_text ()
    variable text = ();
    variable q = __qualifiers();
    variable rotate = qualifier("rotate");
+   variable theta = 0;
    if ((rotate!=NULL)
        && (0 < __is_datatype_numeric(typeof(rotate)) < 3))
      {
-	text = sprintf ("\\rotatebox{%S}{%s}", rotate, text);
-	q = struct_combine (q, struct{extra_packages="graphicx", eps2eps=1});
+        if (rotate mod 90 != 0)
+          {
+             text = sprintf ("\\rotatebox{%S}{%s}", rotate, text);
+             q = struct_combine (q, struct{extra_packages="graphicx", eps2eps=1});
+          }
+        else
+          theta = rotate;
      }
-   do_xfig_new_xxx (&xfig_text2eps, text, fontstruct;; q);
+   variable eps = do_xfig_new_xxx (&xfig_text2eps, text, fontstruct;; q);
+   if (theta != 0)  eps.rotate_pict(theta);
+   return eps;
 }
 
 define xfig_set_font_style (style)

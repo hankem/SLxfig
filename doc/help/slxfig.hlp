@@ -1,3 +1,13 @@
+pict.rotate_pict
+
+ USAGE
+  pict.rotate_pict (theta_degrees);
+
+ DESCRIPTION
+  A picture object can only be rotated by multiples of 90 degrees.
+
+--------------------------------------------------------------
+
 xfig_center_pict_in_box
 
  SYNOPSIS
