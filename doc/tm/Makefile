@@ -45,6 +45,7 @@ all: $(SGML_FILES) $(HTML_FILES) $(TEX_FILES) $(TXT_FILES)
 slxfigfuns.tm: ../../src/xfig/*.sl
 	$(SL2TM) ../../src/xfig/*.sl > slxfigfuns.tm
 	$(TMSORT) slxfigfuns.tm
+	-rm -f slxfigfuns.tm.BAK
 #----- SGML Files -----------------------------------------------------------
 $(MODULE).sgml : $(MODULE).tm $(MODULE_DEPS)
 	$(TMEXPAND) $(MODULE).tm $(MODULE).sgml

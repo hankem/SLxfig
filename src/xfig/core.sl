@@ -1129,7 +1129,7 @@ define xfig_set_paper_size (paper)
 %!%+
 %\function{xfig_set_verbose}
 %\synopsis{Control the level of chattiness}
-%\usage{xfig_set_verbose(Integer_Type level)}
+%\usage{xfig_set_verbose(Integer_Type level);}
 %\description
 %  This function may be used to control the verbosity level of the
 %  xfig functions that display informational messages.

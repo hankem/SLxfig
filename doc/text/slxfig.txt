@@ -1,6 +1,6 @@
   SLxfig Reference
   John E. Davis, with small contributions from Manfred Hanke
-  Aug 22, 2010
+  Aug 26, 2010
   ____________________________________________________________
 
   Table of Contents
@@ -53,8 +53,8 @@
      2.41 xfig_plot_text
      2.42 xfig_render_object
      2.43 xfig_scale_pict
-     2.44 xfig_set_latex_verbosity
-     2.45 xfig_set_output_driver
+     2.44 xfig_set_output_driver
+     2.45 xfig_set_verbose
 
 
   ______________________________________________________________________
@@ -695,6 +695,9 @@
       Usage
         xfig_plot.xaxis([; qualifiers]);
 
+      Qualifiers
+        ; ticlabels2: overwrites the ticlabels qualifier for the x2axis
+
       Description
         This method allows for the configuration of both x-axes via
         qualifiers -- see xfig_plot.axis for further information.
@@ -751,6 +754,7 @@
       Usage
         xfig_plot.y1axis([; qualifiers]);
 
+
       Description
         This method allows for the configuration of the first y-axis via
         qualifiers -- see xfig_plot.axis for further information.
@@ -793,6 +797,9 @@
       Usage
         xfig_plot.yaxis([; qualifiers]);
 
+      Qualifiers
+        ; ticlabels2: overwrites the ticlabels qualifier for the y2axis
+
       Description
         This method allows for the configuration of both y-axes via
         qualifiers -- see xfig_plot.axis for further information.
@@ -813,6 +820,7 @@
         The ylabel is created from the string with the xfig_new_text
         function using all applied qualifiers.
 
+
       See Also
         ``xfig_new_text''
 
@@ -821,6 +829,7 @@
 
       Synopsis
         Add a plot symbol
+
       Usage
         xfig_plot_add_symbol (String_Type name, Ref_Type funct)
 
@@ -887,6 +896,7 @@
              w = xfig_plot_new ();
 
 
+
       See Also
         ``xfig_plot_define_world'', ``xfig_render_object''
 
@@ -951,6 +961,7 @@
 
       Usage
         xfig_render_object (obj, device)
+
       Description
         This function renders the specified object to a specified
         device.  If the device parameter is a string, then a device will
@@ -977,21 +988,7 @@
       See Also
         ``xfig_new_pict''
 
-  2.44.  xfig_set_latex_verbosity
-
-
-      Synopsis
-        Set how output of external programs run by the latex/eps
-        interface is shown.
-
-      Usage
-        xfig_set_latex_verbosity(Integer_Type verbosity);
-
-      Description
-        If verbosity is positive, the full output is displayed.  If
-        verbosity is zero, only the running command is shown.
-
-  2.45.  xfig_set_output_driver
+  2.44.  xfig_set_output_driver
 
 
       Synopsis
@@ -1017,6 +1014,8 @@
              %P    paper-size
              %B    basename of the file
 
+
+
       Example
         The default driver for postscript output is given by:
 
@@ -1036,6 +1035,26 @@
 
       See Also
         ``xfig_set_paper_size''
+
+  2.45.  xfig_set_verbose
+
+
+      Synopsis
+        Control the level of chattiness
+
+      Usage
+        xfig_set_verbose(Integer_Type level);
+
+      Description
+        This function may be used to control the verbosity level of the
+        xfig functions that display informational messages.
+
+      Notes
+        It is not always possible to control the verbosity level of
+        external programs. For the LaTeX/eps interface, if the level is
+        0, then only the running command will be displayed and any
+        output will be redirected to /dev/null. Otherwise if level > 0,
+        then the output will not be redirected.
 
 
 

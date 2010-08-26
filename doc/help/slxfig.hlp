@@ -575,6 +575,9 @@ xfig_plot.xaxis
  USAGE
   xfig_plot.xaxis([; qualifiers]);
 
+ QUALIFIERS
+  ; ticlabels2: overwrites the `ticlabels' qualifier for the x2axis
+
  DESCRIPTION
   This method allows for the configuration of both x-axes
   via qualifiers -- see `xfig_plot.axis' for further information.
@@ -677,6 +680,9 @@ xfig_plot.yaxis
 
  USAGE
   xfig_plot.yaxis([; qualifiers]);
+
+ QUALIFIERS
+  ; ticlabels2: overwrites the `ticlabels' qualifier for the y2axis
 
  DESCRIPTION
   This method allows for the configuration of both y-axes
@@ -866,20 +872,6 @@ xfig_scale_pict
 
 --------------------------------------------------------------
 
-xfig_set_latex_verbosity
-
- SYNOPSIS
-  Set how output of external programs run by the latex/eps interface is shown.
-
- USAGE
-  xfig_set_latex_verbosity(Integer_Type verbosity);
-
- DESCRIPTION
-    If `verbosity' is positive, the full output is displayed.
-    If `verbosity' is zero, only the running command is shown.
-
---------------------------------------------------------------
-
 xfig_set_output_driver
 
  SYNOPSIS
@@ -917,5 +909,26 @@ xfig_set_output_driver
 
  SEE ALSO
   xfig_set_paper_size
+
+--------------------------------------------------------------
+
+xfig_set_verbose
+
+ SYNOPSIS
+  Control the level of chattiness
+
+ USAGE
+  xfig_set_verbose(Integer_Type level);
+
+ DESCRIPTION
+  This function may be used to control the verbosity level of the
+  xfig functions that display informational messages.
+
+ NOTES
+  It is not always possible to control the verbosity level of
+  external programs.  For the LaTeX/eps interface, if the level is 0,
+  then only the running command will be displayed and any output will
+  be redirected to `/dev/null'.  Otherwise if level > 0, then
+  the output will not be redirected.
 
 --------------------------------------------------------------
