@@ -14,8 +14,6 @@ OUTPUTDIR may contain:\n\
    exit (1);
 }
 
-vmessage ("Running %s", __argv[0]);
-
 private variable RootDir;
 private define set_root_dir (dir)
 {
@@ -27,6 +25,8 @@ private define set_root_dir (dir)
    RootDir = _$(dir);
 }
 set_root_dir (__argv[1]);
+
+vmessage ("Running %s in %s", __argv[0], RootDir);
 
 variable TestDir = path_dirname (__FILE__);
 prepend_to_slang_load_path (path_concat (TestDir, ".."));

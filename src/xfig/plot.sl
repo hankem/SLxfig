@@ -3344,7 +3344,7 @@ define xfig_multiplot () %{{{
 %\qualifier{x2label=strval}{overall x2label on top of the multiplot}
 %\qualifier{ylabel=strval}{overall ylabel left of the multiplot}
 %\qualifier{y2label=strval}{overall y2label right of the multiplot}
-%\qualifier{align_ylabels=intval}{align all y1axis-labels and all y2axis-labels}{1}
+%\qualifier{align_ylabels=intval}{bitmask for aligning all y{1,2}axis-labels}{1|2}
 %\description
 %  \var{p1}, \var{p2}, ... can be single plot objects or arrays of them.
 %  \sfun{xfig_multiplot} arranges a multi-panel plot with \var{cols} columns.
@@ -3365,6 +3365,8 @@ define xfig_multiplot () %{{{
 %  labels of the first or last plot are set (possibly overwritten).
 %!%-
 {
+  if (_xfig_check_help (_NARGS, _function_name();; __qualifiers)) return;
+
   variable args = __pop_list(_NARGS), element, plots={};
   loop(_NARGS)
     foreach element ( list_pop(args) )
@@ -3409,13 +3411,20 @@ define xfig_multiplot () %{{{
       dx += p.plot_data.plot_width;
     }
   }
-  if(qualifier("align_ylabels", 1))
-    _for iy (0, last_iy, 1)
+  variable align_ylabels = qualifier ("align_ylabels", 3);
+  variable label;
+  _for iy (0, last_iy, 1)
     {
-      variable label = args[iy*cols].plot_data.y1axis.axis_label;
-      if(label!=NULL)  label.X.x = y1label_x;
-      label = args[iy*cols+last_ix].plot_data.y2axis.axis_label;
-      if(label!=NULL)  label.X.x = y2label_x;
+       if (align_ylabels & 1)
+         {
+            label = args[iy*cols].plot_data.y1axis.axis_label;
+            if (label!=NULL)  label.X.x = y1label_x;
+         }
+       if (align_ylabels & 2)
+         {
+	    label = args[iy*cols+last_ix].plot_data.y2axis.axis_label;
+	    if (label!=NULL)  label.X.x = y2label_x;
+	 }
     }
 
   if(length(plots))
