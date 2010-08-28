@@ -1078,6 +1078,7 @@ private define add_axis_label (p, axis, label) %{{{
      return;
 
    axis.axis_label = xfig_new_text (label ;; __qualifiers);
+   axis.axis_label_rotated = 0;
    position_axis_label (axis);
 }
 %}}}
