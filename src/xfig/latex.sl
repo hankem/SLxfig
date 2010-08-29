@@ -69,6 +69,12 @@ define xfig_make_tmp_file (base, ext)
 define xfig_set_autoeps_dir (dir)
 {
    mkdir_recurse (dir);
+   ifnot (path_is_absolute (dir))
+   {
+     variable cwd = getcwd ();
+     if (cwd != NULL)
+       dir = path_concat(cwd, dir);
+   }
    EPS_Dir = dir;
 }
 
