@@ -356,6 +356,7 @@ xfig_plot.axis
   ; tic_depth: Xfig depth of the ticmarks
   ; maxtics:  maximum number of major tic marks
   ; ticlabels: draw tic labels (requires major tic marks)
+  ; ticlabels_confine: prevent tic labels from overhanging the plot box
   ; ticlabel_style: tic label font style
   ; ticlabel_color: tic label font color
   ; ticlabel_size: tic label font size

@@ -111,6 +111,7 @@ private variable Plot_Axis_Type = struct
    tic_label_objects,
    tic_labels_tweak, % from tic
    tic_labels_just,    % justification for tic labels and axis_label
+   tic_labels_confine,  % May tic label objects overhang the plot box?
    max_tic_h=0.0, max_tic_w=0.0,	       % max width and height of tic label bbox
    geom,			       %  geometric parameters
    line, major_tic_marks, minor_tic_marks,
@@ -833,6 +834,22 @@ private define position_tic_label_objects (axis, tic_pos, tic_label_objects) %{{
 	variable X0 = vector_sum (X, vector_mul(x, dX));
 
 	xfig_justify_object (tic_label_objects[i], X0 + axis.tic_labels_tweak, axis.tic_labels_just);
+
+        ifnot (axis.tic_labels_confine)
+	  continue;
+        % else  % confine tic label objects to size of plot box in order to prevent overlaps
+	if (dX.x != 0)
+	  {
+	     % x tic
+	     variable x0, x1, dx = 0;
+	     (x0,x1,,,,) = tic_label_objects[i].get_bbox();
+	     if (x1 > Xmax.x)
+	       dx = Xmax.x - x1;
+	     if (x0 < X.x)
+	       dx = X.x - x0;
+	     if (dx != 0)
+	       tic_label_objects[i].translate (vector (dx,0,0));
+	  }
 	if (dX.y != 0)
 	  {
 	     % y tic
@@ -1022,10 +1039,6 @@ private define setup_axis_tics (p, axis) %{{{
    make_tic_marks (axis);
 }
 %}}}
-
-% Usage: xfig_plot_set_*_tics (win, major_tics [,tic_labels,[minor_tics]])
-% If tic_labels is NULL or not present then they will be generated.
-% If tic_labels is "", then none will be generated.
 
 private define pop_set_tic_args (fun, nargs) %{{{
 {
@@ -1359,6 +1372,43 @@ private define get_log_qualifiers () %{{{
 %}}}
 
 private define do_axis_method (name, grid_axis) %{{{
+%!%+
+%\function{xfig_plot.axis}
+%\usage{xfig_plot.axis([; qualifiers]);}
+%\qualifiers
+%\qualifier{on}{draw axis, major and minor tic marks, as well as tic labels}{on}
+%\qualifier{off}{do not draw axis, major nor minor tic marks, nor tic labels}
+%\qualifier{linear}{set linear axis scale}
+%\qualifier{log}{set logarithmic axis scale}
+%\qualifier{major}{draw major tic marks [precedence over on/off] or array of major tic mark values}
+%\qualifier{minor}{draw minor tic marks [precedence over on/off] or array of minor tic mark values}
+%\qualifier{color}{color of axis, major and minor tic marks}
+%\qualifier{major_color}{color of major tic marks [precedence over color]}
+%\qualifier{minor_color}{color of minor tic marks [precedence over color]}
+%\qualifier{width}{width of axis, major and minor tic marks}
+%\qualifier{major_width}{width of major tic marks [precedence over width]}
+%\qualifier{minor_width}{width of minor tic marks [precedence over width]}
+%\qualifier{line}{line style of axis, major and minor tic marks}
+%\qualifier{major_line}{line style of major tic marks [precedence over line]}
+%\qualifier{minor_line}{line style of minor tic marks [precedence over line]}
+%\qualifier{major_len}{length of the major tic marks}
+%\qualifier{minor_len}{length of the minor tic marks}
+%\qualifier{grid}{extend major and minor tic marks to a grid}
+%\qualifier{major_grid}{extend major tic marks to a grid [precedence over grid]}
+%\qualifier{minor_grid}{extend minor tic marks to a grid [precedence over grid]}
+%\qualifier{depth}{Xfig depth of the axis}
+%\qualifier{tic_depth}{Xfig depth of the ticmarks}
+%\qualifier{maxtics}{ maximum number of major tic marks}
+%\qualifier{ticlabels}{draw tic labels (requires major tic marks)}
+%\qualifier{ticlabels_confine}{prevent tic labels from overhanging the plot box}
+%\qualifier{ticlabel_style}{tic label font style}
+%\qualifier{ticlabel_color}{tic label font color}
+%\qualifier{ticlabel_size}{tic label font size}
+%\qualifier{wcs}{name of a custom world coordinate system transformation}
+%\description
+%  All axes can be configured with the qualifiers mentioned above.
+%\seealso{xfig_plot.xaxis, xfig_plot.x1axis, xfig_plot.x2axis, xfig_plot.yaxis, xfig_plot.y1axis, xfig_plot.y2axis}
+%!%-
 {
    variable p;
    switch (_NARGS-2)
@@ -1510,6 +1560,7 @@ private define do_axis_method (name, grid_axis) %{{{
 	  wcs = "log";
      }
    axis.inited = 1;
+   axis.tic_labels_confine = qualifier("ticlabels_confine", name[0]=='y');
    add_axis (p, axis, wcs, major_tics, minor_tics);
 }
 %}}}
@@ -1621,42 +1672,6 @@ private define y2axis_method () %{{{
 %}}}
 
 private define axis_method () %{{{
-%!%+
-%\function{xfig_plot.axis}
-%\usage{xfig_plot.axis([; qualifiers]);}
-%\qualifiers
-%\qualifier{on}{draw axis, major and minor tic marks, as well as tic labels}{on}
-%\qualifier{off}{do not draw axis, major nor minor tic marks, nor tic labels}
-%\qualifier{linear}{set linear axis scale}
-%\qualifier{log}{set logarithmic axis scale}
-%\qualifier{major}{draw major tic marks [precedence over on/off] or array of major tic mark values}
-%\qualifier{minor}{draw minor tic marks [precedence over on/off] or array of minor tic mark values}
-%\qualifier{color}{color of axis, major and minor tic marks}
-%\qualifier{major_color}{color of major tic marks [precedence over color]}
-%\qualifier{minor_color}{color of minor tic marks [precedence over color]}
-%\qualifier{width}{width of axis, major and minor tic marks}
-%\qualifier{major_width}{width of major tic marks [precedence over width]}
-%\qualifier{minor_width}{width of minor tic marks [precedence over width]}
-%\qualifier{line}{line style of axis, major and minor tic marks}
-%\qualifier{major_line}{line style of major tic marks [precedence over line]}
-%\qualifier{minor_line}{line style of minor tic marks [precedence over line]}
-%\qualifier{major_len}{length of the major tic marks}
-%\qualifier{minor_len}{length of the minor tic marks}
-%\qualifier{grid}{extend major and minor tic marks to a grid}
-%\qualifier{major_grid}{extend major tic marks to a grid [precedence over grid]}
-%\qualifier{minor_grid}{extend minor tic marks to a grid [precedence over grid]}
-%\qualifier{depth}{Xfig depth of the axis}
-%\qualifier{tic_depth}{Xfig depth of the ticmarks}
-%\qualifier{maxtics}{ maximum number of major tic marks}
-%\qualifier{ticlabels}{draw tic labels (requires major tic marks)}
-%\qualifier{ticlabel_style}{tic label font style}
-%\qualifier{ticlabel_color}{tic label font color}
-%\qualifier{ticlabel_size}{tic label font size}
-%\qualifier{wcs}{name of a custom world coordinate system transformation}
-%\description
-%  All axes can be configured with the qualifiers mentioned above.
-%\seealso{xfig_plot.xaxis, xfig_plot.x1axis, xfig_plot.x2axis, xfig_plot.yaxis, xfig_plot.y1axis, xfig_plot.y2axis}
-%!%-
 {
    if (_xfig_check_help (_NARGS, "xfig_plot.axis";; __qualifiers)) return;
    variable args = __pop_args (_NARGS);
