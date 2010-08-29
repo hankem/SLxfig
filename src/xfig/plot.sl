@@ -125,7 +125,7 @@ private variable Plot_Axis_Type = struct
    axis_color = "black",
    axis_linestyle = 0,
    axis_thickness = 1,
-   axis_label, axis_label_rotated = 0,
+   axis_label,
 
    draw_line=1, draw_major_tics=1, draw_minor_tics=1, draw_tic_labels=1,
    inited = 0,
@@ -1050,21 +1050,9 @@ private define pop_set_tic_args (fun, nargs) %{{{
 
 private define position_axis_label (axis) %{{{
 {
-   variable label = axis.axis_label;
-   if (label == NULL)
-     return;
+   if (axis.axis_label == NULL)  return;
 
    variable geom = axis.geom;
-   variable theta = geom.theta;
-
-   % This routine may have already been called if the label was added
-   % before the axis.
-   ifnot (axis.axis_label_rotated)
-     {
-	if (theta != 0) label.rotate_pict (theta);
-	axis.axis_label_rotated = 1;
-     }
-
    variable X = 0.5 * (2*axis.X + axis.dX);
    X += vector (geom.tx*axis.max_tic_w, geom.ty*axis.max_tic_h, 0);
 
@@ -1078,7 +1066,11 @@ private define add_axis_label (p, axis, label) %{{{
      return;
 
    axis.axis_label = xfig_new_text (label ;; __qualifiers);
-   axis.axis_label_rotated = 0;
+
+   % Whenever a new (y-)axis label is added, it has to be rotated.
+   variable theta = axis.geom.theta;
+   if (theta != 0)  axis.axis_label.rotate_pict (theta);
+
    position_axis_label (axis);
 }
 %}}}
