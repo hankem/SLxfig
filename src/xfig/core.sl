@@ -567,6 +567,7 @@ define xfig_close_file (dev)
    (fmt,) = strreplace (fmt, "%O", dev.devfile, strlen(fmt));
    (fmt,) = strreplace (fmt, "%B", path_sans_extname(dev.figfile), strlen(fmt));
 
+   if (qualifier ("verbose", _XFig_Verbose) >= 0)  message("$ "+fmt);
    () = system_intr (fmt);
 }
 
@@ -608,7 +609,25 @@ private define end_render_as_compound (obj, fp)
 variable XFIG_RENDER_AS_COMPOUND = 1;
 
 private define default_render (obj, dev)
+%!%+
+%\function{<xfig_object>.render}
+%\synopsis{Render an xfig object to a file.}
+%\usage{<xfig_object>.render(String_Type filename);
+%\altusage{<xfig_object>.render(Struct_Type dev);}
+%}
+%\description
+%  If the argument is a \exmp{filename} string,
+%  the file is created through \sfun{xfig_create_file},
+%  and the \exmp{<xfig_object>} is rendered.
+%  \sfun{xfig_close_file} finally closes the file
+%  and runs Xfig's \exmp{fig2dev} program on it.
+%\qualifiers
+%\qualifier{verbose=intval}{if >=0, the fig2dev command is displayed}
+%\seealso{xfig_set_verbose}
+%!%-
 {
+   if (_xfig_check_help (0, "<xfig_object>.render";; __qualifiers))  return;
+
    variable rac;
    variable do_close = 0;
    if (obj == NULL)
@@ -635,7 +654,7 @@ private define default_render (obj, dev)
    if (rac) 
      end_render_as_compound (obj, fp);
    if (do_close) 
-     xfig_close_file (dev);
+     xfig_close_file (dev;; __qualifiers);
 }
 
 private define default_method1 (obj, arg1);

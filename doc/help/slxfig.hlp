@@ -1,3 +1,28 @@
+<xfig_object>.render
+
+ SYNOPSIS
+  Render an xfig object to a file.
+
+ USAGE
+  <xfig_object>.render(String_Type filename);
+  % or
+  <xfig_object>.render(Struct_Type dev);
+
+ DESCRIPTION
+  If the argument is a `filename' string,
+  the file is created through `xfig_create_file',
+  and the `<xfig_object>' is rendered.
+  `xfig_close_file' finally closes the file
+  and runs Xfig's `fig2dev' program on it.
+
+ QUALIFIERS
+  ; verbose=intval: if >=0, the fig2dev command is displayed
+
+ SEE ALSO
+  xfig_set_verbose
+
+--------------------------------------------------------------
+
 pict.rotate_pict
 
  USAGE
