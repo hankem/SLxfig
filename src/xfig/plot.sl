@@ -3160,7 +3160,7 @@ private define get_world_method (w)
 %\seealso{xfig_plot--wcs}
 %!%-
 {
-   if (_xfig_check_help (_NARGS, "xfig_plot.get_world";; __qualifiers)) return;
+   if (_xfig_check_help (_NARGS-1, "xfig_plot.get_world";; __qualifiers)) return;
 
    variable p = w.plot_data;
 
