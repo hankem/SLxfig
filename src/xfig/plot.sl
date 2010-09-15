@@ -1913,7 +1913,7 @@ private define scale_coords_for_axis (axis, axis_len, x) %{{{
 }
 %}}}
 
-private define xfig_coords_method(p, x, y) %{{{
+private define xfig_coords_method() %{{{
 %!%+
 %\function{xfig_plot.xfig_coords}
 %\usage{(Double_Type xXfig, yXfig) = xfig_plot.xfig_coords (Double_Type x, y);
@@ -1926,6 +1926,7 @@ private define xfig_coords_method(p, x, y) %{{{
 %!%-
 {
    if (_xfig_check_help (_NARGS, "xfig_plot.xfig_coords";; __qualifiers)) return;
+   variable p, x, y; (p, x, y) = ();
    p = p.plot_data;
    variable ax, ay;
    (ax, ay) = get_world_axes (p;; __qualifiers);
@@ -2976,7 +2977,7 @@ private define y2label_method () %{{{
 }
 %}}}
 
-private define title_method (w, title) %{{{
+private define title_method () %{{{
 %!%+
 %\function{xfig_plot.title}
 %\synopsis{Add a title to a plot}
@@ -2994,6 +2995,7 @@ private define title_method (w, title) %{{{
 {
    if (_xfig_check_help (_NARGS, "xfig_plot.title";; __qualifiers)) return;
 
+   variable w, title; (w, title) = ();
    variable x0, x1, y, z;
    variable p = w.plot_data;
 
