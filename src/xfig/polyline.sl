@@ -266,18 +266,79 @@ private define polyline_get_bbox (obj)
    return min(X.x), max(X.x), min(X.y), max(X.y), min(X.z), max(X.z);
 }
 
-define xfig_create_arrow ()
+define xfig_create_arrow () %{{{
+%!%+
+%\function{xfig_create_arrow}
+%\synopsis{Create a new arrow shape for a polyline object}
+%\description
+%  \sfun{xfig_create_arrow} creates a structure that can be used
+%  for polyline objects, e.g., with xfig_new_polyline.
+%  All information are passed via qualifiers.
+%\qualifiers
+%\qualifier{arrow_type}{shape of arrow heads (values from 0 to 14), e.g.,
+%                XFIG_ARROWTYPE_{STICK,TRIANGLE,INDENTED,POINTED}
+%                and others}{XFIG_ARROWTYPE_INDENTED==2}
+%\qualifier{arrow_style}{XFIG_ARROWSTYLE_{HOLLOW,FILLED}, i.e., 0 or 1;
+%                 indicating a filling with white or with the pen color
+%                 for \exmp{0 < arrow_type < 13} }{1}
+%\qualifier{arrow_thickness}{}{1}
+%\qualifier{arrow_width}{}{4}
+%\qualifier{arrow_height}{}{8}
+%\example
+%  % using the same (simple) shape for forward and backward arrow,
+%  % implicitly calling xfig_create_arrow (twice):
+%  variable
+%    a1 = xfig_new_polyline([0,4], [0,3]
+%                           ; forward_arrow, backward_arrow,
+%                             arrow_type=0, arrow_style=0);
+%
+%  % explicitly calling xfig_create_arrow, in order to use
+%  % different shapes for forward and backward arrow:
+%  variable
+%    forw_arr = xfig_create_arrow(; arrow_type= 0, arrow_style=0),
+%    back_arr = xfig_create_arrow(; arrow_type=13, arrow_style=1),
+%    a2 = xfig_new_polyline([1,5], [1,4]
+%                           ;  forward_arrow=forw_arr,
+%                             backward_arrow=back_arr);
+%\seealso{xfig_new_polyline}
+%!%-
 {
    return struct {
      arrow_type = qualifier("arrow_type", 2),             % int (enumeration type)
-     arrow_style = qualifier("arrow_style", 3),           % int (enumeration type)
+     arrow_style = qualifier("arrow_style", 1),           % int (enumeration type)
      arrow_thickness = qualifier("arrow_thickness", 1),   % float (1/80 inch)
      arrow_width = qualifier("arrow_width", 4)*2.54/80.,  % float (Fig units)
      arrow_height = qualifier("arrow_height", 8)*2.54/80. % float (Fig units)
    };
-}
+} %}}}
 
-define xfig_new_polyline (X)
+define xfig_new_polyline (X) %{{{
+%!%+
+%\function{xfig_new_polyline}
+%\synopsis{Create a new polyline object}
+%\usage{p = xfig_new_polyline(Vector_Type X);
+%\altusage{p = xfig_new_polyline(Array_Type x [, y [, z]]);}
+%}
+%\description
+%  If \sfun{xfig_new_polyline} is called with one \exmp{Vector_Type} argument \exmp{X},
+%  the fields \exmp{x}, \exmp{y}, and \exmp{z} are expected to contain coordinate arrays
+%  of the polyline's vertices.
+%  These can also be specified directly as \exmp{Array_Type} arguements;
+%  all unspecified coordinates are set to zero.
+%\qualifiers
+%\qualifier{closed}{closes the polygon by repeating the first vertex at the end}
+%\qualifier{line}{line style}
+%\qualifier{width}{line width}
+%\qualifier{color}{line color}
+%\qualifier{fillcolor}{color to fill the region inside the polyline object}
+%\qualifier{areafill}{darkness or pattern}{20}
+%\qualifier{depth}{Xfig depth}
+%\qualifier{join}{shape of the vertex of lines: MITER, ROUNDED, BEVEL}
+%\qualifier{cap}{shape of end points of lines: BUTT, ROUND, PROJECTING)}
+%\qualifier{forward_arrow}{see documentation of \sfun{xfig_create_arrow}}
+%\qualifier{backward_arrow}{see documentation of \sfun{xfig_create_arrow}}
+%\seealso{xfig_create_arrow}
+%!%-
 {
    if ((_NARGS>1) 
        || (typeof(X)!=Vector_Type) && (typeof(X) != Struct_Type))
@@ -332,11 +393,11 @@ define xfig_new_polyline (X)
      {
 	arrow = qualifier("backward_arrow");
 	if (arrow == NULL) arrow = xfig_create_arrow(;; __qualifiers);
-	obj.forward_arrow = arrow;
+	obj.backward_arrow = arrow;
      }
 
    return obj;
-}
+} %}}}
 
 %------------------------------------------------------------------------
 % Polyline_List

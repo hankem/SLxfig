@@ -36,6 +36,7 @@
 @examples/plot/ticlabels.sl
 @examples/plot/run.sl
 @examples/plot/world.sl
+@examples/polyline/arrows.sl
 @src/Makefile.in
 @src/config.hin
 @src/gcontour-module.c

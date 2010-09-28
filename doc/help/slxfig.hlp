@@ -76,6 +76,49 @@ xfig_clip_polyline2d
 
 --------------------------------------------------------------
 
+xfig_create_arrow
+
+ SYNOPSIS
+  Create a new arrow shape for a polyline object
+
+ DESCRIPTION
+  `xfig_create_arrow' creates a structure that can be used
+  for polyline objects, e.g., with xfig_new_polyline.
+  All information are passed via qualifiers.
+
+ QUALIFIERS
+  ; arrow_type: shape of arrow heads (values from 0 to 14), e.g.,
+                XFIG_ARROWTYPE_{STICK,TRIANGLE,INDENTED,POINTED}
+                and others (default: XFIG_ARROWTYPE_INDENTED==2)
+  ; arrow_style: XFIG_ARROWSTYLE_{HOLLOW,FILLED}, i.e., 0 or 1;
+                 indicating a filling with white or with the pen color
+                 for `0 < arrow_type < 13' (default: 1)
+  ; arrow_thickness: (default: 1)
+  ; arrow_width: (default: 4)
+  ; arrow_height: (default: 8)
+
+ EXAMPLE
+  % using the same (simple) shape for forward and backward arrow,
+  % implicitly calling xfig_create_arrow (twice):
+  variable
+    a1 = xfig_new_polyline([0,4], [0,3]
+                           ; forward_arrow, backward_arrow,
+                             arrow_type=0, arrow_style=0);
+
+  % explicitly calling xfig_create_arrow, in order to use
+  % different shapes for forward and backward arrow:
+  variable
+    forw_arr = xfig_create_arrow(; arrow_type= 0, arrow_style=0),
+    back_arr = xfig_create_arrow(; arrow_type=13, arrow_style=1),
+    a2 = xfig_new_polyline([1,5], [1,4]
+                           ;  forward_arrow=forw_arr,
+                             backward_arrow=back_arr);
+
+ SEE ALSO
+  xfig_new_polyline
+
+--------------------------------------------------------------
+
 xfig_justify_object
 
  SYNOPSIS
@@ -224,6 +267,41 @@ xfig_new_pict
 
  SEE ALSO
   xfig_new_text, xfig_justify_object
+
+--------------------------------------------------------------
+
+xfig_new_polyline
+
+ SYNOPSIS
+  Create a new polyline object
+
+ USAGE
+  p = xfig_new_polyline(Vector_Type X);
+  % or
+  p = xfig_new_polyline(Array_Type x [, y [, z]]);
+
+ DESCRIPTION
+  If `xfig_new_polyline' is called with one `Vector_Type' argument `X',
+  the fields `x', `y', and `z' are expected to contain coordinate arrays
+  of the polyline's vertices.
+  These can also be specified directly as `Array_Type' arguements;
+  all unspecified coordinates are set to zero.
+
+ QUALIFIERS
+  ; closed: closes the polygon by repeating the first vertex at the end
+  ; line: line style
+  ; width: line width
+  ; color: line color
+  ; fillcolor: color to fill the region inside the polyline object
+  ; areafill: darkness or pattern (default: 20)
+  ; depth: Xfig depth
+  ; join: shape of the vertex of lines: MITER, ROUNDED, BEVEL
+  ; cap: shape of end points of lines: BUTT, ROUND, PROJECTING)
+  ; forward_arrow: see documentation of `xfig_create_arrow'
+  ; backward_arrow: see documentation of `xfig_create_arrow'
+
+ SEE ALSO
+  xfig_create_arrow
 
 --------------------------------------------------------------
 
