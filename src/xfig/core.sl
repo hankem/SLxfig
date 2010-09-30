@@ -51,13 +51,9 @@ private define eye_focus_changed ()
    variable eyehat = vector (0, 0, 1);
 
    variable d2r = PI/180.0;
-
-   variable
-     roll = Eye_Roll * d2r, theta = Eye_Theta * d2r, phi = Eye_Phi * d2r;
-
-   eyehat = vector_rotate (eyehat, yhat, theta);
-   eyehat = vector_rotate (eyehat, zhat, phi);
-   eyehat = unit_vector (eyehat);
+   eyehat = vector_rotate (eyehat, yhat, Eye_Theta*d2r);
+   eyehat = vector_rotate (eyehat, zhat, Eye_Phi*d2r);
+   eyehat = unit_vector (eyehat);  % Mh: `eyehat' should already be a unit vector.
 
    % Let p be the unit vector from Focus to the Eye.  A vector u
    % perpendicular to p is given by p.u = 0.  Let w be a unit vector
@@ -87,7 +83,7 @@ private define eye_focus_changed ()
      w = vector (0, 0, 1);
    
    v = crossprod (w, eyehat);
-   v = vector_rotate (v, eyehat, -roll);
+   v = vector_rotate (v, eyehat, -Eye_Roll*d2r);
    v = unit_vector (v);
    u = crossprod (eyehat, v);
 
@@ -114,8 +110,17 @@ define xfig_get_eye_roll (roll)
 }
 
 define xfig_set_eye ()
+%!%+
+%\function{xfig_set_eye}
+%\synosis{Define the point from which the projection of 3d space is seen}
+%\usage{xfig_set_eye (Double_Type dist, theta, phi [, roll]);}
+%\description
+%  \exmp{dist}  - distance of the eye from the focus
+%  \exmp{theta} - polar angle from the z-axis (in degrees)
+%  \exmp{phi}   - azimuthal angle in the x-y-plane (in degrees)
+%  \exmp{roll}  - roll angle (in degrees)
+%!%-
 {
-   variable dist, theta, phi;
    if (_NARGS == 4)
      Eye_Roll = ();
 

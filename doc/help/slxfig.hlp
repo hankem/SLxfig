@@ -1014,6 +1014,21 @@ xfig_scale_pict
 
 --------------------------------------------------------------
 
+xfig_set_eye
+
+\synosis{Define the point from which the projection of 3d space is seen}
+
+ USAGE
+  xfig_set_eye (Double_Type dist, theta, phi [, roll]);
+
+ DESCRIPTION
+  `dist'  - distance of the eye from the focus
+  `theta' - polar angle from the z-axis (in degrees)
+  `phi'   - azimuthal angle in the x-y-plane (in degrees)
+  `roll'  - roll angle (in degrees)
+
+--------------------------------------------------------------
+
 xfig_set_output_driver
 
  SYNOPSIS
