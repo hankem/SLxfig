@@ -150,10 +150,15 @@ private define write_arrow (fp, a, X, i1, i2)
    (x2,y2) = xfig_project_to_xfig_plane (vector_sum (X2, vector_mul(height, dX)));
    height = sqrt ((x2-x1)^2+(y2-y1)^2);
 
-   % Now make a vector normal to dX to project the width.   This one will work
-   % for this purpose
-   dX = vector (-dX.y, dX.x, 0);
-   normalize_vector (dX);
+   % Now make a vector normal to dX to project the width.
+   if(dX.y != 0 or dX.x!=0)
+   {
+     % This one will work for this purpose ...
+     dX = vector (-dX.y, dX.x, 0);
+     normalize_vector (dX);
+   } % ... unless dX pointed exactly in z-direction.
+   else
+     dX = vector (1, 0, 0);
    (x2,y2) = xfig_project_to_xfig_plane (vector_sum (X2, vector_mul(width, dX)));
    width = sqrt ((x2-x1)^2+(y2-y1)^2);
    
