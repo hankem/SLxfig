@@ -134,3 +134,11 @@ Changes since 0.1.0
     gets displayed.
 72. src/tests/: Renamed and modified the test scripts.
 73. src/xfig/plot.sl: Pass qualifiers to _xfig_check_help.
+74. src/*: Merged a number of changes from Manfred Hanke, including:
+
+      Documentation updates
+      Misc bugs fixes
+      Updated examples
+      Some code simplifications
+
+    To see the details, use `git diff 9bacc1f..8595a99`.
