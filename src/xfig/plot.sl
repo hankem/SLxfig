@@ -1371,6 +1371,17 @@ private define get_log_qualifiers () %{{{
 }
 %}}}
 
+private define get_reftype_qualifier (name, defval)
+{
+   variable val = qualifier (name, defval);
+   if (typeof (val) == Ref_Type)
+     {
+	if (@val == NULL) @val = defval;
+	val = @val;
+     }
+   return val;
+}
+
 private define do_axis_method (name, grid_axis) %{{{
 %!%+
 %\function{xfig_plot.axis}
@@ -1494,8 +1505,8 @@ private define do_axis_method (name, grid_axis) %{{{
    axis.major_tic_len = qualifier ("major_len", axis.major_tic_len);
    axis.minor_tic_len = qualifier ("minor_len", axis.minor_tic_len);
 
-   axis.axis_depth = qualifier ("depth", axis.axis_depth);
-   axis.tic_depth = qualifier ("tic_depth", axis.tic_depth);
+   axis.axis_depth = get_reftype_qualifier ("depth", axis.axis_depth;;__qualifiers);
+   axis.tic_depth = get_reftype_qualifier ("tic_depth", axis.tic_depth;;__qualifiers);
    axis.maxtics = qualifier ("maxtics", axis.maxtics);
 
    variable f = axis.tic_labels_font_struct;
@@ -1962,7 +1973,8 @@ private define plot_lines (p, x, y) %{{{
    variable i = where (isnan (x) or isnan (y));
    bad[i] = 1;
 
-   variable depth = qualifier ("depth", p.line_depth);
+   variable depth = get_reftype_qualifier ("depth", p.line_depth;; __qualifiers);
+
    variable thickness = qualifier ("width", p.thickness);
    variable color = qualifier ("color", p.line_color);
    variable linestyle = qualifier ("line", p.line_style);
@@ -2087,7 +2099,8 @@ private define plot_err (p, err_axis, val_const, val_err, err) %{{{
      }
 
    lines.translate(p.X);
-   lines.set_depth      ( qualifier ("eb_depth", qualifier ("depth", p.line_depth)) );
+   variable depth = get_reftype_qualifier ("depth", p.line_depth;;__qualifiers);
+   lines.set_depth      ( get_reftype_qualifier ("eb_depth", depth;;__qualifiers));
    lines.set_thickness  ( qualifier ("eb_width", qualifier ("width", p.thickness )) );
    lines.set_pen_color  ( qualifier ("eb_color", qualifier ("color", p.line_color)) );
    lines.set_line_style ( qualifier ("eb_line",                      p.line_style ) );
@@ -2352,7 +2365,7 @@ private define plot_symbols (p, x, y) %{{{
    variable color = qualifier ("color", p.point_color);
    color = qualifier ("symcolor", color);
    variable fill_color = qualifier ("fillcolor", color);
-   variable depth = qualifier ("depth", p.point_depth);
+   variable depth = get_reftype_qualifier ("depth", p.point_depth;;__qualifiers);
    depth = qualifier ("symdepth", depth);
    variable area_fill = qualifier ("fill", -1);
    variable size = qualifier ("width", p.thickness);
@@ -2624,7 +2637,7 @@ private define plot_shaded_histogram (p, x, y) %{{{
 	list.insert (vector([x0, x0, x1, x1], [y0,y1,y1,y0], [0.0,0.0,0.0,0.0]));
      }
    list.translate (p.X);
-   list.set_depth (qualifier ("depth", p.line_depth+1));
+   list.set_depth (get_reftype_qualifier("depth", p.line_depth+1;;__qualifiers));
    list.set_thickness (qualifier ("width", p.thickness));
    variable color = qualifier ("color", p.line_color);
    list.set_pen_color (color);
@@ -3140,7 +3153,7 @@ private define shade_region_method () %{{{
    variable obj = xfig_new_polyline (vector (xs, ys, 0*xs));
    obj.translate (p.X);
 
-   obj.set_depth (qualifier ("depth", p.image_depth));
+   obj.set_depth (get_reftype_qualifier ("depth", p.image_depth;;__qualifiers));
    obj.set_thickness (qualifier ("width", p.thickness));
    variable color = qualifier ("color", p.line_color);
    obj.set_pen_color (color);
