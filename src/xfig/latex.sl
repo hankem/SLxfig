@@ -140,7 +140,7 @@ private define run_latex (file)
    switches = "";
    () = run_cmd (1, sprintf ("cd '%s'; %s %s '%s'",
 			     dir, LaTeX_Pgm, switches, base)
-		 ; verbose=0
+		 ; verbose=1
 		);
 }
 

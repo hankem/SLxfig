@@ -142,9 +142,10 @@ Changes since 0.1.0
       Some code simplifications
 
     To see the details, use `git diff 9bacc1f..8595a99`.
-75. src/plot.sl: The "depth" qualifier may be a reference to a
+75. src/xfig/plot.sl: The "depth" qualifier may be a reference to a
     variable, which if NULL, will be set upon return to the depth used:
 
        depth = NULL;
        w.plot (x1, y1; depth=&depth);
        w.plot (x2, y2; depth=depth-1);
+76. src/xfig/latex.sl: If latex fails, run again with verbose=1.

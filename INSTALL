@@ -1,15 +1,16 @@
 -*- text -*-
 
-To use this package you need to have slang-2, LaTeX, and xfig installed.
+To use this package you need to have slang (2.2.3 or higher), LaTeX,
+and xfig installed.
 
 Installing the package involves running the configure script, then
 running `make`, followed by `make install`.  The configure script has
 two important options:
 
    --prefix=/installation-path-prefix
-   
+
        This specifies path-prefix for the slxfig package
-       
+
    --with-slang=/prefix-for-slang-2
 
        This option is used to specify where slang-2 is located.  If
