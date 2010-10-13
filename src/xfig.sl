@@ -1,11 +1,11 @@
 $1 = 0; $2 = 2; $3 = 0;
 variable _xfig_version = $1*10000 + $2*100 + $3;
-variable _xfig_version_string = "pre$1.$2.$3-77"$;
+variable _xfig_version_string = "pre$1.$2.$3-78"$;
 
 ()=evalfile ("xfig/core");
 ()=evalfile ("xfig/polyline");
 ()=evalfile ("xfig/ellipse");
-()=evalfile ("xfig/text");
+%()=evalfile ("xfig/text");  % obsolete-- replaced by latex.sl
 ()=evalfile ("xfig/latex.sl");
 ()=evalfile ("xfig/objects");
 ()=evalfile ("xfig/png.sl");
