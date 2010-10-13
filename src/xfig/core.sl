@@ -1,4 +1,5 @@
 require ("vector");
+require ("rand");
 
 private variable PIX_PER_INCH = 1200.0; %  xfig units per inch
 private variable XFig_Origin_X = 10.795;%  [cm]
@@ -1168,6 +1169,55 @@ define xfig_set_verbose (n)
 {
    _XFig_Verbose = n;
 }
+
+private variable Tmp_Dir = "/tmp";
+
+define xfig_mkdir ();
+define xfig_mkdir (dir)
+{
+   variable topdir = path_dirname (dir);
+
+   if (topdir == dir)
+     return;
+
+   if (NULL == stat_file (topdir))
+     xfig_mkdir (topdir);
+
+   if ((-1 == mkdir (dir, 0777))
+       && (errno != EEXIST))
+     throw OSError, sprintf ("Unable to mkdir(%s): %s", dir, errno_string());
+}
+
+define xfig_set_tmp_dir (tmp)
+{
+   xfig_mkdir (tmp);
+   Tmp_Dir = tmp;
+}
+
+define xfig_get_tmp_dir ()
+{
+   return Tmp_Dir;
+}
+
+define xfig_make_tmp_file (base, ext)
+{
+   if (path_is_absolute (base) == 0)
+     base = path_concat (Tmp_Dir, base);
+
+   xfig_mkdir (path_dirname (base));
+
+   if (ext == NULL) ext = ".tmp";
+   loop (1000)
+     {
+	variable file = sprintf ("%s%X%X%s", base,
+				 rand_int (1, 0xFFFF), rand_int(1, 0x7FFFF),
+				 ext);
+	if (NULL == stat_file (file))
+	  return file;
+     }
+   throw IOError, "Unable to create a tmp file";
+}
+
 
 % Use CM as the default system
 xfig_use_cm ();

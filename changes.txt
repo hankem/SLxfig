@@ -151,3 +151,4 @@ Changes since 0.1.0
 76. src/xfig/latex.sl: If latex fails, run again with verbose=1.
 77. examples/: Added pict/ and draw/ examples.
 78. src/xfig.sl: Obsolete text.sl is nolonger loaded.
+79. src/xfig/core.sl,latext.sl: tmpfile functions moved to core.sl
