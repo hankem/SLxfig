@@ -3,7 +3,6 @@ require ("vector");
 private variable PIX_PER_INCH = 1200.0; %  xfig units per inch
 private variable XFig_Origin_X = 10.795;%  [cm]
 private variable XFig_Origin_Y = 13.97; %  [cm]
-private variable Focus = vector (0, 0, 0);
 
 % XFig has a strange notion about what a cm is--- not 1200/2.54.
 private variable PIX_PER_CM = 450.0; 
@@ -31,11 +30,8 @@ define _xfig_check_help (nargs, fname)
    return 1;
 }
 
-define xfig_get_focus ()
-{
-   return Focus;
-}
 
+private variable Focus = vector (0, 0, 0);
 private variable Eye = vector (0, 0, 1e6);
 private variable EF_Len, EF_x, EF_y, EF_z;
 private variable EFhat_x, EFhat_y, EFhat_z;
@@ -43,6 +39,7 @@ private variable Eye_x, Eye_y, Eye_z;  %  components of Eye
 private variable Focal_Plane_Xhat, Focal_Plane_Yhat;
 private variable Eye_Roll = 0.0;
 private variable Eye_Dist, Eye_Theta, Eye_Phi;
+
 private define eye_focus_changed ()
 {
    
@@ -99,12 +96,28 @@ private define eye_focus_changed ()
 }
 
 define xfig_set_eye_roll (roll)
+%!%+
+%\function{xfig_set_eye_roll}
+%\synopsis{Set the roll angle under which the projection of 3d space is seen}
+%\usage{xfig_get_eye_roll (Double_Type roll);}
+%\description
+%  The \exmp{roll} angle is measured in degrees.
+%\seealso{xfig_get_eye_roll, xfig_set_eye, xfig_set_focus}
+%!%-
 {
    variable Eye_Roll = roll;
    eye_focus_changed ();
 }
 
 define xfig_get_eye_roll (roll)
+%!%+
+%\function{xfig_get_eye_roll}
+%\synopsis{Obtain the roll angle under which the projection of 3d space is seen}
+%\usage{Double_Type xfig_get_eye_roll ()}
+%\description
+%  The roll angle is measured in degrees.
+%\seealso{xfig_set_eye_roll, xfig_set_eye}
+%!%-
 {
    return Eye_Roll;
 }
@@ -112,13 +125,14 @@ define xfig_get_eye_roll (roll)
 define xfig_set_eye ()
 %!%+
 %\function{xfig_set_eye}
-%\synosis{Define the point from which the projection of 3d space is seen}
+%\synopsis{Define the point from which the projection of 3d space is seen}
 %\usage{xfig_set_eye (Double_Type dist, theta, phi [, roll]);}
 %\description
 %  \exmp{dist}  - distance of the eye from the focus
 %  \exmp{theta} - polar angle from the z-axis (in degrees)
 %  \exmp{phi}   - azimuthal angle in the x-y-plane (in degrees)
 %  \exmp{roll}  - roll angle (in degrees)
+%\seealso{xfig_get_eye, xfig_get_eye_roll, xfig_set_eye_roll, xfig_set_focus}
 %!%-
 {
    if (_NARGS == 4)
@@ -128,16 +142,41 @@ define xfig_set_eye ()
    eye_focus_changed ();
 }
 
+define xfig_get_eye ()
+%!%+
+%\function{xfig_get_eye}
+%\synopsis{Obtain the point from which the projection of 3d space is seen}
+%\usage{Vector_Type xfig_get_eye ()}
+%\seealso{xfig_set_eye}
+%!%-
+{
+   return Eye;
+}
+
+
 define xfig_set_focus (X)
+%!%+
+%\function{xfig_set_focus}
+%\synopsis{Define the focus point of the projection of 3d space}
+%\usage{xfig_set_focus (Vector_Type X);}
+%\seealso{xfig_get_focus, xfig_set_eye}
+%!%-
 {
    Focus = X;
    eye_focus_changed ();
 }
 
-define xfig_get_eye ()
+define xfig_get_focus ()
+%!%+
+%\function{xfig_get_focus}
+%\synopsis{Obtain the focus point of the projection of 3d space}
+%\usage{Vector_Type xfig_get_focus ()}
+%\seealso{xfig_set_focus}
+%!%-
 {
-   return Eye;
+   return Focus;
 }
+
 
 define xfig_convert_inches (x)
 {

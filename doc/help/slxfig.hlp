@@ -119,6 +119,48 @@ xfig_create_arrow
 
 --------------------------------------------------------------
 
+xfig_get_eye
+
+ SYNOPSIS
+  Obtain the point from which the projection of 3d space is seen
+
+ USAGE
+  Vector_Type xfig_get_eye ()
+
+ SEE ALSO
+  xfig_set_eye
+
+--------------------------------------------------------------
+
+xfig_get_eye_roll
+
+ SYNOPSIS
+  Obtain the roll angle under which the projection of 3d space is seen
+
+ USAGE
+  Double_Type xfig_get_eye_roll ()
+
+ DESCRIPTION
+  The roll angle is measured in degrees.
+
+ SEE ALSO
+  xfig_set_eye_roll, xfig_set_eye
+
+--------------------------------------------------------------
+
+xfig_get_focus
+
+ SYNOPSIS
+  Obtain the focus point of the projection of 3d space
+
+ USAGE
+  Vector_Type xfig_get_focus ()
+
+ SEE ALSO
+  xfig_set_focus
+
+--------------------------------------------------------------
+
 xfig_justify_object
 
  SYNOPSIS
@@ -1016,7 +1058,8 @@ xfig_scale_pict
 
 xfig_set_eye
 
-\synosis{Define the point from which the projection of 3d space is seen}
+ SYNOPSIS
+  Define the point from which the projection of 3d space is seen
 
  USAGE
   xfig_set_eye (Double_Type dist, theta, phi [, roll]);
@@ -1026,6 +1069,38 @@ xfig_set_eye
   `theta' - polar angle from the z-axis (in degrees)
   `phi'   - azimuthal angle in the x-y-plane (in degrees)
   `roll'  - roll angle (in degrees)
+
+ SEE ALSO
+  xfig_get_eye, xfig_get_eye_roll, xfig_set_eye_roll, xfig_set_focus
+
+--------------------------------------------------------------
+
+xfig_set_eye_roll
+
+ SYNOPSIS
+  Set the roll angle under which the projection of 3d space is seen
+
+ USAGE
+  xfig_get_eye_roll (Double_Type roll);
+
+ DESCRIPTION
+  The `roll' angle is measured in degrees.
+
+ SEE ALSO
+  xfig_get_eye_roll, xfig_set_eye, xfig_set_focus
+
+--------------------------------------------------------------
+
+xfig_set_focus
+
+ SYNOPSIS
+  Define the focus point of the projection of 3d space
+
+ USAGE
+  xfig_set_focus (Vector_Type X);
+
+ SEE ALSO
+  xfig_get_focus, xfig_set_eye
 
 --------------------------------------------------------------
 
