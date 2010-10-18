@@ -55,6 +55,7 @@
 @src/xfig/polyline.sl
 @src/xfig/text.sl
 @src/tests/setup.sl
+@src/tests/test_ellipse.sl
 @src/tests/test_multiplot_align_ylabels.sl
 @src/tests/test_plot_axis-labels.sl
 @src/tests/test_plot_scale.sl

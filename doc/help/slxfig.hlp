@@ -17,6 +17,7 @@
 
  QUALIFIERS
   ; verbose=intval: if >=0, the fig2dev command is displayed
+  ; clean: remove the .fig file
 
  SEE ALSO
   xfig_set_verbose
@@ -116,6 +117,19 @@ xfig_create_arrow
 
  SEE ALSO
   xfig_new_polyline
+
+--------------------------------------------------------------
+
+xfig_ellipse.rotate
+
+ USAGE
+  xfig_ellipse.rotate([Vector_Type axis,] Double_Type theta);
+
+ DESCRIPTION
+  If no `axis' is given, the ellipse is rotated
+  in the x-y-plane around `axis = vector(0,0,1)'.
+
+  The rotation angle `theta' is measured in radians.
 
 --------------------------------------------------------------
 
@@ -260,6 +274,24 @@ xfig_new_color
 
  SEE ALSO
   xfig_lookup_color_rgb, xfig_lookup_color
+
+--------------------------------------------------------------
+
+xfig_new_ellipse
+
+ SYNOPSIS
+  Create a new ellipse object
+
+ USAGE
+  XFig_Ellipse_Type xfig_create_ellipse (Double_Type a [, b])
+
+ QUALIFIERS
+  ; line: line style (default: 0)
+  ; width: line width (default: 1)
+  ; color: line color (default: -1)
+  ; fillcolor: (default: -1)
+  ; areafill: darkness or pattern (default: -1 or 20, depending on `fillcolor')
+  ; depth: XFig depth (default: 50)
 
 --------------------------------------------------------------
 
