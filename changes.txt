@@ -150,3 +150,5 @@ Changes since 0.1.0
        w.plot (x2, y2; depth=depth-1);
 76. src/xfig/latex.sl: If latex fails, run again with verbose=1.
 77. examples/: Added pict/ and draw/ examples.
+78. src/plot.sl: Tweak ticlabels when min/max axis limits are nearly
+    equal.
