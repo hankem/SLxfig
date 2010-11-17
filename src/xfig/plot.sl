@@ -1697,23 +1697,26 @@ private define axis_method () %{{{
 
 private define get_world_min_max (axis, x0, x1, islog, pad) %{{{
 {
+   x0 *= 1.0; x1 *= 1.0;	       %  convert ints
+
    if (isnan (x0) or isnan (x1) or isinf (x0) or isinf (x1))
      {
 	() = fprintf (stderr, "xfig_plot_define_world: Axis limits must be finite.\n");
 	return 0.1, 1.0;
      }
 
-   variable diff = x1-x0;
-   variable den = maxabs([x0,x1]);
-   variable reldiff = (den > 0) ? diff/den : 0;
-   if (reldiff < 1e-4)
+   % Do not make this tolerance too large-- the user may define custom
+   % tic labels.  For examples, minutes given a set of time_t values.
+   if (feqs (x0, x1, 2e-15))
      {
 	x1 *= (x1 >= 0) ? 1.01 : 0.99;
 	x0 *= (x0 >= 0) ? 0.99 : 1.01;
+	() = fprintf (stderr, "xfig_plot_define_world: world limits are too small--tweaking: x0=%g x1=%g\n", x0, x1);
      }
 
    if (x0 == x1)
      {
+	() = fprintf (stderr, "xfig_plot_define_world: invalid world limits: x0=x1=%g\n", x0);
 	x0 -= 0.01;
 	x1 += 0.01;
 	if (x0 == x1)
