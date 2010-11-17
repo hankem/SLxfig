@@ -718,6 +718,7 @@ private define format_labels_using_scientific_notation (tics) %{{{
 	b[j] -= 1;
      }
 
+#iffalse   % This logic is flawed.
    variable mant_factor = 1.0;
    loop (20)
      {
@@ -730,7 +731,10 @@ private define format_labels_using_scientific_notation (tics) %{{{
 	  }
      }
    mant *= mant_factor;
-
+#else
+   variable mant = nint(10^a);
+   mant[where(tics<0)] *= -1;
+#endif
    return array_map (String_Type, &sprintf, "$\bm%g{\times}10^{%d}$"R, mant, b);
 }
 %}}}
