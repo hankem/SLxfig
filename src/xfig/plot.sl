@@ -557,14 +557,14 @@ private define compute_major_tics (xmin, xmax, maxtics, tic_intervals) %{{{
    tic_interval /= multiplier;
    variable nmin = xmin / tic_interval;
    if (abs(nmin) > 0x7FFFFFFF)
-     return [xmin,xmax];
+     return [xmin,xmax], 0;
    nmin = int(nmin);
    if (xmin < 0)
      nmin--;
 
    variable nmax = xmax/tic_interval;
    if (abs(nmin) > 0x7FFFFFFE)
-     return [xmin,xmax];
+     return [xmin,xmax], 0;
    nmax = int(nmax);
    if (xmax > 0)
      nmax++;
@@ -1703,10 +1703,19 @@ private define get_world_min_max (axis, x0, x1, islog, pad) %{{{
 	return 0.1, 1.0;
      }
 
+   variable diff = x1-x0;
+   variable den = maxabs([x0,x1]);
+   variable reldiff = (den > 0) ? diff/den : 0;
+   if (reldiff < 1e-4)
+     {
+	x1 *= (x1 >= 0) ? 1.01 : 0.99;
+	x0 *= (x0 >= 0) ? 0.99 : 1.01;
+     }
+
    if (x0 == x1)
      {
-	x0 = 0.5*x0;
-	x1 = 2.0*x0;
+	x0 -= 0.01;
+	x1 += 0.01;
 	if (x0 == x1)
 	  {
 	     () = fprintf (stderr, "xfig_plot_define_world: invalid world limits: x0=x1=%g\n", x0);

@@ -155,3 +155,5 @@ Changes since 0.1.0
 80. src/xfig/core.sl: added xfig_add_tmp_file, which will schedule a
     file for deletion at exit.  The ;delete qualifier to
     xfig_make_tmp_file will also do this.
+81. src/plot.sl: Tweak ticlabels when min/max axis limits are nearly
+    equal.
