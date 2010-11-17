@@ -157,3 +157,5 @@ Changes since 0.1.0
     xfig_make_tmp_file will also do this.
 81. src/plot.sl: Tweak ticlabels when min/max axis limits are nearly
     equal.
+82. examples/plot/overlay.sl: img1 and img2 were not always the same
+    size.

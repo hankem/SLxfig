@@ -17,7 +17,7 @@ private define make_hist_image (x, h, xmin, xmax, ymin, ymax, color)
    w.world (xmin, xmax, ymin, ymax);
    w.axes (; off);
    w.hplot (x, h; fill=20, color=color);
-   w.plot ([xmin, xmax], [ymin, ymax]; sym="point");
+   w.plot ([xmin, xmax], [ymin, ymax]; sym="point");   %  registration marks
    variable tmp = "tmp.png";
    w.render (tmp);
    variable img = png_read (tmp);
@@ -28,17 +28,17 @@ private define make_hist_image (x, h, xmin, xmax, ymin, ymax, color)
 public define slsh_main ()
 {
    variable mu = 100, sigma = 15;
-   variable data = mu + rand_gauss (sigma, 10000);
-   variable x = [int(min(data)):1+int(max(data)):1];
-   variable h = hist1d (data, x)/(1.0*length(data));
-   variable xmin = min(x), xmax = max(x), ymin = 0, ymax = max(h);
+   variable data1 = mu + rand_gauss (sigma, 10000);
+   variable data2 = 10 + mu + rand_gauss (sigma, 10000);
+   variable all_data = [data1, data2];
 
-   variable img1 = make_hist_image (x, h, xmin, xmax, ymin, ymax, "red");
+   variable x = [int(min(all_data)):1+int(max(all_data)):1];
+   variable h1 = hist1d (data1, x)/(1.0*length(data1));
+   variable h2 = hist1d (data2, x)/(1.0*length(data2));
 
-   data = 10 + mu + rand_gauss (sigma, 10000);
-   x = [int(min(data)):1+int(max(data)):1];
-   h = hist1d (data, x)/(1.0*length(data));
-   variable img2 = make_hist_image (x, h, xmin, xmax, ymin, ymax, "blue");
+   variable xmin = x[0], xmax = x[-1], ymin = 0, ymax = max([h1,h2]);
+   variable img1 = make_hist_image (x, h1, xmin, xmax, ymin, ymax, "red");
+   variable img2 = make_hist_image (x, h2, xmin, xmax, ymin, ymax, "blue");
 
    variable img1_r = png_rgb_get_r (img1);
    variable img1_g = png_rgb_get_g (img1);
