@@ -150,3 +150,13 @@ Changes since 0.1.0
        w.plot (x2, y2; depth=depth-1);
 76. src/xfig/latex.sl: If latex fails, run again with verbose=1.
 77. examples/: Added pict/ and draw/ examples.
+78. src/xfig.sl: Obsolete text.sl is nolonger loaded.
+79. src/xfig/core.sl,latex.sl: tmpfile functions moved to core.sl
+80. src/xfig/core.sl: added xfig_add_tmp_file, which will schedule a
+    file for deletion at exit.  The ;delete qualifier to
+    xfig_make_tmp_file will also do this.
+81. src/plot.sl: Tweak ticlabels when min/max axis limits are nearly
+    equal.
+82. examples/plot/overlay.sl: img1 and img2 were not always the same
+    size.
+83. src/plot.sl: Modified change #81.

@@ -3,7 +3,6 @@
 
 %{{{ Tmpfile and Dir handling Functions
 
-private variable Latex_Tmp_Dir = NULL;
 private variable Latex_Packages = {"amsmath", "bm", "color"};
 private variable Latex_Font_Size = 12;
 private variable Latex_Default_Color = "black";
@@ -19,62 +18,15 @@ private variable Supported_Font_Sizes =
 private variable Preamble_Commands = NULL;
 private variable EPS_Dir = NULL;
 
-private define mkdir_recurse ();
-private define mkdir_recurse (dir)
-{
-   variable topdir = path_dirname (dir);
-
-   if (NULL == stat_file (topdir))
-     mkdir_recurse (topdir);
-
-   if ((-1 == mkdir (dir, 0777))
-       and (errno != EEXIST))
-     verror ("Unable to mkdir(%s): %s", dir, errno_string(errno));
-}
-
-private define make_tmp_filename (base, ext)
-{
-   base = sprintf ("%s_%d", base, getpid ());
-   variable file = strcat (base, ext);
-   variable count = 0;
-
-   while (NULL != stat_file (file))
-     {
-	file = sprintf ("%s_%X%s", base, count, ext);
-	count++;
-     }
-   return file;
-}
-
-define xfig_set_tmp_dir (tmp)
-{
-   mkdir_recurse (tmp);
-   Latex_Tmp_Dir = tmp;
-}
-
-define xfig_get_tmp_dir ()
-{
-   if (Latex_Tmp_Dir == NULL)
-     xfig_set_tmp_dir (make_tmp_filename ("tmp", ""));
-
-   return Latex_Tmp_Dir;
-}
-
-define xfig_make_tmp_file (base, ext)
-{
-   base = path_concat (xfig_get_tmp_dir (), base);
-   return make_tmp_filename (base, ext);
-}
-
 define xfig_set_autoeps_dir (dir)
 {
-   mkdir_recurse (dir);
+   xfig_mkdir (dir);
    ifnot (path_is_absolute (dir))
-   {
-     variable cwd = getcwd ();
-     if (cwd != NULL)
-       dir = path_concat(cwd, dir);
-   }
+     {
+	variable cwd = getcwd ();
+	if (cwd != NULL)
+	  dir = path_concat(cwd, dir);
+     }
    EPS_Dir = dir;
 }
 
@@ -89,13 +41,12 @@ define xfig_get_autoeps_dir ()
 private define make_autoeps_file (base)
 {
    base = path_concat (xfig_get_autoeps_dir (), base);
-   return make_tmp_filename (base, ".eps");
+   return xfig_make_tmp_file (base, ".eps");
 }
 
 private define make_tmp_latex_file (base)
 {
-   base = path_concat (xfig_get_tmp_dir (), base);
-   return make_tmp_filename (base, ".tex");
+   return xfig_make_tmp_file (base, ".tex");
 }
 
 %}}}

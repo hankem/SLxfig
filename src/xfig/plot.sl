@@ -557,14 +557,14 @@ private define compute_major_tics (xmin, xmax, maxtics, tic_intervals) %{{{
    tic_interval /= multiplier;
    variable nmin = xmin / tic_interval;
    if (abs(nmin) > 0x7FFFFFFF)
-     return [xmin,xmax];
+     return [xmin,xmax], 0;
    nmin = int(nmin);
    if (xmin < 0)
      nmin--;
 
    variable nmax = xmax/tic_interval;
    if (abs(nmin) > 0x7FFFFFFE)
-     return [xmin,xmax];
+     return [xmin,xmax], 0;
    nmax = int(nmax);
    if (xmax > 0)
      nmax++;
@@ -718,6 +718,7 @@ private define format_labels_using_scientific_notation (tics) %{{{
 	b[j] -= 1;
      }
 
+#iffalse   % This logic is flawed.
    variable mant_factor = 1.0;
    loop (20)
      {
@@ -730,7 +731,10 @@ private define format_labels_using_scientific_notation (tics) %{{{
 	  }
      }
    mant *= mant_factor;
-
+#else
+   variable mant = nint(10^a);
+   mant[where(tics<0)] *= -1;
+#endif
    return array_map (String_Type, &sprintf, "$\bm%g{\times}10^{%d}$"R, mant, b);
 }
 %}}}
@@ -1693,16 +1697,28 @@ private define axis_method () %{{{
 
 private define get_world_min_max (axis, x0, x1, islog, pad) %{{{
 {
+   x0 *= 1.0; x1 *= 1.0;	       %  convert ints
+
    if (isnan (x0) or isnan (x1) or isinf (x0) or isinf (x1))
      {
 	() = fprintf (stderr, "xfig_plot_define_world: Axis limits must be finite.\n");
 	return 0.1, 1.0;
      }
 
+   % Do not make this tolerance too large-- the user may define custom
+   % tic labels.  For examples, minutes given a set of time_t values.
+   if (feqs (x0, x1, 2e-15))
+     {
+	x1 *= (x1 >= 0) ? 1.01 : 0.99;
+	x0 *= (x0 >= 0) ? 0.99 : 1.01;
+	() = fprintf (stderr, "xfig_plot_define_world: world limits are too small--tweaking: x0=%g x1=%g\n", x0, x1);
+     }
+
    if (x0 == x1)
      {
-	x0 = 0.5*x0;
-	x1 = 2.0*x0;
+	() = fprintf (stderr, "xfig_plot_define_world: invalid world limits: x0=x1=%g\n", x0);
+	x0 -= 0.01;
+	x1 += 0.01;
 	if (x0 == x1)
 	  {
 	     () = fprintf (stderr, "xfig_plot_define_world: invalid world limits: x0=x1=%g\n", x0);

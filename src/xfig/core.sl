@@ -1,11 +1,12 @@
 require ("vector");
+require ("rand");
 
 private variable PIX_PER_INCH = 1200.0; %  xfig units per inch
 private variable XFig_Origin_X = 10.795;%  [cm]
 private variable XFig_Origin_Y = 13.97; %  [cm]
 
 % XFig has a strange notion about what a cm is--- not 1200/2.54.
-private variable PIX_PER_CM = 450.0; 
+private variable PIX_PER_CM = 450.0;
 private variable DISPLAY_PIX_PER_INCH = 80;
 private variable Scale_Factor;
 private variable Display_Pixel_Size;
@@ -42,7 +43,7 @@ private variable Eye_Dist, Eye_Theta, Eye_Phi;
 
 private define eye_focus_changed ()
 {
-   
+
    variable yhat = vector (0, 1, 0);
    variable zhat = vector (0, 0, 1);
    variable eyehat = vector (0, 0, 1);
@@ -63,13 +64,13 @@ private define eye_focus_changed ()
    %   wx*dx + wy*dy + wz*dz = 0
    %   px*dx + py*dy + pz*dz = 0
    %   ux*dx + uy*dy + uz*dz = 0
-   % ==> 
+   % ==>
    %   wx*py*uz + wy*pz*ux + wz*px*uy = wz*py*ux + wx*pz*uy + wy*px*uz
    %   (wx*py-wy*px)*uz + (wy*pz-wz*py)*ux + (wz*px-wx*pz)*uy
    % ==> (w cross p).u = 0
    % Let v = (w cross p) ==> v.p = 0, v.u = 0
    % ==> u = p cross v
-   
+
    variable u, v, w;
    variable eps = 2.3e-16;
    if (abs(eyehat.z)>eps)
@@ -78,7 +79,7 @@ private define eye_focus_changed ()
      w = vector (0, 0, 1);
    else
      w = vector (0, 0, 1);
-   
+
    v = crossprod (w, eyehat);
    v = vector_rotate (v, eyehat, -Eye_Roll*d2r);
    v = unit_vector (v);
@@ -204,7 +205,7 @@ define xfig_use_cm ()
    Display_Pixel_Size = 2.54/DISPLAY_PIX_PER_INCH;
 }
 
-% Scale from inches to user system 
+% Scale from inches to user system
 define xfig_scale_from_inches (x)
 {
    return x*(PIX_PER_INCH/Scale_Factor);
@@ -215,13 +216,12 @@ define xfig_scale_to_inches (x)
    return (x * Scale_Factor)/PIX_PER_INCH;
 }
 
-
 % Xfig scales the image pixels (e.g., png) to its pixel system using the factor
 %   PIX_PER_INCH/DISPLAY_PIX_PER_INCH
 % when inches are used, and
 %   (2.54*PIX_PER_CM)/DISPLAY_PIX_PER_INCH
 % when cm are used.
-% where DISPLAY_PIX_PER_INCH is 80.  Note also that in Xfig, 
+% where DISPLAY_PIX_PER_INCH is 80.  Note also that in Xfig,
 % PIX_PER_INCH/PIX_PER_CM is _not_ 2.54.  The scale factor represents
 % the number of Xfig pixels per image-pixel.
 % The function below supplies the correct scaling for images that have no
@@ -253,14 +253,14 @@ define xfig_project_to_xfig_plane (X)
    % EF.EF + t(X-E).EF = 0
    % t = -EF.EF/(X-E).EF   %   = -EF.nhat/(X-E).n
    %   = -EF_len/(X-E).n
-   % compute X'-F = (E-F)+(X-E)*t   
+   % compute X'-F = (E-F)+(X-E)*t
    variable dx = X.x - Eye_x, dy = X.y - Eye_y, dz = X.z - Eye_z;
    variable t = -EF_Len/(EFhat_x*dx + EFhat_y*dy + EFhat_z*dz);
    X = vector (EF_x+dx*t, EF_y+dy*t, EF_z+dz*t);
-   
+
    variable x = dotprod (X,Focal_Plane_Xhat);
    variable y = dotprod (X,Focal_Plane_Yhat);
-   
+
    y = -y;
    x += XFig_Origin_X;
    y += XFig_Origin_Y;
@@ -269,7 +269,7 @@ define xfig_project_to_xfig_plane (X)
      {
 	if (typeof (x) != Array_Type)
 	  return _NaN, _NaN;
-	
+
 	x[is_bad] = _NaN; y[is_bad] = _NaN;
      }
    return (x, y);
@@ -316,7 +316,6 @@ define xfig_write_header (fp, h)
 
 private variable Fig2dev_Formats = Assoc_Type[String_Type];
 
-
 %!%+
 %\function{xfig_set_output_driver}
 %\synopsis{Associate an output driver to a file extension}
@@ -326,8 +325,8 @@ private variable Fig2dev_Formats = Assoc_Type[String_Type];
 % output format (dictated by the extension) from the corresponding .fig file.
 % The \exmp{ext} parameter specifies the filename extension and \exmp{cmd} is
 % the shell command that will be used to generate the file.
-% 
-% The \exmp{cmd} may contain the following format descriptors that will be 
+%
+% The \exmp{cmd} may contain the following format descriptors that will be
 % replace by the corresponding objects before being passed to the shell:
 %#v+
 %   %I    Input .fig file
@@ -488,7 +487,6 @@ define xfig_get_color_info (color)
    return find_color (color);
 }
 
-
 %!%+
 %\function{xfig_new_color}
 %\synopsis{Add a new color definition}
@@ -503,7 +501,7 @@ define xfig_get_color_info (color)
 define xfig_new_color ()
 {
    variable name, rgb, id, idp = &id;
-   
+
    if (_NARGS == 3)
      idp = ();
    (name, rgb) = ();
@@ -519,7 +517,7 @@ define xfig_new_color ()
 	@idp = s.id;
 	return;
      }
-   
+
    new_color (name, rgb, Next_XFig_Color_Id, Next_Color_Id);
    @idp = Next_Color_Id;
    Next_Color_Id++;
@@ -570,7 +568,7 @@ private define get_fig2dev_cmd (ext)
 
 define xfig_create_file (file)
 {
-   variable dev = struct 
+   variable dev = struct
      {
 	fp, figfile, devfile, papersize, fig2dev_fmt
      };
@@ -591,7 +589,7 @@ define xfig_create_file (file)
    if (fp == NULL)
      verror ("Unable to open %s\n", figfile);
    dev.fp = fp;
-   dev.papersize = XFig_Header.papersize;	
+   dev.papersize = XFig_Header.papersize;
    xfig_write_header (fp, NULL);
    write_colors (fp);
    return dev;
@@ -614,7 +612,6 @@ define xfig_close_file (dev)
    if (qualifier ("verbose", _XFig_Verbose) >= 0)  message("$ "+fmt);
    () = system_intr (fmt);
 }
-
 
 #iffalse
 define xfig_primative_set_attr (p, attr, val)
@@ -647,7 +644,6 @@ private define end_render_as_compound (obj, fp)
 {
    xfig_write (fp, "-6\n");
 }
-
 
 % Bitmapped values for flags parameter
 variable XFIG_RENDER_AS_COMPOUND = 1;
@@ -684,7 +680,7 @@ private define default_render (obj, dev)
    variable fp = dev;
    if (typeof (dev) == Struct_Type)
      fp = dev.fp;
-   
+
    rac = (obj.flags & XFIG_RENDER_AS_COMPOUND);
    if (rac)
      {
@@ -694,10 +690,10 @@ private define default_render (obj, dev)
      }
 
    obj.render_to_fp (fp);
-   
-   if (rac) 
+
+   if (rac)
      end_render_as_compound (obj, fp);
-   if (do_close) 
+   if (do_close)
      xfig_close_file (dev;; __qualifiers);
 }
 
@@ -718,9 +714,9 @@ private define default_count_objects (object)
 
 private variable XFig_Object = struct
 {
-   render_to_fp = &default_render_to_fp,%  define this one  
-   rotate = &default_method2, 
-   translate = &default_method1, 
+   render_to_fp = &default_render_to_fp,%  define this one
+   rotate = &default_method2,
+   translate = &default_method1,
    scale = &default_method3,
    get_bbox = &default_get_bbox,
    set_depth = &default_method1,
@@ -761,7 +757,7 @@ define _xfig_get_scale_args (nargs)
       case 1:
 	return 1, 1, 1;
      }
-   
+
    usage (".scale: Expecting 1, 2, or 3 scale parameters");
 }
 
@@ -805,7 +801,6 @@ define xfig_get_object_bbox (obj)
    return obj.get_bbox ();
 }
 #endif
-
 
 private define translate_compound (c, dX)
 {
@@ -970,7 +965,6 @@ define xfig_new_compound_list ()
    return obj;
 }
 
-
 % Usage: c = xfig_new_compound (obj, ...);
 define xfig_new_compound ()
 {
@@ -985,15 +979,14 @@ define xfig_new_compound ()
    return c;
 }
 
-
 %!%+
 %\function{xfig_justify_object}
 %\synopsis{Justify an object at a specified position}
 %\usage{xfig_justify_object (obj, X, dX)}
 %\description
-%  This function moves the object to the specified position X (a vector) 
+%  This function moves the object to the specified position X (a vector)
 %  and justifies it at that position according to the offsets specified by
-%  the vector \exmp{dX}.  The components of \exmp{dX} are normally in the 
+%  the vector \exmp{dX}.  The components of \exmp{dX} are normally in the
 %  range -0.5 to 0.5 and represent offsets relative to the size of the object.
 %  If the components of dX are 0, then the object will be centered at \exmp{X}.
 %\seealso{xfig_translate_object}
@@ -1002,7 +995,7 @@ define xfig_justify_object (obj, X, dX)
 {
    variable x0, x1, y0, y1, z0, z1;
    (x0, x1, y0, y1, z0, z1) = obj.get_bbox ();
-   
+
    obj.translate (vector (X.x - 0.5*(x0+x1) - dX.x*(x1-x0),
 			  X.y - 0.5*(y0+y1) - dX.y*(y1-y0),
 			  X.z - 0.5*(z0+z1) - dX.z*(z1-z0)));
@@ -1049,7 +1042,7 @@ define xfig_new_hbox_compound ()
    variable xmax;
    variable x0, x1;
    variable space = 0;
-   
+
    variable num = length (objs);
    if (0 == is_struct_type (objs[-1].value))
      {
@@ -1075,7 +1068,6 @@ define xfig_new_hbox_compound ()
      }
    return xfig_new_compound (__push_args (objs));
 }
-
 
 #iffalse
 define xfig_object_set_attr (obj, attr, val)
@@ -1158,7 +1150,7 @@ define xfig_set_font_size (p, val)
 %\usage{xfig_render_object (obj, device)}
 %\description
 %  This function renders the specified object to a specified device.
-%  If the device parameter is a string, then a device will be opened with 
+%  If the device parameter is a string, then a device will be opened with
 %  the specified name.
 %\seealso{xfig_create_file, xfig_close_file}
 %!%-
@@ -1183,7 +1175,7 @@ define xfig_render_object (obj, fp)
 %A2 (42 cm x 59.4cm),
 %A1 (59.4cm x 84.1 cm),
 %A0 (84.1 cm x 118.9cm),
-%B5 (18.2cm x 25.7cm) 
+%B5 (18.2cm x 25.7cm)
 define xfig_set_paper_size (paper)
 {
    XFig_Header.papersize = paper;
@@ -1206,6 +1198,88 @@ define xfig_set_paper_size (paper)
 define xfig_set_verbose (n)
 {
    _XFig_Verbose = n;
+}
+
+
+private variable Temp_File_List = {};
+define xfig_add_tmp_file (file)
+{
+   ifnot (path_is_absolute (file))
+     {
+	variable cwd = getcwd ();
+	if (cwd == NULL)
+	  return;
+	file = path_concat (cwd, file);
+     }
+   list_append (Temp_File_List, file);
+}
+
+define xfig_delete_tmp_files ()
+{
+   loop (length (Temp_File_List))
+     {
+	variable file = list_pop (Temp_File_List);
+	variable st = stat_file (file);
+	if (st == NULL)
+	  continue;
+	if (stat_is ("dir", st.st_mode))
+	  () = rmdir (file);
+	else
+	  () = remove (file);
+     }
+}
+atexit (&xfig_delete_tmp_files);
+
+private variable Tmp_Dir = "/tmp";
+
+define xfig_mkdir ();
+define xfig_mkdir (dir)
+{
+   variable topdir = path_dirname (dir);
+
+   if (topdir == dir)
+     return;
+
+   if (NULL == stat_file (topdir))
+     xfig_mkdir (topdir);
+
+   if ((-1 == mkdir (dir, 0777))
+       && (errno != EEXIST))
+     throw OSError, sprintf ("Unable to mkdir(%s): %s", dir, errno_string());
+}
+
+define xfig_set_tmp_dir (tmp)
+{
+   xfig_mkdir (tmp);
+   Tmp_Dir = tmp;
+}
+
+define xfig_get_tmp_dir ()
+{
+   return Tmp_Dir;
+}
+
+define xfig_make_tmp_file (base, ext)
+{
+   if (path_is_absolute (base) == 0)
+     base = path_concat (Tmp_Dir, base);
+
+   xfig_mkdir (path_dirname (base));
+
+   if (ext == NULL) ext = ".tmp";
+   loop (1000)
+     {
+	variable file = sprintf ("%s%X%X%s", base,
+				 rand_int (1, 0xFFFF), rand_int(1, 0x7FFFF),
+				 ext);
+	if (NULL == stat_file (file))
+	  {
+	     if (qualifier_exists ("delete"))
+	       xfig_add_tmp_file (file);
+	     return file;
+	  }
+     }
+   throw IOError, "Unable to create a tmp file";
 }
 
 % Use CM as the default system
