@@ -648,7 +648,7 @@ private define end_render_as_compound (obj, fp)
 % Bitmapped values for flags parameter
 variable XFIG_RENDER_AS_COMPOUND = 1;
 
-private define default_render (obj, dev)
+private define default_render ()
 %!%+
 %\function{<xfig_object>.render}
 %\synopsis{Render an xfig object to a file.}
@@ -667,6 +667,7 @@ private define default_render (obj, dev)
 %!%-
 {
    if (_xfig_check_help (0, "<xfig_object>.render";; __qualifiers))  return;
+   variable dev=(), obj=();
 
    variable rac;
    variable do_close = 0;
@@ -739,6 +740,18 @@ define xfig_new_object ()
 }
 
 define _xfig_get_scale_args (nargs)
+%!%+
+%\function{<xfig_object>.scale}
+%\synopsis{Scale an xfig object}
+%\usage{<xfig_object>.scale (s);
+%\altusage{<xfig_object>.scale (sx, sy[, sz]]);}
+%}
+%\description
+%  If the \sfun{.scale} method is called with one argument \exmp{s},
+%  the object is scaled by \exmp{s} in all directions.
+%  If two (three) arguments \exmp{sx}, \exmp{sy} (and \exmp{sz}) are given,
+%  x, y (and z) coordinates are scaled differently.
+%!%-
 {
    if (nargs == 4)
      return;			       %  leave them on the stack
@@ -791,6 +804,8 @@ define xfig_rotate_object (obj, axis, theta)
 
 define xfig_scale_object ()
 {
+   if (_xfig_check_help (_NARGS, "<xfig_object>.scale";; __qualifiers)) return;
+
    variable obj, sx, sy, sz;
    (obj, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
    return obj.scale(sx, sy, sz);
@@ -833,14 +848,13 @@ private define count_objects_compound (c)
 
 private define scale_compound ()
 {
-   variable c, sx, sy, sz;
+   if (_xfig_check_help (_NARGS, "<xfig_object>.scale";; __qualifiers)) return;
+
+   variable c, sx, sy, sz, obj;
    (c, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
 
-   foreach (c.list)
-     {
-	variable obj = ();
-	obj.scale (sx, sy, sz);
-     }
+   foreach obj (c.list)
+     obj.scale (sx, sy, sz);
 }
 
 private define set_depth_compound (c, depth)
@@ -965,8 +979,17 @@ define xfig_new_compound_list ()
    return obj;
 }
 
-% Usage: c = xfig_new_compound (obj, ...);
 define xfig_new_compound ()
+%!%+
+%\function{xfig_new_compound}
+%\synopsis{Create an XFig compound list}
+%\usage{c = xfig_new_compound ([obj1, obj2, ...]);}
+%\description
+%  An empty compound list is created with \sfun{xfig_new_compound_list}.
+%  All arguments passed to the \sfun{xfig_new_compound} function
+%  are inserted in the newly created list.
+%\seealso{xfig_new_vbox_compound, xfig_new_hbox_compound}
+%!%-
 {
    variable c = xfig_new_compound_list ();
 
@@ -1003,6 +1026,12 @@ define xfig_justify_object (obj, X, dX)
 
 % Usage: xfig_new_vbox_compound (o1, o2, ,,, [optional-space]);
 define xfig_new_vbox_compound ()
+%!%+
+%\function{xfig_new_vbox_compound}
+%\synopsis{Create an XFig compound list of vertically aligned objects}
+%\usage{c = xfig_new_vbox_compound (obj1, obj2 [, ...] [, space]);}
+%\seealso{xfig_new_hbox_compound, xfig_new_compound}
+%!%-
 {
    variable objs = __pop_args (_NARGS);
    variable ymin;
@@ -1037,6 +1066,12 @@ define xfig_new_vbox_compound ()
 
 % Usage: xfig_new_hbox_compound (o1, o2, ,,, [optional-space]);
 define xfig_new_hbox_compound ()
+%!%+
+%\function{xfig_new_hbox_compound}
+%\synopsis{Create an XFig compound list of horizontally aligned objects}
+%\usage{c = xfig_new_hbox_compound (obj1, obj2 [, ...] [, space]);}
+%\seealso{xfig_new_vbox_compound, xfig_new_compound}
+%!%-
 {
    variable objs = __pop_args (_NARGS);
    variable xmax;

@@ -74,6 +74,8 @@ private define translate_ellipse (e, dX)
 
 private define scale_ellipse ()
 {
+   if (_xfig_check_help (_NARGS, "<xfig_object>.scale";; __qualifiers)) return;
+
    variable e, sx, sy, sz;
    (e, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
    variable X = e.X;

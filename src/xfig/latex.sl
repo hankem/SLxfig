@@ -521,19 +521,47 @@ define xfig_new_eq (eq)
    do_xfig_new_xxx (&xfig_eq2eps, eq, fontstruct;; __qualifiers);
 }
 
+define xfig_new_text () %{{{
 %!%+
 %\function{xfig_new_text}
 %\synopsis{Create a text object by running LaTeX}
 %\usage{obj = xfig_new_text (String_Type text [,font_object])}
+%\qualifiers
+%\qualifier{extra_packages}{NULL}
+%\qualifier{preamble}{}{NULL}
+%\qualifier{color=strval}{}{"black"}
+%\qualifier{style=strval}{}{"\\bf\\boldmath"R}
+%\qualifier{size=strval}{}{"\\normalsize"R}
+%\qualifier{rotate=angle}{rotate text by \exmp{angle} in degrees}{0}
+%\qualifier{eps2eps}{run eps2eps after dvips -- still experimental!}
+%\qualifier{x0}{x-position}{0}
+%\qualifier{y0}{y-position}{0}
+%\qualifier{z0}{z-position}{0}
+%\qualifier{just=[jx,jy]}{justification, see \sfun{xfig_new_pict}}{[0,0]}
 %\description
 %  This function runs LaTeX on the specified text string and returns the
 %  resulting object.  The text string must be formatted according to the LaTeX
 %  rules.  The optional parameter is a structure that may be used to specify
 %  the font, color, pointsize, etc to use when calling LaTeX.  This structure
-%  may be instantiated using the xfig_font_new.
-%\seealso{xfig_font_new}
+%  may be instantiated using the xfig_make_font.
+%\seealso{xfig_make_font, xfig_new_pict}
 %!%-
-define xfig_new_text ()
+%#c  make_font_struct
+%#c  -> rotate
+%#c  do_xfig_new_xxx
+%#c  + xfig_text2eps
+%#c  | + latex_xxx2eps
+%#c  |   + make_latex_string
+%#c  |   | + make_preamble
+%#c  |   |   +-> extra_packages
+%#c  |   |   +-> preamble
+%#c  |   + run_dvips
+%#c  |     +-> eps2eps
+%#c  + xfig_new_eps
+%#c    + xfig_new_pict
+%#c      +-> x0, y0, z0
+%#c      + xfig_new_polyline
+%#c      +-> just
 {
    variable fontstruct = NULL;
    if (_NARGS == 2)
@@ -559,6 +587,7 @@ define xfig_new_text ()
    if (theta != 0)  eps.rotate_pict(theta);
    return eps;
 }
+%}}}
 
 define xfig_set_font_style (style)
 {
@@ -571,11 +600,21 @@ define xfig_add_latex_package (package)
 }
 
 define xfig_set_latex_preamble (preamble)
+%!%+
+%\function{xfig_set_latex_preamble}
+%\usage{xfig_set_latex_preamble (String_Type preamble)}
+%\seealso{xfig_get_latex_preamble}
+%!%-
 {
    Preamble_Commands = preamble;
 }
 
-define xfig_get_latex_preamble (preamble)
+define xfig_get_latex_preamble ()
+%!%+
+%\function{xfig_get_latex_preamble}
+%\usage{String_Typer xfig_get_latex_preamble ()}
+%\seealso{xfig_set_latex_preamble}
+%!%-
 {
    return Preamble_Commands;
 }

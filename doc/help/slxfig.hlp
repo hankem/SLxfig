@@ -17,10 +17,27 @@
 
  QUALIFIERS
   ; verbose=intval: if >=0, the fig2dev command is displayed
-  ; clean: remove the .fig file
 
  SEE ALSO
   xfig_set_verbose
+
+--------------------------------------------------------------
+
+<xfig_object>.scale
+
+ SYNOPSIS
+  Scale an xfig object
+
+ USAGE
+  <xfig_object>.scale (s);
+  % or
+  <xfig_object>.scale (sx, sy[, sz]]);
+
+ DESCRIPTION
+  If the `.scale' method is called with one argument `s',
+  the object is scaled by `s' in all directions.
+  If two (three) arguments `sx', `sy' (and `sz') are given,
+  x, y (and z) coordinates are scaled differently.
 
 --------------------------------------------------------------
 
@@ -175,6 +192,16 @@ xfig_get_focus
 
 --------------------------------------------------------------
 
+xfig_get_latex_preamble
+
+ USAGE
+  String_Typer xfig_get_latex_preamble ()
+
+ SEE ALSO
+  xfig_set_latex_preamble
+
+--------------------------------------------------------------
+
 xfig_justify_object
 
  SYNOPSIS
@@ -277,6 +304,24 @@ xfig_new_color
 
 --------------------------------------------------------------
 
+xfig_new_compound
+
+ SYNOPSIS
+  Create an XFig compound list
+
+ USAGE
+  c = xfig_new_compound ([obj1, obj2, ...]);
+
+ DESCRIPTION
+  An empty compound list is created with `xfig_new_compound_list'.
+  All arguments passed to the `xfig_new_compound' function
+  are inserted in the newly created list.
+
+ SEE ALSO
+  xfig_new_vbox_compound, xfig_new_hbox_compound
+
+--------------------------------------------------------------
+
 xfig_new_ellipse
 
  SYNOPSIS
@@ -292,6 +337,19 @@ xfig_new_ellipse
   ; fillcolor: (default: -1)
   ; areafill: darkness or pattern (default: -1 or 20, depending on `fillcolor')
   ; depth: XFig depth (default: 50)
+
+--------------------------------------------------------------
+
+xfig_new_hbox_compound
+
+ SYNOPSIS
+  Create an XFig compound list of horizontally aligned objects
+
+ USAGE
+  c = xfig_new_hbox_compound (obj1, obj2 [, ...] [, space]);
+
+ SEE ALSO
+  xfig_new_vbox_compound, xfig_new_compound
 
 --------------------------------------------------------------
 
@@ -322,15 +380,19 @@ xfig_new_pict
   obj = xfig_new_pict(filename, width, height [; qualifiers])
 
  DESCRIPTION
- This function creates an object containing the specified image file
- and scales it to the specified width an height.  The resulting
- object containing the image will be centered at (0,0,0).
+  This function creates an object containing the specified image file
+  and scales it to the specified width an height.  The resulting
+  object containing the image will be centered at (0,0,0).
 
  QUALIFIERS
- The `just' qualifier may be used to indicate how the object is
- to be justified with respect to the origin.  Its value must be a 2d
- numeric array [dx,dy] that gives the offset of the center of the
- image scaled with respect to the bounding box.  Examples include:
+  ; x0: x-position (default: 0)
+  ; y0: y-position (default: 0)
+  ; z0: z-position (default: 0)
+  ; just=[jx,jy]: justification (default: [0,0])
+  The `just' qualifier may be used to indicate how the object is
+  to be justified with respect to the origin.  Its value must be a 2d
+  numeric array [dx,dy] that gives the offset of the center of the
+  image scaled with respect to the bounding box.  Examples include:
 
     just=[0,0]           Center object upon the origin (default)
     just=[-0.5,-0.5]     Put the lower-left corner at the origin
@@ -387,15 +449,56 @@ xfig_new_text
  USAGE
   obj = xfig_new_text (String_Type text [,font_object])
 
+ QUALIFIERS
+  ; extra_packages: NULL
+  ; preamble: (default: NULL)
+  ; color=strval: (default: "black")
+  ; style=strval: (default: "\bf\boldmath"R)
+  ; size=strval: (default: "\normalsize"R)
+  ; rotate=angle: rotate text by `angle' in degrees (default: 0)
+  ; eps2eps: run eps2eps after dvips -- still experimental!
+  ; x0: x-position (default: 0)
+  ; y0: y-position (default: 0)
+  ; z0: z-position (default: 0)
+  ; just=[jx,jy]: justification, see `xfig_new_pict' (default: [0,0])
+
  DESCRIPTION
   This function runs LaTeX on the specified text string and returns the
   resulting object.  The text string must be formatted according to the LaTeX
   rules.  The optional parameter is a structure that may be used to specify
   the font, color, pointsize, etc to use when calling LaTeX.  This structure
-  may be instantiated using the xfig_font_new.
+  may be instantiated using the xfig_make_font.
 
  SEE ALSO
-  xfig_font_new
+  xfig_make_font, xfig_new_pict
+
+--------------------------------------------------------------
+
+xfig_new_vbox_compound
+
+ SYNOPSIS
+  Create an XFig compound list of vertically aligned objects
+
+ USAGE
+  c = xfig_new_vbox_compound (obj1, obj2 [, ...] [, space]);
+
+ SEE ALSO
+  xfig_new_hbox_compound, xfig_new_compound
+
+--------------------------------------------------------------
+
+xfig_pict.scale
+
+ SYNOPSIS
+  Scale an xfig pict object
+
+ USAGE
+  xfig_pict.scale (s);
+  % or
+  xfig_pict.scale (sx, sy);
+
+ SEE ALSO
+  xfig_new_pict
 
 --------------------------------------------------------------
 
@@ -489,6 +592,10 @@ xfig_plot.add_object
  USAGE
   xfig_plot.add_object (obj[, x, y[, dx, dy]]);
 
+ QUALIFIERS
+ % qualifiers to specifiy the world coordinate system,
+   see `xfig_plot--wcs'
+
  DESCRIPTION
   This function may be used to add an object to a plot window at a specified
   world coordinate.  The `dx' and `dy' arguments control the
@@ -577,12 +684,12 @@ xfig_plot.hplot
  % qualifiers to specifiy the world coordinate system,
    see `xfig_plot--wcs'
 
-  ; fill: plot shaded histogram
-  ; depth:
-  ; thickness:
-  ; color:
-  ; line: linestyle
-  ; width:
+  ; width: line thickness
+  ; color: line color
+  ; line: line style
+  ; fill[=area_fill]: plot shaded histogram, with area_fill style (default: 20, if set)
+  ; fillcolor: (default: `color')
+  ; depth: XFig depth
 
  % qualifiers for error bars:
    see `xfig_plot--errorbars'
@@ -591,7 +698,7 @@ xfig_plot.hplot
   If no `x' values are given, `x = [1:length(y)]' is assumed.
 
  SEE ALSO
-  xfig_plot--initialize-plot, xfig_plot--wcs, xfig_plot--errorbars
+  xfig_plot--initialize_plot, xfig_plot--wcs, xfig_plot--errorbars
 
 --------------------------------------------------------------
 
@@ -634,7 +741,7 @@ xfig_plot.plot
   unless the line qualifier is also specified.
 
  SEE ALSO
-  xfig_plot--initialize-plot, xfig_plot--wcs, xfig_plot--errorbars
+  xfig_plot--initialize_plot, xfig_plot--wcs, xfig_plot--errorbars
 
 --------------------------------------------------------------
 
@@ -841,6 +948,10 @@ xfig_plot.xylabel
 
  USAGE
   xfig_plot.xylabel (String_Type text, Double_Type x, y[, dx, dy]);
+
+ QUALIFIERS
+ % qualifiers to specifiy the world coordinate system,
+   see `xfig_plot--wcs'
 
  SEE ALSO
   xfig_plot_text, xfig_plot--wcs
@@ -1069,25 +1180,6 @@ xfig_render_object
 
 --------------------------------------------------------------
 
-xfig_scale_pict
-
- SYNOPSIS
-  Scale an xfig pict object
-
- USAGE
-  xfig_scale_pict (pict, sx [,sy])
-
- DESCRIPTION
-  TBD
-
- EXAMPLE
-  TBD
-
- SEE ALSO
-  xfig_new_pict
-
---------------------------------------------------------------
-
 xfig_set_eye
 
  SYNOPSIS
@@ -1133,6 +1225,16 @@ xfig_set_focus
 
  SEE ALSO
   xfig_get_focus, xfig_set_eye
+
+--------------------------------------------------------------
+
+xfig_set_latex_preamble
+
+ USAGE
+  xfig_set_latex_preamble (String_Type preamble)
+
+ SEE ALSO
+  xfig_get_latex_preamble
 
 --------------------------------------------------------------
 

@@ -1207,6 +1207,8 @@ private define plot_rotate (p, normal, theta) %{{{
 
 private define plot_scale () %{{{
 {
+   if (_xfig_check_help (_NARGS, "<xfig_object>.scale";; __qualifiers)) return;
+
    variable p, sx, sy, sz;
    (p, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
    p = p.plot_data;
@@ -1302,9 +1304,6 @@ private define plot_get_bbox (p) %{{{
 private define plot_render (p, fp) %{{{
 {
    p = p.plot_data;
-   %variable plot_width = p.plot_width;
-   %variable plot_height= p.plot_height;
-
    p.object_list.render (fp);
 
    if (p.title_object != NULL)
@@ -2539,7 +2538,7 @@ private define plot_method () %{{{
 %  If no \exmp{x} values are given, \exmp{x = [1:length(y)]} is assumed.
 %  If a symbol is specified, no lines are drawn
 %  unless the line qualifier is also specified.
-%\seealso{xfig_plot--initialize-plot, xfig_plot--wcs, xfig_plot--errorbars}
+%\seealso{xfig_plot--initialize_plot, xfig_plot--wcs, xfig_plot--errorbars}
 %!%-
 {
    if (_xfig_check_help (_NARGS, "xfig_plot.plot";; __qualifiers)) return;
@@ -2679,18 +2678,18 @@ private define hplot_method () %{{{
 % % qualifiers to specifiy the world coordinate system,
 %   see \sfun{xfig_plot--wcs}
 %
-%\qualifier{fill}{plot shaded histogram}
-%\qualifier{depth}{}
-%\qualifier{thickness}{}
-%\qualifier{color}{}
-%\qualifier{line}{linestyle}
-%\qualifier{width}{}
+%\qualifier{width}{line thickness}
+%\qualifier{color}{line color}
+%\qualifier{line}{line style}
+%\qualifier{fill[=area_fill]}{plot shaded histogram, with area_fill style}{20, if set}
+%\qualifier{fillcolor}{}{\svar{color}}
+%\qualifier{depth}{XFig depth}
 %
 % % qualifiers for error bars:
 %   see \sfun{xfig_plot--errorbars}
 %\description
 %  If no \exmp{x} values are given, \exmp{x = [1:length(y)]} is assumed.
-%\seealso{xfig_plot--initialize-plot, xfig_plot--wcs, xfig_plot--errorbars}
+%\seealso{xfig_plot--initialize_plot, xfig_plot--wcs, xfig_plot--errorbars}
 %!%-
 {
    if (_xfig_check_help (_NARGS, "xfig_plot.hplot";; __qualifiers)) return;
@@ -2820,6 +2819,9 @@ private define add_object_method () %{{{
 %\function{xfig_plot.add_object}
 %\synopsis{Add an object to a plot at a world coordinate position}
 %\usage{xfig_plot.add_object (obj[, x, y[, dx, dy]]);}
+%\qualifiers
+% % qualifiers to specifiy the world coordinate system,
+%   see \sfun{xfig_plot--wcs}
 %\description
 %  This function may be used to add an object to a plot window at a specified
 %  world coordinate.  The \exmp{dx} and \exmp{dy} arguments control the
@@ -2905,6 +2907,9 @@ private define xylabel_method () %{{{
 %!%+
 %\function{xfig_plot.xylabel}
 %\usage{xfig_plot.xylabel (String_Type text, Double_Type x, y[, dx, dy]);}
+%\qualifiers
+% % qualifiers to specifiy the world coordinate system,
+%   see \sfun{xfig_plot--wcs}
 %\seealso{xfig_plot_text, xfig_plot--wcs}
 %!%-
 {

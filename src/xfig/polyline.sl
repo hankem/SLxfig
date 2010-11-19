@@ -255,6 +255,8 @@ private define polyline_translate (obj, dX)
 
 private define polyline_scale ()
 {
+   if (_xfig_check_help (_NARGS, "<xfig_object>.scale";; __qualifiers)) return;
+
    variable obj, sx, sy, sz;
    (obj, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
    
@@ -477,6 +479,8 @@ private define polyline_list_translate (obj, dX)
 
 private define polyline_list_scale ()
 {
+   if (_xfig_check_help (_NARGS, "<xfig_object>.scale";; __qualifiers)) return;
+
    variable obj, sx, sy, sz;
    (obj, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
 
@@ -774,6 +778,8 @@ private define pict_get_bbox (p)
 
 private define pict_scale ()
 {
+   if (_xfig_check_help (_NARGS, "<xfig_object>.scale";; __qualifiers)) return;
+
    variable p, sx, sy, sz;
    (p, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
 
@@ -843,18 +849,18 @@ define pict_rotate_pict () %{{{
 }
 %}}}
 
+private define pict_scale_pict ()
 %!%+
-%\function{xfig_scale_pict}
+%\function{xfig_pict.scale}
 %\synopsis{Scale an xfig pict object}
-%\usage{xfig_scale_pict (pict, sx [,sy])}
-%\description
-%  TBD
-%\example
-%  TBD
+%\usage{xfig_pict.scale (s);
+%\altusage{xfig_pict.scale (sx, sy);}
+%}
 %\seealso{xfig_new_pict}
 %!%-
-private define pict_scale_pict ()
 {
+   if (_xfig_check_help (_NARGS, "xfig_pict.scale";; __qualifiers)) return;
+
    variable pict, sx, sy;
    if (_NARGS == 2)
      {
@@ -907,15 +913,19 @@ private define pict_center_pict (pict, X, dx, dy)
 %\synopsis{Create an object that encapsulates an image file}
 %\usage{obj = xfig_new_pict(filename, width, height [; qualifiers])}
 %\description
-% This function creates an object containing the specified image file
-% and scales it to the specified width an height.  The resulting
-% object containing the image will be centered at (0,0,0).
+%  This function creates an object containing the specified image file
+%  and scales it to the specified width an height.  The resulting
+%  object containing the image will be centered at (0,0,0).
 % 
 %\qualifiers
-% The \exmp{just} qualifier may be used to indicate how the object is
-% to be justified with respect to the origin.  Its value must be a 2d
-% numeric array [dx,dy] that gives the offset of the center of the
-% image scaled with respect to the bounding box.  Examples include:
+%\qualifier{x0}{x-position}{0}
+%\qualifier{y0}{y-position}{0}
+%\qualifier{z0}{z-position}{0}
+%\qualifier{just=[jx,jy]}{justification}{[0,0]}
+%  The \exmp{just} qualifier may be used to indicate how the object is
+%  to be justified with respect to the origin.  Its value must be a 2d
+%  numeric array [dx,dy] that gives the offset of the center of the
+%  image scaled with respect to the bounding box.  Examples include:
 %#v+
 %    just=[0,0]           Center object upon the origin (default)
 %    just=[-0.5,-0.5]     Put the lower-left corner at the origin
