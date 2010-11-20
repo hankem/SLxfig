@@ -20,13 +20,13 @@ public define slsh_main ()
    _for i (0, 7, 1)
      p.xylabel (a_planet[i]*1.05, P_planet[i], `\Large\`+planet[i], -0.5, 0.5);
 
-   p.xlabel ("Axis semimaior [unitas astronomica]");
-   p.ylabel ("Periodus orbitalis [annus]");
-   p.x2label ("Axis semimaior [chiliometrum]");
-   p.y2label ("Periodus orbitalis [dies]");
+   p.xlabel ("Axis: semimaior [unitas: astronomica]");
+   p.ylabel ("Periodus: orbitalis: [annus:]");
+   p.x2label ("Axis: semimaior [chiliometrum]");
+   p.y2label ("Periodus: orbitalis: [dies:]");
    p.xylabel (.05, .93,
 	      `\begin{minipage}{95mm}`
-	      +"Sed res est certissima exactissimaque, quod proportio quae est inter binorum quorumcunque Planetarum tempora periodica, sit praecise sesquialtera proportionis mediarum distantiarum, id est Orbium ipsorum."
+	      +"Sed res: est certissima exactissimaque, quod proportio quae est inter binorum quorumcunque Planetarum tempora periodica, sit praecise sesquialtera proportionis: mediarum distantiarum, id est Orbium ipsorum."
 	      +`\end{minipage}`,
 	      -0.5, 0.5; world0);
    p.scale(1.5);
