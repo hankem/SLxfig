@@ -51,6 +51,25 @@ pict.rotate_pict
 
 --------------------------------------------------------------
 
+xfig_add_latex_package
+
+ SYNOPSIS
+  Load a package in the preamble of latex documents.
+
+ USAGE
+  xfig_add_latex_package (String_Type package[, package2, ...]);
+
+ QUALIFIERS
+  ; prepend: `package' is inserted before previous packages
+
+ DESCRIPTION
+  Options can be added to `package' in square brackets:
+
+ EXAMPLE
+  xfig_add_latex_package("fontenc[T1]", "mathpazo[osf]");
+
+--------------------------------------------------------------
+
 xfig_center_pict_in_box
 
  SYNOPSIS
@@ -219,6 +238,33 @@ xfig_justify_object
 
  SEE ALSO
   xfig_translate_object
+
+--------------------------------------------------------------
+
+xfig_make_font
+
+ SYNOPSIS
+  Create a font structure used by SLxfig's LaTeX interface
+
+ USAGE
+  Struct_Type xfig_make_font ([String_Type style, size, color])
+
+ QUALIFIERS
+  ; style: (default: `\bf\boldmath`)
+  ; size: (default: `\normalsize`)
+  ; color: (default: "black")
+
+ DESCRIPTION
+  If `color' is a string, it is considered to be
+  a named color from the SLxfig color interface.
+  Alternatively, `color' can be an integer number,
+  representing the color's RGB value.
+
+  `style', `size', `color' arguments different from `NULL'
+  overwrite qualifier values.
+
+ SEE ALSO
+  xfig_new_text
 
 --------------------------------------------------------------
 
@@ -1225,6 +1271,22 @@ xfig_set_focus
 
  SEE ALSO
   xfig_get_focus, xfig_set_eye
+
+--------------------------------------------------------------
+
+xfig_set_font_style
+
+ SYNOPSIS
+  Set the default font style for LaTeX
+
+ USAGE
+  xfig_set_font_style (String_Type style);
+
+ DESCRIPTION
+  Unless changed, the default font style is `\bf\boldmath`.
+
+ SEE ALSO
+  xfig_make_font, xfig_new_text, xfig_add_latex_package
 
 --------------------------------------------------------------
 

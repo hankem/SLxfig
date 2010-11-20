@@ -5,6 +5,7 @@ PNG_FILES = \
   color.png \
   colors.png \
   errbar.png \
+  font-style.png \
   histplt.png \
   image.png \
   multiplot.png \

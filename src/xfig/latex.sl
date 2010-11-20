@@ -3,7 +3,7 @@
 
 %{{{ Tmpfile and Dir handling Functions
 
-private variable Latex_Packages = {"amsmath", "bm", "color"};
+private variable Latex_Packages = {"amsmath", "color"};
 private variable Latex_Font_Size = 12;
 private variable Latex_Default_Color = "black";
 private variable Latex_Default_Font_Style = "\bf\boldmath"R;
@@ -180,7 +180,7 @@ private define check_font_struct (s)
    if (f[0] != '\\')
      f = strcat ("\\", f);
 
-   if (0 == length (where (f == Supported_Font_Sizes)))
+   if (all (Supported_Font_Sizes != f))
      {
 	() = fprintf (stderr, "*** Warning: font size %s not supported\n", f);
 	f = "\\normalsize";
@@ -192,10 +192,7 @@ private define check_font_struct (s)
      f = 0;
 
    if (typeof (f) == String_Type)
-     {
-	(f,) = strreplace (strlow (f), " ", "", strlen (f));
-	f = xfig_lookup_color_rgb (f);
-     }
+     f = xfig_lookup_color_rgb ( strreplace (strlow (f), " ", "") );
    s.color = f;
 
    f = s.style;
@@ -225,17 +222,33 @@ private define make_font_struct ()
 }
 
 define xfig_make_font ()
+%!%+
+%\function{xfig_make_font}
+%\synopsis{Create a font structure used by SLxfig's LaTeX interface}
+%\usage{Struct_Type xfig_make_font ([String_Type style, size, color])}
+%\qualifiers
+%\qualifier{style}{}{`\\bf\\boldmath`}
+%\qualifier{size}{}{`\\normalsize`}
+%\qualifier{color}{}{"black"}
+%\description
+%  If \exmp{color} is a string, it is considered to be
+%  a named color from the SLxfig color interface.
+%  Alternatively, \exmp{color} can be an integer number,
+%  representing the color's RGB value.
+%
+%  \exmp{style}, \exmp{size}, \exmp{color} arguments different from \exmp{NULL}
+%  overwrite qualifier values.
+%\seealso{xfig_new_text}
+%!%-
 {
    variable s = make_font_struct (;;__qualifiers);
    if (_NARGS == 0)
      return s;
 
    if (_NARGS != 3)
-     {
-	usage ("font = %s (style, size, color)", _function_name ());
-     }
+     usage ("font = %s (style, size, color)", _function_name ());
 
-   variable style, size, color;
+   variable color=(), size=(), style=();
    if (style != NULL) s.style = style;
    if (size != NULL) s.size = size;
    if (color != NULL) s.color = color;
@@ -277,7 +290,9 @@ private define make_preamble (font)
    foreach (get_package_list (qualifier("extra_packages")))
      {
 	variable package = ();
-	str = strcat (str, sprintf ("\\usepackage{%s}\n", package));
+	variable m = string_matches(package, `\(.*\)\(\[.*\]\)`);  % package has options?
+	str += sprintf ( m==NULL ? ("\\usepackage{%s}\n", package)
+				 : ("\\usepackage%s{%s}\n", m[2], m[1]) );
      }
 
    if (font == NULL)
@@ -544,7 +559,7 @@ define xfig_new_text () %{{{
 %  rules.  The optional parameter is a structure that may be used to specify
 %  the font, color, pointsize, etc to use when calling LaTeX.  This structure
 %  may be instantiated using the xfig_make_font.
-%\seealso{xfig_make_font, xfig_new_pict}
+%\seealso{xfig_make_font, xfig_add_latex_package, xfig_set_latex_preamble, xfig_new_pict}
 %!%-
 %#c  make_font_struct
 %#c  -> rotate
@@ -590,13 +605,37 @@ define xfig_new_text () %{{{
 %}}}
 
 define xfig_set_font_style (style)
+%!%+
+%\function{xfig_set_font_style}
+%\synopsis{Set the default font style for LaTeX}
+%\usage{xfig_set_font_style (String_Type style);}
+%\description
+%  Unless changed, the default font style is `\bf\boldmath`.
+%\seealso{xfig_make_font, xfig_new_text, xfig_add_latex_package}
+%!%-
 {
    Latex_Default_Font_Style = style;
 }
 
-define xfig_add_latex_package (package)
+define xfig_add_latex_package ()
+%!%+
+%\function{xfig_add_latex_package}
+%\synopsis{Load a package in the preamble of latex documents.}
+%\usage{xfig_add_latex_package (String_Type package[, package2, ...]);}
+%\qualifiers
+%\qualifier{prepend}{\exmp{package} is inserted before previous packages}
+%\description
+%  Options can be added to \exmp{package} in square brackets:
+%\example
+%  xfig_add_latex_package("fontenc[T1]", "mathpazo[osf]");
+%!%-
 {
-   list_append (Latex_Packages, package, -1);
+   variable package;
+   foreach package (__pop_list (_NARGS))
+     if(qualifier_exists("prepend"))
+       list_insert (Latex_Packages, package, 0);
+     else
+       list_append (Latex_Packages, package, -1);
 }
 
 define xfig_set_latex_preamble (preamble)

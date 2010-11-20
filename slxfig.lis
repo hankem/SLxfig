@@ -23,6 +23,7 @@
 @examples/plot/axisxform.sl
 @examples/plot/color.sl
 @examples/plot/errbar.sl
+@examples/plot/font-style.sl
 @examples/plot/histplt.sl
 @examples/plot/image.sl
 @examples/plot/multiplot.sl

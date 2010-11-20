@@ -107,7 +107,9 @@ private variable Plot_Axis_Type = struct
    user_specified_major_tics, user_specified_minor_tics,
    user_specified_tic_labels,
    %tic_label_format, tic_labels, tic_labels_dX,   %  from tic
-   tic_label_format, tic_label_strings, tic_labels_font_struct = xfig_make_font (),
+   tic_label_format, tic_label_strings,
+   tic_labels_font_struct, % do not initialize font_struct here, but only in do_axis_method,
+                           % when user may have changed the default font_style
    tic_label_objects,
    tic_labels_tweak, % from tic
    tic_labels_just,    % justification for tic labels and axis_label
@@ -735,7 +737,7 @@ private define format_labels_using_scientific_notation (tics) %{{{
    variable mant = nint(10^a);
    mant[where(tics<0)] *= -1;
 #endif
-   return array_map (String_Type, &sprintf, "$\bm%g{\times}10^{%d}$"R, mant, b);
+   return array_map (String_Type, &sprintf, `$\text{%g}{\times}\text{10}^\text{%d}$`, mant, b);
 }
 %}}}
 
@@ -759,8 +761,8 @@ private define construct_tic_label_strings (axis, tics)
      {
 	if (format == NULL)
 	  {
-	     format = "\\bf 10$\\bm^{%g}$";
-	     alt_fmt = "\\bf %.5g";
+	     format = `$\text{10}^\text{%g}$`;
+	     alt_fmt = "%.5g";
 	  }
 	variable log10_tics = log10 (tics);
 	variable frac, whole;
@@ -793,7 +795,7 @@ private define construct_tic_label_strings (axis, tics)
    else
      {
 	if (format == NULL)
-	  format = "\\bf %.5g";
+	  format = "%.5g";
 
 	tic_labels = array_map (String_Type, &sprintf, format, tics);
 	ifnot (fixed_format)
@@ -1512,10 +1514,9 @@ private define do_axis_method (name, grid_axis) %{{{
    axis.tic_depth = get_reftype_qualifier ("tic_depth", axis.tic_depth;;__qualifiers);
    axis.maxtics = qualifier ("maxtics", axis.maxtics);
 
-   variable f = axis.tic_labels_font_struct;
-   f.style = qualifier ("ticlabel_style", f.style);
-   f.color = qualifier ("ticlabel_color", f.color);
-   f.size = qualifier ("ticlabel_size", f.size);
+   axis.tic_labels_font_struct = xfig_make_font (qualifier ("ticlabel_style"),
+						 qualifier ("ticlabel_size"),
+						 qualifier ("ticlabel_color") );
 
    % .islog already has a default value.  Don't muck with it unless
    % requested.
