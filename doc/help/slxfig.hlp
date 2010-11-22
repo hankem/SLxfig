@@ -809,10 +809,24 @@ xfig_plot.plot_png
 
  USAGE
   xfig_plot.plot_png (String_Type pngfile);
+  % or
+  xfig_plot.plot_png (Array_Type image);
 
  QUALIFIERS
  % qualifiers to initialize the first plot only,
    see `xfig_plot--initialize_plot'
+  ; cmap: name of the color map used by `png_gray_to_rgb'
+
+ DESCRIPTION
+  The image from `pngfile' is drawn in the plot region.
+
+  If a two-dimensional array `image' is passed to `.plot_png',
+  it is converted to a png file in the temporary directory,
+  using the `png_gray_to_rgb' function and possibly a color map.
+  All other qualifiers are forwarded to `png_gray_to_rgb'.
+
+ SEE ALSO
+  xfig_set_tmp_dir, png_gray_to_rgb
 
 --------------------------------------------------------------
 

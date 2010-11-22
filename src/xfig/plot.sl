@@ -3065,14 +3065,28 @@ private define add_pict_to_plot (w, png) %{{{
 }
 %}}}
 
+try { require("png"); }
+catch AnyError: ;
+
 define plot_png_method () %{{{
 %!%+
 %\function{xfig_plot.plot_png}
 %\synopsis{Add a png file to a plot, scaling it to the window}
-%\usage{xfig_plot.plot_png (String_Type pngfile);}
+%\usage{xfig_plot.plot_png (String_Type pngfile);
+%\altusage{xfig_plot.plot_png (Array_Type image);}
+%}
 %\qualifiers
 % % qualifiers to initialize the first plot only,
 %   see \sfun{xfig_plot--initialize_plot}
+%\qualifier{cmap}{name of the color map used by \sfun{png_gray_to_rgb}}
+%\description
+%  The image from \exmp{pngfile} is drawn in the plot region.
+%
+%  If a two-dimensional array \exmp{image} is passed to \exmp{.plot_png},
+%  it is converted to a png file in the temporary directory,
+%  using the \sfun{png_gray_to_rgb} function and possibly a color map.
+%  All other qualifiers are forwarded to \sfun{png_gray_to_rgb}.
+%\seealso{xfig_set_tmp_dir, png_gray_to_rgb}
 %!%-
 {
    if (_xfig_check_help (_NARGS, "xfig_plot.plot_png";; __qualifiers)) return;
@@ -3082,6 +3096,18 @@ define plot_png_method () %{{{
      usage (".plot_png (img)");
 
    (w, png) = ();
+   if (typeof(png)==Array_Type)
+     {
+#ifnexists png_write_flipped
+       throw ApplicationError, "The png module is not available.";
+#else
+       variable pngfile = xfig_make_tmp_file ("png", ".png");
+       variable cmap = qualifier ("cmap");
+       png = png_gray_to_rgb (png, cmap!=NULL ? cmap : ();; __qualifiers);
+       png_write_flipped (pngfile, png);
+       png = pngfile;
+#endif
+     }
    png = xfig_new_png (png);
    initialize_plot (w, NULL, NULL ;;__qualifiers);
    add_pict_to_plot (w, png);
