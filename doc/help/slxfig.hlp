@@ -250,8 +250,8 @@ xfig_make_font
   Struct_Type xfig_make_font ([String_Type style, size, color])
 
  QUALIFIERS
-  ; style: (default: `\bf\boldmath`)
-  ; size: (default: `\normalsize`)
+  ; style: (default: "\bf\boldmath"R)
+  ; size: (default: "\normalsize"R)
   ; color: (default: "black")
 
  DESCRIPTION
@@ -516,7 +516,7 @@ xfig_new_text
   may be instantiated using the xfig_make_font.
 
  SEE ALSO
-  xfig_make_font, xfig_new_pict
+  xfig_make_font, xfig_add_latex_package, xfig_set_latex_preamble, xfig_new_pict
 
 --------------------------------------------------------------
 
@@ -1283,7 +1283,7 @@ xfig_set_font_style
   xfig_set_font_style (String_Type style);
 
  DESCRIPTION
-  Unless changed, the default font style is `\bf\boldmath`.
+  Unless changed, the default font style is "\bf\boldmath"R.
 
  SEE ALSO
   xfig_make_font, xfig_new_text, xfig_add_latex_package

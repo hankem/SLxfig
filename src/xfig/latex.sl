@@ -227,8 +227,8 @@ define xfig_make_font ()
 %\synopsis{Create a font structure used by SLxfig's LaTeX interface}
 %\usage{Struct_Type xfig_make_font ([String_Type style, size, color])}
 %\qualifiers
-%\qualifier{style}{}{`\\bf\\boldmath`}
-%\qualifier{size}{}{`\\normalsize`}
+%\qualifier{style}{}{"\\bf\\boldmath"R}
+%\qualifier{size}{}{"\\normalsize"R}
 %\qualifier{color}{}{"black"}
 %\description
 %  If \exmp{color} is a string, it is considered to be
@@ -610,7 +610,7 @@ define xfig_set_font_style (style)
 %\synopsis{Set the default font style for LaTeX}
 %\usage{xfig_set_font_style (String_Type style);}
 %\description
-%  Unless changed, the default font style is `\bf\boldmath`.
+%  Unless changed, the default font style is "\\bf\\boldmath"R.
 %\seealso{xfig_make_font, xfig_new_text, xfig_add_latex_package}
 %!%-
 {
