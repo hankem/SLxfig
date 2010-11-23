@@ -3449,6 +3449,7 @@ define xfig_multiplot () %{{{
   variable dy=0., y1label_x=1./0, y2label_x=-1./0;
   _for iy (0, last_iy, 1)
   {
+    % shift all plots at first in negative y-direction (will be corrected at the end):
     dy -= plots[0].plot_data.plot_height;
     variable dx=0.;
     _for ix (0, last_ix, 1)
@@ -3502,7 +3503,8 @@ define xfig_multiplot () %{{{
     vmessage("warning (%s): %d plots left over when using cols=%d", _function_name(), length(plots), cols);
 
   plots = xfig_new_compound( __push_list(args) );
-
+  plots.translate (vector (0, -dy, 0));  % correct shift in negative y-direction
+                                         % lower left corner is now back at (0,0,0)
   variable xmin, xmax, ymin, ymax;
   (xmin,xmax, ymin,ymax, ,) = plots.get_bbox();
 
