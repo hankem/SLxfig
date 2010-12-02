@@ -432,11 +432,68 @@ add_color ("pink3",	0xffa0a0,	28);
 add_color ("pink2",	0xffc0c0,	29);
 add_color ("pink",	0xffe0e0,	30);
 
+define xfig_new_color () %{{{
+%!%+
+%\function{xfig_new_color}
+%\synopsis{Add a new color definition}
+%\usage{xfig_new_color (name, RGB [,&id]}
+%\description
+% This function may be used to add a new color called \exmp{name}
+% with the specified RGB (24 bit integer) value.  If the optional
+% third parameter is provided, it must be a reference to a variable
+% whose value upon return will be set to the integer index of the color.
+%\seealso{xfig_lookup_color_rgb, xfig_lookup_color}
+%!%-
+{
+   variable name, rgb, id, idp = &id;
+
+   if (_NARGS == 3)
+     idp = ();
+   (name, rgb) = ();
+   if (assoc_key_exists (Color_Table, name))
+     {
+	variable s = Color_Table[name];
+	if (rgb != s.rgb)
+	  {
+	     s.rgb = rgb;
+	     if (s.xfigid <= LAST_XFIG_COLOR_ID)
+	       s.xfigid = Next_XFig_Color_Id;
+	  }
+	@idp = s.id;
+	return;
+     }
+
+   new_color (name, rgb, Next_XFig_Color_Id, Next_Color_Id);
+   @idp = Next_Color_Id;
+   Next_Color_Id++;
+   Next_XFig_Color_Id++;
+}
+%}}}
+
+private define to_rgb (r, g, b)
+{
+   return (r << 16) | (g << 8) | b;
+}
+
+% some additional colors
+xfig_new_color ("orange", to_rgb(255,165,0));
+xfig_new_color ("orange2",to_rgb(238,154,0));
+xfig_new_color ("orange3",to_rgb(205,133,0));
+xfig_new_color ("orange4",to_rgb(139,90,0));
+xfig_new_color ("gray", 0xC0C0C0);
+
 private define find_color (color)
 {
    if (typeof (color) == String_Type)
      {
 	color = strlow (color);
+	ifnot (assoc_key_exists (Color_Table, color))
+	  {
+	     variable h = `[0-9A-Fa-f]`  + dup;  % two hex characters
+	     h = string_matches (color, `^#\(`+h+h+h+`\)$`);
+	     if (h != NULL && sscanf (h[1], "%x", &h))
+	       xfig_new_color(color, h);
+	  }
 	if (assoc_key_exists (Color_Table, color))
 	  return Color_Table[color];
 	return NULL;
@@ -486,55 +543,6 @@ define xfig_get_color_info (color)
 {
    return find_color (color);
 }
-
-%!%+
-%\function{xfig_new_color}
-%\synopsis{Add a new color definition}
-%\usage{xfig_new_color (name, RGB [,&id]}
-%\description
-% This function may be used to add a new color called \exmp{name}
-% with the specified RGB (24 bit integer) value.  If the optional
-% third parameter is provided, it must be a reference to a variable
-% whose value upon return will be set to the integer index of the color.
-%\seealso{xfig_lookup_color_rgb, xfig_lookup_color}
-%!%-
-define xfig_new_color ()
-{
-   variable name, rgb, id, idp = &id;
-
-   if (_NARGS == 3)
-     idp = ();
-   (name, rgb) = ();
-   if (assoc_key_exists (Color_Table, name))
-     {
-	variable s = Color_Table[name];
-	if (rgb != s.rgb)
-	  {
-	     s.rgb = rgb;
-	     if (s.xfigid <= LAST_XFIG_COLOR_ID)
-	       s.xfigid = Next_XFig_Color_Id;
-	  }
-	@idp = s.id;
-	return;
-     }
-
-   new_color (name, rgb, Next_XFig_Color_Id, Next_Color_Id);
-   @idp = Next_Color_Id;
-   Next_Color_Id++;
-   Next_XFig_Color_Id++;
-}
-
-% Some additional colors
-private define to_rgb (r, g, b)
-{
-   return (r << 16) | (g << 8) | b;
-}
-
-xfig_new_color ("orange", to_rgb(255,165,0));
-xfig_new_color ("orange2",to_rgb(238,154,0));
-xfig_new_color ("orange3",to_rgb(205,133,0));
-xfig_new_color ("orange4",to_rgb(139,90,0));
-xfig_new_color ("gray", 0xC0C0C0);
 
 private define write_colors (fp)
 {
