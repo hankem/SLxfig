@@ -1,3 +1,18 @@
+<xfig_object>.justify
+
+ SYNOPSIS
+  Justify an object at a specified position
+
+ USAGE
+  <xfig_object>.justify (Vector_Type X [, Vector_Type dX]);
+  % or
+  <xfig_object>.justify (XFig_Object o [, Vector_Type dX]);
+
+ SEE ALSO
+  xfig_justify_object
+
+--------------------------------------------------------------
+
 <xfig_object>.render
 
  SYNOPSIS
@@ -227,17 +242,41 @@ xfig_justify_object
   Justify an object at a specified position
 
  USAGE
-  xfig_justify_object (obj, X, dX)
+  xfig_justify_object (XFig_Object obj, Vector_Type X [, Vector_Type dX]);
+  % or
+  xfig_justify_object (XFig_Object obj, XFig_Object o [, Vector_Type dX]);
 
  DESCRIPTION
-  This function moves the object to the specified position X (a vector)
+  This function moves the object to the specified position `X' (a vector)
   and justifies it at that position according to the offsets specified by
   the vector `dX'.  The components of `dX' are normally in the
   range -0.5 to 0.5 and represent offsets relative to the size of the object.
-  If the components of dX are 0, then the object will be centered at `X'.
+  If the components of `dX' are 0, then the object will be centered at `X'.
+
+  Alternatively, the second argument may be an XFig object `o' itself.
+  The position vector `X' is then determined from the position of `o'
+  and the justification vector `dX': `obj' will be justified relative
+  to the outer boundary of `o', unless the `inside' qualifier is set,
+  in which case it will be justified relative to the inner boundary.
+
+ QUALIFIERS
+  ; inside: justify `obj' relative to the inner boundary of `o'
+
+ EXAMPLE
+  For `dX = vector (0,0,0)':
+  the object `obj' will be justified concentrically with `o'.
+
+  For `dX = vector (0,-0.5,0)' (i.e., `obj' will be horizontally
+  centered and vertically aligned at its lower baseline): `X' is
+  the horizontal center of the upper vertical baseline of `o'
+  such that `obj' will be placed on top of `o'.
+
+  For `dX = vector (0,-0.5,0)', together with the `inside' qualifier:
+  `X' is the horizontal center of the lower vertical baseline of `o'
+  such that `obj' will be coaligned with `o' at their lower baselines.
 
  SEE ALSO
-  xfig_translate_object
+  <xfig_object>.justify, <xfig_object>.get_bbox, <xfig_object>.translate
 
 --------------------------------------------------------------
 

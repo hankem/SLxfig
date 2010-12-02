@@ -698,6 +698,86 @@ private define default_render ()
      xfig_close_file (dev;; __qualifiers);
 }
 
+define xfig_justify_object () %{{{
+%!%+
+%\function{xfig_justify_object}
+%\synopsis{Justify an object at a specified position}
+%\usage{xfig_justify_object (XFig_Object obj, Vector_Type X [, Vector_Type dX]);
+%\altusage{xfig_justify_object (XFig_Object obj, XFig_Object o [, Vector_Type dX]);}
+%}
+%\description
+%  This function moves the object to the specified position \exmp{X} (a vector)
+%  and justifies it at that position according to the offsets specified by
+%  the vector \exmp{dX}.  The components of \exmp{dX} are normally in the
+%  range -0.5 to 0.5 and represent offsets relative to the size of the object.
+%  If the components of \exmp{dX} are 0, then the object will be centered at \exmp{X}.
+%
+%  Alternatively, the second argument may be an XFig object \exmp{o} itself.
+%  The position vector \exmp{X} is then determined from the position of \exmp{o}
+%  and the justification vector \exmp{dX}: \exmp{obj} will be justified relative
+%  to the outer boundary of \exmp{o}, unless the \exmp{inside} qualifier is set,
+%  in which case it will be justified relative to the inner boundary.
+%\qualifiers
+%\qualifier{inside}{justify \exmp{obj} relative to the inner boundary of \exmp{o}}
+%\example
+%  For \exmp{dX = vector (0,0,0)}:
+%  the object \exmp{obj} will be justified concentrically with \exmp{o}.
+%
+%  For \exmp{dX = vector (0,-0.5,0)} (i.e., \exmp{obj} will be horizontally
+%  centered and vertically aligned at its lower baseline): \exmp{X} is
+%  the horizontal center of the upper vertical baseline of \exmp{o}
+%  such that \exmp{obj} will be placed on top of \exmp{o}.
+%
+%  For \exmp{dX = vector (0,-0.5,0)}, together with the \exmp{inside} qualifier:
+%  \exmp{X} is the horizontal center of the lower vertical baseline of \exmp{o}
+%  such that \exmp{obj} will be coaligned with \exmp{o} at their lower baselines.
+%\seealso{<xfig_object>.justify, <xfig_object>.get_bbox, <xfig_object>.translate}
+%!%-
+{
+   variable obj, X, dX;
+   switch (_NARGS)
+   { case 2: (obj, X) = (); dX = vector (0, 0, 0); }
+   { case 3: (obj, X, dX) = (); }
+   { usage ("%s (obj, X [, dX]);", _function_name()); }
+
+   variable x0, x1, y0, y1, z0, z1;
+
+   if (   typeof (X) != Vector_Type
+       && typeof (X) == Struct_Type && struct_field_exists (X, "get_bbox") )
+     {
+	(x0, x1, y0, y1, z0, z1) = X.get_bbox ();
+
+	if (qualifier_exists ("inside"))
+	  (x0, x1, y0, y1, z0, z1) = (x1, x0, y1, y0, z1, z0);
+
+	X = vector (0.5*(x0+x1) - dX.x*(x1-x0),
+		    0.5*(y0+y1) - dX.y*(y1-y0),
+		    0.5*(z0+z1) - dX.z*(z1-z0));
+     }
+
+   (x0, x1, y0, y1, z0, z1) = obj.get_bbox ();
+
+   obj.translate (vector (X.x - 0.5*(x0+x1) - dX.x*(x1-x0),
+			  X.y - 0.5*(y0+y1) - dX.y*(y1-y0),
+			  X.z - 0.5*(z0+z1) - dX.z*(z1-z0)));
+}
+%}}}
+
+private define default_justify ()
+%!%+
+%\function{<xfig_object>.justify}
+%\synopsis{Justify an object at a specified position}
+%\usage{<xfig_object>.justify (Vector_Type X [, Vector_Type dX]);
+%\altusage{<xfig_object>.justify (XFig_Object o [, Vector_Type dX]);}
+%}
+%\seealso{xfig_justify_object}
+%!%-
+{
+   variable args = __pop_list(_NARGS);
+   xfig_justify_object (__push_list (args);; __qualifiers);
+}
+
+
 private define default_method1 (obj, arg1);
 private define default_method2 (obj, arg1, arg2);
 private define default_method3 (obj, arg1, arg2, arg3);
@@ -727,6 +807,7 @@ private variable XFig_Object = struct
    set_area_fill = &default_method1,
    set_fill_color = &default_method1,
    render = &default_render, 			       %  do not override
+   justify = &default_justify,
    flags = 0,
    count_objects = &default_count_objects,
      % Private below
@@ -773,49 +854,6 @@ define _xfig_get_scale_args (nargs)
 
    usage (".scale: Expecting 1, 2, or 3 scale parameters");
 }
-
-#iffalse
-define xfig_translate_object ()
-{
-   variable obj, dX;
-   switch (_NARGS)
-     {
-      case 3:
-	dX = __pop_args (2);
-	dX = vector (__push_args (dX), 0);
-	obj = ();
-     }
-     {
-      case 4:
-	dX = __pop_args (3);
-	dX = vector (__push_args (dX));
-	obj = ();
-     }
-     {
-	(obj, dX) = ();
-     }
-   return obj.translate (dX);
-}
-
-define xfig_rotate_object (obj, axis, theta)
-{
-   return obj.rotate (axis, theta);
-}
-
-define xfig_scale_object ()
-{
-   if (_xfig_check_help (_NARGS, "<xfig_object>.scale";; __qualifiers)) return;
-
-   variable obj, sx, sy, sz;
-   (obj, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
-   return obj.scale(sx, sy, sz);
-}
-
-define xfig_get_object_bbox (obj)
-{
-   return obj.get_bbox ();
-}
-#endif
 
 private define translate_compound (c, dX)
 {
@@ -1002,27 +1040,6 @@ define xfig_new_compound ()
    return c;
 }
 
-%!%+
-%\function{xfig_justify_object}
-%\synopsis{Justify an object at a specified position}
-%\usage{xfig_justify_object (obj, X, dX)}
-%\description
-%  This function moves the object to the specified position X (a vector)
-%  and justifies it at that position according to the offsets specified by
-%  the vector \exmp{dX}.  The components of \exmp{dX} are normally in the
-%  range -0.5 to 0.5 and represent offsets relative to the size of the object.
-%  If the components of dX are 0, then the object will be centered at \exmp{X}.
-%\seealso{xfig_translate_object}
-%!%-
-define xfig_justify_object (obj, X, dX)
-{
-   variable x0, x1, y0, y1, z0, z1;
-   (x0, x1, y0, y1, z0, z1) = obj.get_bbox ();
-
-   obj.translate (vector (X.x - 0.5*(x0+x1) - dX.x*(x1-x0),
-			  X.y - 0.5*(y0+y1) - dX.y*(y1-y0),
-			  X.z - 0.5*(z0+z1) - dX.z*(z1-z0)));
-}
 
 define xfig_new_vbox_compound ()
 %!%+
