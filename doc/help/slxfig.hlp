@@ -394,6 +394,12 @@ xfig_new_hbox_compound
  USAGE
   c = xfig_new_hbox_compound (obj1, obj2 [, ...] [, space]);
 
+ DESCRIPTION
+  The objects `obj2', ... are translated in negative y-direction
+  such that all of them align horizontally according to their size.
+  If the last argument `space' is numeric, it indicates additional
+  horizontal space that is inserted between each of the objects.
+
  SEE ALSO
   xfig_new_vbox_compound, xfig_new_compound
 
@@ -527,6 +533,12 @@ xfig_new_vbox_compound
 
  USAGE
   c = xfig_new_vbox_compound (obj1, obj2 [, ...] [, space]);
+
+ DESCRIPTION
+  The objects `obj2', ... are translated in negative y-direction
+  such that all of them align vertically according to their size.
+  If the last argument `space' is numeric, it indicates additional
+  vertical space that is inserted between each of the objects.
 
  SEE ALSO
   xfig_new_hbox_compound, xfig_new_compound

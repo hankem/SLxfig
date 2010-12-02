@@ -1024,84 +1024,61 @@ define xfig_justify_object (obj, X, dX)
 			  X.z - 0.5*(z0+z1) - dX.z*(z1-z0)));
 }
 
-% Usage: xfig_new_vbox_compound (o1, o2, ,,, [optional-space]);
 define xfig_new_vbox_compound ()
 %!%+
 %\function{xfig_new_vbox_compound}
 %\synopsis{Create an XFig compound list of vertically aligned objects}
 %\usage{c = xfig_new_vbox_compound (obj1, obj2 [, ...] [, space]);}
+%\description
+%  The objects \exmp{obj2}, ... are translated in negative y-direction
+%  such that all of them align vertically according to their size.
+%  If the last argument \exmp{space} is numeric, it indicates additional
+%  vertical space that is inserted between each of the objects.
 %\seealso{xfig_new_hbox_compound, xfig_new_compound}
 %!%-
 {
-   variable objs = __pop_args (_NARGS);
-   variable ymin;
-   variable y0, y1;
-   variable space = 0;
-
-   variable num = length (objs);
-   if (0 == is_struct_type (objs[-1].value))
+   variable objs = __pop_list (_NARGS);
+   variable space = is_struct_type (objs[-1])
+                  ? 0
+                  : list_pop (objs, -1);
+   variable ymin, obj, y0, y1;
+   (,,ymin,,,) = objs[0].get_bbox ();
+   foreach obj (objs[[1:]])
      {
-	space = objs[-1].value;
-	num--;
-	objs = objs[[0:num-1]];
+	(,,y0,y1,,) = obj.get_bbox ();
+	obj.translate (vector (0, ymin-y1-space, 0));
+	ymin += y0;
      }
-
-   if (num > 1)
-     {
-	(,,ymin,,,) = objs[0].value.get_bbox ();
-	variable v0 = vector (0, ymin, 0);
-	foreach (objs[[1:]])
-	  {
-	     variable obj = ();
-	     obj = obj.value;
-	     (,,y0,y1,,) = obj.get_bbox ();
-	     variable v = vector (0, y1+space, 0);
-	     variable dv = vector_diff (v0, v);
-	     obj.translate (dv);
-	     v0 = vector_sum (vector (0, y0, 0), dv);
-	  }
-     }
-   return xfig_new_compound (__push_args (objs));
+   return xfig_new_compound (__push_list (objs));
 }
 
-% Usage: xfig_new_hbox_compound (o1, o2, ,,, [optional-space]);
 define xfig_new_hbox_compound ()
 %!%+
 %\function{xfig_new_hbox_compound}
 %\synopsis{Create an XFig compound list of horizontally aligned objects}
 %\usage{c = xfig_new_hbox_compound (obj1, obj2 [, ...] [, space]);}
+%\description
+%  The objects \exmp{obj2}, ... are translated in negative y-direction
+%  such that all of them align horizontally according to their size.
+%  If the last argument \exmp{space} is numeric, it indicates additional
+%  horizontal space that is inserted between each of the objects.
 %\seealso{xfig_new_vbox_compound, xfig_new_compound}
 %!%-
 {
-   variable objs = __pop_args (_NARGS);
-   variable xmax;
-   variable x0, x1;
-   variable space = 0;
-
-   variable num = length (objs);
-   if (0 == is_struct_type (objs[-1].value))
+   variable objs = __pop_list (_NARGS);
+   variable xmax, obj, x0, x1;
+   variable space = is_struct_type (objs[-1])
+                  ? 0
+                  : list_pop (objs, -1);
+   (,xmax,,,,) = objs[0].get_bbox ();
+   variable v0 = vector (xmax, 0, 0);
+   foreach obj (objs[[1:]])
      {
-	space = objs[-1].value;
-	num--;
-	objs = objs[[0:num-1]];
+	(x0,x1,,,,) = obj.get_bbox ();
+	obj.translate (vector (xmax-x0+space, 0, 0));
+	xmax += x1;
      }
-
-   if (num > 1)
-     {
-	(,xmax,,,,) = objs[0].value.get_bbox ();
-	variable v0 = vector (xmax, 0, 0);
-	foreach (objs[[1:]])
-	  {
-	     variable obj = ();
-	     obj = obj.value;
-	     (x0,x1,,,,) = obj.get_bbox ();
-	     variable v = vector (x0-space, 0, 0);
-	     variable dv = vector_diff (v0, v);
-	     obj.translate (dv);
-	     v0 = vector_sum (vector (x1, 0, 0), dv);
-	  }
-     }
-   return xfig_new_compound (__push_args (objs));
+   return xfig_new_compound (__push_list (objs));
 }
 
 #iffalse
