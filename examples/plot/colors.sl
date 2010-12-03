@@ -3,6 +3,7 @@ require ("xfig");
 public define slsh_main ()
 {
    variable w = xfig_plot_new (14, 20);
+   w.world (0,1,0,1);
    variable color;
    variable ncolors = 33;
    variable dy = 1.0/(ncolors+1);

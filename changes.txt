@@ -160,3 +160,5 @@ Changes since 0.1.0
 82. examples/plot/overlay.sl: img1 and img2 were not always the same
     size.
 83. src/plot.sl: Modified change #81.
+84. src/xfig/polyline.sl: Avoid writing really long lines to the
+    output file.

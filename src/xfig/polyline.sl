@@ -189,9 +189,19 @@ private define make_polyline_header_string (p)
 
 private define write_polyline_data (fp, x, y)
 {
-   _for (0, length(x)-1, 1)
+   variable m = length(x);
+   variable i = 0;
+   loop (m/16)
      {
-	variable i = ();
+	xfig_vwrite (fp, " %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",
+		     x[i], y[i], x[i+1], y[i+1], x[i+2], y[i+2], x[i+3], y[i+3],
+		     x[i+4], y[i+4], x[i+5], y[i+5], x[i+6], y[i+6], x[i+7], y[i+7],
+		     x[i+8], y[i+8], x[i+9], y[i+9], x[i+10], y[i+10], x[i+11], y[i+11],
+		     x[i+12], y[i+12], x[i+13], y[i+13], x[i+14], y[i+14], x[i+15], y[i+15]);
+	i += 16;
+     }
+   _for i (i, length(x)-1, 1)
+     {
 	xfig_vwrite (fp, " %d %d", x[i], y[i]);
      }
    xfig_write (fp, "\n");
