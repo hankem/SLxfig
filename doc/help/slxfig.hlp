@@ -784,14 +784,18 @@ xfig_plot.hplot
   ; width: line thickness
   ; color: line color
   ; line: line style
-  ; fill[=area_fill]: plot shaded histogram, with area_fill style (default: 20, if set)
-  ; fillcolor: (default: `color')
+  ; fillcolor=fcol: fill histogram with color `fcol' (default: `color')
+  ; fill[=area_fill]: use style `area_fill' for shaded histogram (default: 20, if set)
   ; depth: XFig depth
 
  % qualifiers for error bars:
    see `xfig_plot--errorbars'
 
  DESCRIPTION
+  `x' is an array of lower bin boundaries corresponding
+  to the histogram values `y'. If `length(x)==length(y)+1',
+  then `x[-1]' is the upper boundary of the last bin,
+  otherwise, the last bin will be as large as the previous one.
   If no `x' values are given, `x = [1:length(y)]' is assumed.
 
  SEE ALSO

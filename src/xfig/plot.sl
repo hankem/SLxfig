@@ -2591,25 +2591,19 @@ private define plot_method () %{{{
 
 private define plot_histogram (w, xpts, ypts) %{{{
 {
-   variable len = length(xpts);
-   variable len2 = 2 + 2*len;
+   % length(xpts) == length(ypts) + 1  (last value is last bin's upper limit)
+   variable len2 = 2*length(xpts);
    variable x = Double_Type[len2];
    variable y = Double_Type[len2];
    variable i;
-   y[0] = 0;
-   x[[0:len2-3:2]] = xpts;
-   x[[1:len2-2:2]] = xpts;
+   y[0] = 0;  % could be generalized by a qualifier
+   x[[0::2]] = xpts;
+   x[[1::2]] = xpts;
    y[[1:len2-3:2]] = ypts;
    y[[2:len2-2:2]] = ypts;
-   x[-1] = xpts[-1] + (xpts[-1]-xpts[-2]);
-   x[-2] = x[-1];
-   y[where (isnan (y))] = 0.0;
+   y[-1] = y[0];
 
-#iffalse
-   y[-1] = ypts[-1];
-#else
-   y[-1] = 0;
-#endif
+   y[where (isnan (y))] = 0.0;
    initialize_plot (w, x, y ;;__qualifiers);
    plot_lines (w, x, y ;; __qualifiers);
 }
@@ -2629,28 +2623,26 @@ private define plot_shaded_histogram (p, x, y) %{{{
    variable y0 = scale_coords_for_axis (ay, h, 0.0);
    if (y0 < 0.0) y0 = 0.0;
 
-   x = @x;
    variable i0 = wherelast (x <= 0);
    if (i0 == NULL) i0 = 0;
-   variable i1 = wherefirst (x >= w);
-   if (i1 == NULL) i1 = length(x);
-   variable i = [i0:i1-1];
-   %variable i = where ((x>= 0) and (x <= w));
-   x = x[i]; y = y[i];
+   variable i1 = wherefirst (x > w);
+   if (i1 == NULL) i1 = length(x)-1;
+   % length(x) == length(y) + 1  (last value is last bin's upper limit)
+   x = x[[i0:i1]]; y = y[[i0:i1-1]];
    x[where(x<0)] = 0;
    x[where(x>w)] = w;
    y[where(isnan(y))] = y0;
-   y[where (y < y0)] = y0;
-   y[where (y > h)] = h;
+   y[where(y<y0)] = y0;
+   y[where(y>h)] = h;
 
    variable list = xfig_new_polyline_list ();
-   _for i (0, length (x)-2, 1)
+   variable z_box = [0., 0., 0., 0.];
+   _for i0 (0, length (x)-2, 1)
      {
-	variable x0 = x[i];
-	variable x1 = x[i+1];
-	variable y1 = y[i];
-
-	list.insert (vector([x0, x0, x1, x1], [y0,y1,y1,y0], [0.0,0.0,0.0,0.0]));
+	variable x0 = x[i0];
+	variable x1 = x[i0+1];
+	variable y1 = y[i0];
+	list.insert (vector([x0,x0,x1,x1], [y0,y1,y1,y0], z_box));
      }
    list.translate (p.X);
    list.set_depth (get_reftype_qualifier("depth", p.line_depth+1;;__qualifiers));
@@ -2682,13 +2674,17 @@ private define hplot_method () %{{{
 %\qualifier{width}{line thickness}
 %\qualifier{color}{line color}
 %\qualifier{line}{line style}
-%\qualifier{fill[=area_fill]}{plot shaded histogram, with area_fill style}{20, if set}
-%\qualifier{fillcolor}{}{\svar{color}}
+%\qualifier{fillcolor=fcol}{fill histogram with color \exmp{fcol}}{\svar{color}}
+%\qualifier{fill[=area_fill]}{use style \exmp{area_fill} for shaded histogram}{20, if set}
 %\qualifier{depth}{XFig depth}
 %
 % % qualifiers for error bars:
 %   see \sfun{xfig_plot--errorbars}
 %\description
+%  \exmp{x} is an array of lower bin boundaries corresponding
+%  to the histogram values \exmp{y}. If \exmp{length(x)==length(y)+1},
+%  then \exmp{x[-1]} is the upper boundary of the last bin,
+%  otherwise, the last bin will be as large as the previous one.
 %  If no \exmp{x} values are given, \exmp{x = [1:length(y)]} is assumed.
 %\seealso{xfig_plot--initialize_plot, xfig_plot--wcs, xfig_plot--errorbars}
 %!%-
@@ -2720,19 +2716,25 @@ private define hplot_method () %{{{
      }
    p = ();
 
-   if (qualifier_exists ("fill"))
-     plot_shaded_histogram (p, x, y;; __qualifiers);
+   variable xH;  % array including last bin's upper limit
+   if(length(x) == length(y))
+     xH = [x, 2*x[-1]-x[-2]];
+   else if(length(x) == length(y)+1)
+     xH = x;
    else
-     plot_histogram (p, x, y;; __qualifiers);
+     throw UsageError, ".hplot(x, y):  length(x) must be length(y) or length(y)+1";
+
+   if (qualifier_exists ("fill") || qualifier_exists ("fillcolor"))
+     plot_shaded_histogram (p, xH, y;; __qualifiers);
+   else
+     plot_histogram (p, xH, y;; __qualifiers);
 
    if (dy != NULL)
      {
-	variable xhi = shift(x,1);
-	xhi[-1] = 2*x[-1] - x[-2];
 	variable ax; (ax,) = get_world_axes (p.plot_data;; __qualifiers);
 	variable x0, x1; (x0, x1) = get_world_for_axis(ax);
-	variable n = .5 * (  world_to_normalized(ax.wcs_transform, x  , x0, x1)
-			   + world_to_normalized(ax.wcs_transform, xhi, x0, x1) );
+	variable n = .5 * (  world_to_normalized(ax.wcs_transform, x       , x0, x1)
+			   + world_to_normalized(ax.wcs_transform, xH[[1:]], x0, x1) );
 	x = normalized_to_world(ax.wcs_transform, n, x0, x1);
 	plot_err (p, "y", x, y, dy ;; __qualifiers);
      }
