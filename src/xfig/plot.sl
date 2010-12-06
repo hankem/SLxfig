@@ -3448,7 +3448,7 @@ define xfig_multiplot () %{{{
   variable cols = qualifier("cols", 1);
 
   variable ix, iy, last_ix=cols-1, last_iy=length(plots)/cols-1;
-  variable dy=0., y1label_x=1./0, y2label_x=-1./0;
+  variable dy=0., y1label_x=_Inf, y2label_x=-_Inf;
   _for iy (0, last_iy, 1)
   {
     % shift all plots at first in negative y-direction (will be corrected at the end):
@@ -3557,7 +3557,7 @@ define xfig_multiplot () %{{{
     {
       txt = xfig_new_text(q);
       txt.rotate_pict(270);
-      xfig_justify_object(txt, vector(xmax, .5*dy, 0), vector(0, -1, 0));
+      xfig_justify_object(txt, vector(xmax, .5*dy, 0), vector(-1, 0, 0));
       plots.append(txt);
     }
   }
