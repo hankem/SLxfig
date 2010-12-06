@@ -3505,8 +3505,8 @@ define xfig_multiplot () %{{{
     vmessage("warning (%s): %d plots left over when using cols=%d", _function_name(), length(plots), cols);
 
   plots = xfig_new_compound( __push_list(args) );
-  plots.translate (vector (0, -dy, 0));  % correct shift in negative y-direction
-                                         % lower left corner is now back at (0,0,0)
+  dy *= -1;                             % correct shift in negative y-direction
+  plots.translate (vector (0, dy, 0));  % lower left corner is now back at (0,0,0)
   variable xmin, xmax, ymin, ymax;
   (xmin,xmax, ymin,ymax, ,) = plots.get_bbox();
 
