@@ -160,3 +160,13 @@ Changes since 0.1.0
 82. examples/plot/overlay.sl: img1 and img2 were not always the same
     size.
 83. src/plot.sl: Modified change #81.
+84. src/xfig/polyline.sl: Avoid writing really long lines to the
+    output file.
+85. Various updated from Manfred Hanke:
+   * ticlabels in a plot respect default font style; font-related docs updated
+   * xfig_plot.plot_png accepts arrays and produces pngs automatically
+   * new .justify method; xfig_justify_object can work relative to other objects
+   * colors can be specified as "#RRGGBB" with 6 hex-digits for RGB
+   * A histogram plot's x-array may now also contain the last bin's 
+     upper limit, if it has one element more than the y-array of the
+     histogram data.
