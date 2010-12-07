@@ -1,0 +1,23 @@
+* An interactive plot viewer.
+
+* Add a mechanism to the .plot method that facilitates the creation of the
+  legend:
+
+    w.plot (x1,y1;color=3,label="First curve");
+    w.plot (x2,y2;color=4,sym="triangle",label="Triangles");
+    w.legend(0.2, 0.8; world00);
+
+* A .shade_between method that shades between two curves:
+
+   private define shade_between_curves (w, x, ylo, yhi)
+   {
+      variable x = [x, reverse(x)];
+      variable y = [ylo, reverse(yhi)];
+      w.shade_region (x, y; __qualifiers);
+   }
+
+* Various time/date related tic labels.
+
+* Additional flexibility for tic labels-- perhaps via a callback
+  function.  Perhaps time/date labels could be implemented via such
+  callbacks.
