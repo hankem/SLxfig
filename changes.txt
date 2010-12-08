@@ -170,4 +170,6 @@ Changes since 0.1.0
    * A histogram plot's x-array may now also contain the last bin's 
      upper limit, if it has one element more than the y-array of the
      histogram data.
-86. src/plot.sl: positioning bug-fix in xfig_multiplot (Manfred Hanke).
+86. src/xfig/plot.sl: positioning bug-fix in xfig_multiplot (Manfred Hanke).
+87. src/xfig/core.sl: #85 introduced a bug in the hbox/vbox functions
+    (Manfred Hanke).
