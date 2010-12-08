@@ -1071,8 +1071,9 @@ define xfig_new_vbox_compound ()
    foreach obj (objs[[1:]])
      {
 	(,,y0,y1,,) = obj.get_bbox ();
-	obj.translate (vector (0, ymin-y1-space, 0));
-	ymin += y0;
+	variable dy = ymin-y1-space;
+	obj.translate (vector (0, dy, 0));
+	ymin = y0 + dy;
      }
    return xfig_new_compound (__push_list (objs));
 }
@@ -1100,8 +1101,9 @@ define xfig_new_hbox_compound ()
    foreach obj (objs[[1:]])
      {
 	(x0,x1,,,,) = obj.get_bbox ();
-	obj.translate (vector (xmax-x0+space, 0, 0));
-	xmax += x1;
+	variable dx = xmax-x0+space;
+	obj.translate (vector (dx, 0, 0));
+	xmax = x1 + dx;
      }
    return xfig_new_compound (__push_list (objs));
 }
