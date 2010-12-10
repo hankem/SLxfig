@@ -10,7 +10,7 @@ private define main ()
 {
    if (__argc != 2)
      {
-	() = fprintf (stderr, "Usage: ./%s <example.sl>\n", 
+	() = fprintf (stderr, "Usage: ./%s <example.sl>\n",
 		      path_basename (__argv[0]));
 	exit (1);
      }
@@ -18,7 +18,3 @@ private define main ()
 }
 
 main ();
-%if (is_defined ("slsh_main"))
-%  slsh_main ();
-
-

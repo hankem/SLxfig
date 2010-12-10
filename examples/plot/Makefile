@@ -1,5 +1,3 @@
-# -*- sh -*-
-
 PNG_FILES = \
   axisxform.png \
   color.png \
@@ -19,10 +17,4 @@ PNG_FILES = \
   world.png
 # project.png \
 
-png: $(PNG_FILES)
-%.png: %.sl
-	./run.sl ./$<
-clean:
-	/bin/rm -f $(PNG_FILES) *.fig *~
-	/bin/rm -rf slxfigtmp
-	/bin/rm -rf tmp* autoeps
+include ../Makefile.sub

@@ -1,0 +1,11 @@
+# -*- make -*-
+
+png: $(PNG_FILES)
+%.png: %.sl
+	../run.sl ./$<
+clean:
+	-/bin/rm -f *.fig *~
+	-/bin/rm -rf autoeps
+
+distclean: clean
+	-/bin/rm -f $(PNG_FILES)

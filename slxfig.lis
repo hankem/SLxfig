@@ -1,6 +1,7 @@
 @slxfig.lis
 @INSTALL
 @README
+@TODO
 @COPYING
 @changes.txt
 @configure 0755
@@ -18,26 +19,36 @@
 @doc/help/slxfig.hlp
 @doc/help/gcontour.hlp
 @doc/text/slxfig.txt
+@examples/Makefile
+@examples/Makefile.sub
+@examples/run.sl 0755
 @examples/slxfigrc
+@examples/draw/inclinometer.sl
+@examples/draw/Makefile
+@examples/pict/colormaps.sl
+@examples/pict/Makefile
 @examples/plot/Makefile
 @examples/plot/axisxform.sl
 @examples/plot/color.sl
+@examples/plot/colors.sl
 @examples/plot/errbar.sl
 @examples/plot/font-style.sl
 @examples/plot/histplt.sl
 @examples/plot/image.sl
+@examples/plot/Makefile
 @examples/plot/multiplot.sl
 @examples/plot/multiplot2.sl
 @examples/plot/overlay.sl
 @examples/plot/project.sl
+@examples/plot/scatter.sl
 @examples/plot/simple.sl
 @examples/plot/subplot.sl
 @examples/plot/symbol.sl
 @examples/plot/scatter.sl
 @examples/plot/ticlabels.sl
-@examples/plot/run.sl
 @examples/plot/world.sl
 @examples/polyline/arrows.sl
+@examples/polyline/Makefile
 @src/Makefile.in
 @src/config.hin
 @src/gcontour-module.c

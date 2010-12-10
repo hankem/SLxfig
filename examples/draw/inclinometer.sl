@@ -74,5 +74,5 @@ define slsh_main ()
 				  [0, 0, 0, 0, 0]));
    obj.insert (circle);
    obj.insert (box);
-   obj.render ("inclinometer.ps");
+   obj.render ("inclinometer.png");
 }

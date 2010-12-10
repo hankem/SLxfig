@@ -27,4 +27,4 @@ _for a (0, 14, 1)
   c.append(txt);
 }
 
-c.render("arrows.eps");
+c.render("arrows.png");
