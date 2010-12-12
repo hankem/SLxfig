@@ -552,6 +552,7 @@ define xfig_new_text () %{{{
 %\qualifier{x0}{x-position}{0}
 %\qualifier{y0}{y-position}{0}
 %\qualifier{z0}{z-position}{0}
+%\qualifier{depth}{Xfig depth}
 %\qualifier{just=[jx,jy]}{justification, see \sfun{xfig_new_pict}}{[0,0]}
 %\description
 %  This function runs LaTeX on the specified text string and returns the
@@ -576,6 +577,7 @@ define xfig_new_text () %{{{
 %#c    + xfig_new_pict
 %#c      +-> x0, y0, z0
 %#c      + xfig_new_polyline
+%#c      | -> depth, ...
 %#c      +-> just
 {
    variable fontstruct = NULL;

@@ -551,6 +551,7 @@ xfig_new_text
   ; x0: x-position (default: 0)
   ; y0: y-position (default: 0)
   ; z0: z-position (default: 0)
+  ; depth: Xfig depth
   ; just=[jx,jy]: justification, see `xfig_new_pict' (default: [0,0])
 
  DESCRIPTION
@@ -786,7 +787,7 @@ xfig_plot.hplot
   ; line: line style
   ; fillcolor=fcol: fill histogram with color `fcol' (default: `color')
   ; fill[=area_fill]: use style `area_fill' for shaded histogram (default: 20, if set)
-  ; depth: XFig depth
+  ; depth: Xfig depth
 
  % qualifiers for error bars:
    see `xfig_plot--errorbars'
@@ -887,6 +888,9 @@ xfig_plot.plot_png
 
 xfig_plot.shade_region
 
+ SYNOPSIS
+  Add a filled rectangle or polygon to the plot
+
  USAGE
   xfig_plot.shade_region (x[], y[]);
   % or
@@ -894,7 +898,17 @@ xfig_plot.shade_region
 
  QUALIFIERS
  % qualifiers to initialize the first plot only
+   see `xfig_plot--initialize_plot'
+
  % qualifiers to specifiy the world coordinate system
+   see `xfig_plot--wcs'
+
+  ; line: line style
+  ; width: line thickness
+  ; color: line color
+  ; fillcolor: fill color (default: `color')
+  ; fill: area fill style (default: 20)
+  ; depth: Xfig depth of shaded region
 
  SEE ALSO
   xfig_plot--initialize_plot, xfig_plot--wcs

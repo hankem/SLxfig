@@ -2676,7 +2676,7 @@ private define hplot_method () %{{{
 %\qualifier{line}{line style}
 %\qualifier{fillcolor=fcol}{fill histogram with color \exmp{fcol}}{\svar{color}}
 %\qualifier{fill[=area_fill]}{use style \exmp{area_fill} for shaded histogram}{20, if set}
-%\qualifier{depth}{XFig depth}
+%\qualifier{depth}{Xfig depth}
 %
 % % qualifiers for error bars:
 %   see \sfun{xfig_plot--errorbars}
@@ -3150,12 +3150,23 @@ private define plot_pict_method () %{{{
 private define shade_region_method () %{{{
 %!%+
 %\function{xfig_plot.shade_region}
+%\synopsis{Add a filled rectangle or polygon to the plot}
 %\usage{xfig_plot.shade_region (x[], y[]);
 %\altusage{xfig_plot.shade_region (xmin, xmax, ymin, ymax);}
 %}
 %\qualifiers
 % % qualifiers to initialize the first plot only
+%   see \sfun{xfig_plot--initialize_plot}
+%
 % % qualifiers to specifiy the world coordinate system
+%   see \sfun{xfig_plot--wcs}
+%
+%\qualifier{line}{line style}
+%\qualifier{width}{line thickness}
+%\qualifier{color}{line color}
+%\qualifier{fillcolor}{fill color}{\exmp{color}}
+%\qualifier{fill}{area fill style}{20}
+%\qualifier{depth}{Xfig depth of shaded region}
 %\seealso{xfig_plot--initialize_plot, xfig_plot--wcs}
 %!%-
 {
@@ -3194,11 +3205,8 @@ private define shade_region_method () %{{{
    xs = scale_coords_for_axis (ax, width, xs);
    ys = scale_coords_for_axis (ay, height, ys);
 
-   xs[where(xs>width)]=width; xs[where(xs<0)] = 0;
-   ys[where(ys>height)]=height; ys[where(ys<0)] = 0;
-
-   xs[where(isnan(xs))] = 0;
-   ys[where(isnan(ys))] = 0;
+   xs[where(xs>width )] = width ;  xs[where(xs<0 or isnan(xs))] = 0;
+   ys[where(ys>height)] = height;  ys[where(ys<0 or isnan(ys))] = 0;
 
    variable obj = xfig_new_polyline (vector (xs, ys, 0*xs));
    obj.translate (p.X);
