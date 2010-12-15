@@ -1028,6 +1028,7 @@ xfig_plot.xaxis
   xfig_plot.xaxis([; qualifiers]);
 
  QUALIFIERS
+  ; ticlabels1: overwrites the `ticlabels' qualifier for the x1axis
   ; ticlabels2: overwrites the `ticlabels' qualifier for the x2axis
 
  DESCRIPTION
@@ -1138,6 +1139,7 @@ xfig_plot.yaxis
   xfig_plot.yaxis([; qualifiers]);
 
  QUALIFIERS
+  ; ticlabels1: overwrites the `ticlabels' qualifier for the y1axis
   ; ticlabels2: overwrites the `ticlabels' qualifier for the y2axis
 
  DESCRIPTION

@@ -1585,6 +1585,7 @@ private define xaxis_method () %{{{
 %\function{xfig_plot.xaxis}
 %\usage{xfig_plot.xaxis([; qualifiers]);}
 %\qualifiers
+%\qualifier{ticlabels1}{overwrites the \exmp{ticlabels} qualifier for the x1axis}
 %\qualifier{ticlabels2}{overwrites the \exmp{ticlabels} qualifier for the x2axis}
 %\description
 %  This method allows for the configuration of both x-axes
@@ -1594,8 +1595,10 @@ private define xaxis_method () %{{{
 {
    if (_xfig_check_help (_NARGS, "xfig_plot.xaxis";; __qualifiers)) return;
    variable args = __pop_args (_NARGS);
-   do_axis_method (__push_args (args), "x1axis", 1 ;; __qualifiers);
    variable q = __qualifiers;
+   if(qualifier_exists ("ticlabels1"))  q = struct { @q, ticlabels=qualifier("ticlabels1") };
+   do_axis_method (__push_args (args), "x1axis", 1;; q);
+   q = __qualifiers;
    if(qualifier_exists ("ticlabels2"))  q = struct { @q, ticlabels=qualifier("ticlabels2") };
    do_axis_method (__push_args (args), "x2axis", 0;; q);
 }
@@ -1606,6 +1609,7 @@ private define yaxis_method () %{{{
 %\function{xfig_plot.yaxis}
 %\usage{xfig_plot.yaxis([; qualifiers]);}
 %\qualifiers
+%\qualifier{ticlabels1}{overwrites the \exmp{ticlabels} qualifier for the y1axis}
 %\qualifier{ticlabels2}{overwrites the \exmp{ticlabels} qualifier for the y2axis}
 %\description
 %  This method allows for the configuration of both y-axes
@@ -1615,8 +1619,10 @@ private define yaxis_method () %{{{
 {
    if (_xfig_check_help (_NARGS, "xfig_plot.yaxis";; __qualifiers)) return;
    variable args = __pop_args (_NARGS);
-   do_axis_method (__push_args (args), "y1axis", 2 ;; __qualifiers);
    variable q = __qualifiers;
+   if(qualifier_exists ("ticlabels1"))  q = struct { @q, ticlabels=qualifier("ticlabels1") };
+   do_axis_method (__push_args (args), "y1axis", 2;; q);
+   q = __qualifiers;
    if(qualifier_exists ("ticlabels2"))  q = struct { @q, ticlabels=qualifier("ticlabels2") };
    do_axis_method (__push_args (args), "y2axis", 0;; q);
 }
