@@ -720,7 +720,7 @@ private define format_labels_using_scientific_notation (tics) %{{{
 	b[j] -= 1;
      }
 
-#iffalse   % This logic is flawed.
+#ifnfalse   % This logic is flawed
    variable mant_factor = 1.0;
    loop (20)
      {
@@ -733,7 +733,14 @@ private define format_labels_using_scientific_notation (tics) %{{{
 	  }
      }
    mant *= mant_factor;
-#else
+   j = where (mant >= 10);
+   if (length(j)*2 >= length(mant))
+     {
+	mant *= 0.1;
+	b += 1;
+     }
+   
+#else % This fails on linear grids from, e.g., 0 to 3e5
    variable mant = nint(10^a);
    mant[where(tics<0)] *= -1;
 #endif
@@ -807,7 +814,11 @@ private define construct_tic_label_strings (axis, tics)
 	     i = where (((abs_tics > 0) and (abs_tics < 1e-4))
 		   or (abs_tics >= 99999.5));
 	     if (length(i))
-	       tic_labels[i] = format_labels_using_scientific_notation (tics[i]);
+	       {
+		  % FIXME: This should be configurable!!!
+		  i = where (abs_tics>0);
+		  tic_labels[i] = format_labels_using_scientific_notation (tics[i]);
+	       }
 	  }
      }
    return tic_labels;
