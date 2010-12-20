@@ -853,8 +853,13 @@ xfig_plot.plot_pict
   xfig_plot.plot_pict (String_Type imgfile);
 
  QUALIFIERS
+  ; depth: Xfig depth
+
  % qualifiers to initialize the first plot only,
    see `xfig_plot--initialize_plot'
+
+ SEE ALSO
+  xfig_plot.plot_png
 
 --------------------------------------------------------------
 
@@ -869,6 +874,8 @@ xfig_plot.plot_png
   xfig_plot.plot_png (Array_Type image);
 
  QUALIFIERS
+  ; depth: Xfig depth
+
  % qualifiers to initialize the first plot only,
    see `xfig_plot--initialize_plot'
   ; cmap: name of the color map used by `png_gray_to_rgb'
@@ -882,7 +889,7 @@ xfig_plot.plot_png
   All other qualifiers are forwarded to `png_gray_to_rgb'.
 
  SEE ALSO
-  xfig_set_tmp_dir, png_gray_to_rgb
+  xfig_plot_new_png, xfig_plot.plot_pict, xfig_set_tmp_dir, png_gray_to_rgb
 
 --------------------------------------------------------------
 
@@ -1251,14 +1258,11 @@ xfig_plot_new_png
  USAGE
   w = xfig_plot_new_png (file)
 
- DESCRIPTION
-  TBD
-
- EXAMPLE
-  TBD
+ QUALIFIERS
+  ; depth: Xfig depth
 
  SEE ALSO
-  xfig_new_object
+  xfig_plot_new, xfig_plot.plot_png, xfig_plot.plot_pict
 
 --------------------------------------------------------------
 

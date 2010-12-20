@@ -3069,7 +3069,7 @@ private define add_pict_to_plot (w, png) %{{{
 
    png.center_pict (p.X + 0.5*vector (width,height,0), width, height);
    w.add_object (png);
-   png.set_depth (p.image_depth);
+   png.set_depth (qualifier ("depth", p.image_depth));
 }
 %}}}
 
@@ -3084,6 +3084,8 @@ define plot_png_method () %{{{
 %\altusage{xfig_plot.plot_png (Array_Type image);}
 %}
 %\qualifiers
+%\qualifier{depth}{Xfig depth}
+%
 % % qualifiers to initialize the first plot only,
 %   see \sfun{xfig_plot--initialize_plot}
 %\qualifier{cmap}{name of the color map used by \sfun{png_gray_to_rgb}}
@@ -3094,7 +3096,7 @@ define plot_png_method () %{{{
 %  it is converted to a png file in the temporary directory,
 %  using the \sfun{png_gray_to_rgb} function and possibly a color map.
 %  All other qualifiers are forwarded to \sfun{png_gray_to_rgb}.
-%\seealso{xfig_set_tmp_dir, png_gray_to_rgb}
+%\seealso{xfig_plot_new_png, xfig_plot.plot_pict, xfig_set_tmp_dir, png_gray_to_rgb}
 %!%-
 {
    if (_xfig_check_help (_NARGS, "xfig_plot.plot_png";; __qualifiers)) return;
@@ -3117,8 +3119,8 @@ define plot_png_method () %{{{
 #endif
      }
    png = xfig_new_png (png);
-   initialize_plot (w, NULL, NULL ;;__qualifiers);
-   add_pict_to_plot (w, png);
+   initialize_plot (w, NULL, NULL;; __qualifiers);
+   add_pict_to_plot (w, png;; __qualifiers);
 }
 %}}}
 
@@ -3127,8 +3129,11 @@ private define plot_pict_method () %{{{
 %\function{xfig_plot.plot_pict}
 %\usage{xfig_plot.plot_pict (String_Type imgfile);}
 %\qualifiers
+%\qualifier{depth}{Xfig depth}
+%
 % % qualifiers to initialize the first plot only,
 %   see \sfun{xfig_plot--initialize_plot}
+%\seealso{xfig_plot.plot_png}
 %!%-
 {
    if (_xfig_check_help (_NARGS, "xfig_plot.plot_pict";; __qualifiers)) return;
@@ -3138,18 +3143,9 @@ private define plot_pict_method () %{{{
      usage (".plot_pict (img)");
    (w, img) = ();
 
-   variable dx=4., dy=3.;  % numbers do not matter here, will be scaled anyway
-   variable pict = xfig_new_pict(img, dx, dy);
-
+   variable pict = xfig_new_pict(img, 1., 1.); % numbers do not matter here, will be scaled anyway
    initialize_plot (w, NULL, NULL;; __qualifiers);
-
-   variable p = w.plot_data;
-   variable width = p.plot_width;
-   variable height = p.plot_height;
-   pict.scale_pict (width/dx, height/dy);
-   pict.center_pict (p.X + 0.5*vector (width,height,0), width, height);
-   w.add_object (pict);
-   pict.set_depth (p.image_depth);
+   add_pict_to_plot (w, pict;; __qualifiers);
 }
 %}}}
 
@@ -3357,18 +3353,16 @@ define xfig_plot_new_png (png) %{{{
 %\function{xfig_plot_new_png}
 %\synopsis{Create a new plot window for a png file}
 %\usage{w = xfig_plot_new_png (file)}
-%\description
-%  TBD
-%\example
-%  TBD
-%\seealso{xfig_new_object}
+%\qualifiers
+%\qualifier{depth}{Xfig depth}
+%\seealso{xfig_plot_new, xfig_plot.plot_png, xfig_plot.plot_pict}
 %!%-
 {
    png = xfig_new_png (png);
    variable dx, dy;
    (dx, dy) = png.get_pict_bbox ();
    variable w = xfig_plot_new (dx, dy);
-   add_pict_to_plot (w, png);
+   add_pict_to_plot (w, png;; __qualifiers);
    return w;
 }
 %}}}
