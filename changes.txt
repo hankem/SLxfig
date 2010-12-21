@@ -173,3 +173,5 @@ Changes since 0.1.0
 86. src/xfig/plot.sl: positioning bug-fix in xfig_multiplot (Manfred Hanke).
 87. src/xfig/core.sl: #85 introduced a bug in the hbox/vbox functions
     (Manfred Hanke).
+88. src/xfig/plot.sl: Change 67 introduced duplicate tic marks for grids running
+    from, e.g, 0 to 30000.
