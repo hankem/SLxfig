@@ -2926,7 +2926,7 @@ define xfig_plot_text () %{{{
 private define xylabel_method () %{{{
 %!%+
 %\function{xfig_plot.xylabel}
-%\usage{xfig_plot.xylabel (String_Type text, Double_Type x, y[, dx, dy]);}
+%\usage{xfig_plot.xylabel (Double_Type x, y, String_Type text[, dx, dy]);}
 %\qualifiers
 % % qualifiers to specifiy the world coordinate system,
 %   see \sfun{xfig_plot--wcs}

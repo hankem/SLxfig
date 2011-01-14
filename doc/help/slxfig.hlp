@@ -32,6 +32,7 @@
 
  QUALIFIERS
   ; verbose=intval: if >=0, the fig2dev command is displayed
+  ; clean: remove the .fig file
 
  SEE ALSO
   xfig_set_verbose
@@ -1084,7 +1085,7 @@ xfig_plot.xlabel
 xfig_plot.xylabel
 
  USAGE
-  xfig_plot.xylabel (String_Type text, Double_Type x, y[, dx, dy]);
+  xfig_plot.xylabel (Double_Type x, y, String_Type text[, dx, dy]);
 
  QUALIFIERS
  % qualifiers to specifiy the world coordinate system,
