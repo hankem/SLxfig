@@ -824,6 +824,8 @@ xfig_plot.plot
   ; width=intval: thickness of lines and error bars
   ; depth=intval: Xfig depth
   ; line=intval: line style for lines and error bars
+  ; forward_arrow: see `xfig_create_arrow' (default: NULL)
+  ; backward_arrow: see `xfig_create_arrow' (default: NULL)
 
  % qualifiers for error bars:
    see `xfig_plot--errorbars'

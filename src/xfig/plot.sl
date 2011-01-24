@@ -2011,6 +2011,12 @@ private define plot_lines (p, x, y) %{{{
    variable thickness = qualifier ("width", p.thickness);
    variable color = qualifier ("color", p.line_color);
    variable linestyle = qualifier ("line", p.line_style);
+   variable forward_arrow = qualifier("forward_arrow");
+   if (qualifier_exists("forward_arrow") && forward_arrow==NULL)
+     forward_arrow = xfig_create_arrow(;; __qualifiers);
+   variable backward_arrow = qualifier("arrow");
+   if (qualifier_exists("backward_arrow") && backward_arrow==NULL)
+     backward_arrow = xfig_create_arrow(;; __qualifiers);
    variable i0 = 0;
    variable list = xfig_new_polyline_list ();
    foreach (where (bad))
@@ -2025,6 +2031,8 @@ private define plot_lines (p, x, y) %{{{
 	     lines.set_thickness (thickness);
 	     lines.set_pen_color (color);
 	     lines.set_line_style (linestyle);
+	     lines.forward_arrow = forward_arrow;
+	     lines.backward_arrow = backward_arrow;
 	     p.object_list.insert(lines);
 	  }
 	i0 = i+1;
@@ -2539,6 +2547,8 @@ private define plot_method () %{{{
 %\qualifier{width=intval}{thickness of lines and error bars}
 %\qualifier{depth=intval}{Xfig depth}
 %\qualifier{line=intval}{line style for lines and error bars}
+%\qualifier{forward_arrow}{see \sfun{xfig_create_arrow}}{NULL}
+%\qualifier{backward_arrow}{see \sfun{xfig_create_arrow}}{NULL}
 %
 % % qualifiers for error bars:
 %   see \sfun{xfig_plot--errorbars}
