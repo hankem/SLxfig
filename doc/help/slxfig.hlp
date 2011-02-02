@@ -834,7 +834,7 @@ xfig_plot.plot
   ; sym=strval: symbol, see xfig_plot_get_symbol_names
   ; symcolor=strval: color of symbols (default: `color' qualifier)
   ; size=val: symbol point size
-  ; fill=intval (from -1 to 20): area fill style
+  ; fill[=intval]: area fill style (default: 20, if set; otherwise -1)
   ; fillcolor=strval: color for filled symbols
   ; symlinestyle=intval: line style to draw symbols
   ; symwidth=intval: thickness of symbol lines (default: `width' qualifier)

@@ -2409,6 +2409,7 @@ private define plot_symbols (p, x, y) %{{{
    variable depth = get_reftype_qualifier ("depth", p.point_depth;;__qualifiers);
    depth = qualifier ("symdepth", depth);
    variable area_fill = qualifier ("fill", -1);
+   if (area_fill==NULL)  area_fill = 20;
    variable size = qualifier ("width", p.thickness);
    size = qualifier ("symwidth",size);
    variable linestyle = qualifier ("symlinestyle", p.line_style);
@@ -2557,7 +2558,7 @@ private define plot_method () %{{{
 %\qualifier{sym=strval}{symbol, see xfig_plot_get_symbol_names}
 %\qualifier{symcolor=strval}{color of symbols}{\exmp{color} qualifier}
 %\qualifier{size=val}{symbol point size}
-%\qualifier{fill=intval (from -1 to 20)}{area fill style}
+%\qualifier{fill[=intval]}{area fill style}{20, if set; otherwise -1}
 %\qualifier{fillcolor=strval}{color for filled symbols}
 %\qualifier{symlinestyle=intval}{line style to draw symbols}
 %\qualifier{symwidth=intval}{thickness of symbol lines}{\exmp{width} qualifier}
