@@ -21,3 +21,13 @@
 * Additional flexibility for tic labels-- perhaps via a callback
   function.  Perhaps time/date labels could be implemented via such
   callbacks.
+
+* allow to set only some world coordinate limits,
+  and have the others be determined automatically,
+  in analogy to, e.g.,  isis> xrange(xmin, );
+
+* connection between world coordinates and size of plot box
+  to have several plots with different ranges, but same scales
+
+* duplicate method for XFig_Object's
+-> allow xfig_multiplot to operate on copies of plots

@@ -661,18 +661,13 @@ private define make_tic_marks (axis) %{{{
 
    variable islog = axis.islog;
 
-   variable X1 = vector_sum (X, dX);
    if (axis.draw_line)
-     {
-	variable line = xfig_new_polyline (vector ([X.x, X1.x],[X.y,X1.y],[X.z,X1.z]));
-	line.set_pen_color (axis.axis_color);
-	line.set_line_style (axis.axis_linestyle);
-	line.set_thickness (axis.axis_thickness);
-	line.set_depth (axis.axis_depth);
-
-	axis.line = line;
-     }
-
+     axis.line = xfig_new_polyline (X.x+[0,dX.x], X.y+[0,dX.y], X.z+[0,dX.z]
+				    ; color=axis.axis_color,
+				      line=axis.axis_linestyle,
+				      width=axis.axis_thickness,
+				      depth=axis.axis_depth
+				   );
    axis.minor_tic_marks = NULL;
    axis.major_tic_marks = NULL;
 
@@ -1057,27 +1052,6 @@ private define setup_axis_tics (p, axis) %{{{
 }
 %}}}
 
-private define pop_set_tic_args (fun, nargs) %{{{
-{
-   variable win, major_tics, tic_labels = NULL, minor_tics = NULL;
-   switch (nargs)
-     {
-      case 4:
-	(tic_labels,minor_tics) = ();
-     }
-     {
-      case 3:
-	tic_labels = ();
-     }
-     {
-	if (_NARGS != 2)
-	  usage ("%s (win, major_tics [,major_tic_labels [,minor_tics]])", fun);
-     }
-   (win, major_tics) = ();
-   return win, major_tics, tic_labels, minor_tics;
-}
-%}}}
-
 private define position_axis_label (axis) %{{{
 {
    if (axis.axis_label == NULL)  return;
@@ -1117,61 +1091,46 @@ private define add_axis (p, axis, wcs_type, major_tics, minor_tics) %{{{
 }
 %}}}
 
+private define get_axis_objects (axis) %{{{
+{
+   variable object, objects = {};
+   if (axis!=NULL)
+     foreach object ([axis.line,
+		      axis.major_tic_marks,
+		      axis.tic_label_objects,
+		      axis.minor_tic_marks,
+		      axis.axis_label
+		     ])
+       if (object!=NULL)
+	 list_append(objects, object);
+
+   return qualifier_exists("on_stack") ? __push_list(objects)
+				       : objects;  % list_to_array(objects, Struct_Type);
+}
+%}}}
+
 private define render_tics_for_axis (axis, fp) %{{{
 {
-   if (axis == NULL)
-     return;
-
-   if (axis.line != NULL)
-     axis.line.render (fp);
-   if (axis.major_tic_marks != NULL)
-     axis.major_tic_marks.render (fp);
-   if (axis.tic_label_objects != NULL)
-     axis.tic_label_objects.render (fp);
-   if (axis.minor_tic_marks != NULL)
-     axis.minor_tic_marks.render (fp);
-   if (axis.axis_label != NULL)
-     axis.axis_label.render (fp);
-   %xfig_render_object (axis.axis_label, fp);
+   variable object;
+   foreach object (get_axis_objects (axis))
+     object.render (fp);
 }
 %}}}
 
 private define render_plot_axes (p, fp) %{{{
 {
    variable axis;
-   variable w = p.plot_width;
-   variable h = p.plot_height;
-   variable tic, ticlen;
-
-   variable dX, dY, xmin, xmax;
-
-   axis = p.x1axis;
-   render_tics_for_axis (axis, fp);
-
-   axis = p.y1axis;
-   render_tics_for_axis (axis, fp);
-
-   axis = p.x2axis;
-   render_tics_for_axis (axis, fp);
-
-   axis = p.y2axis;
-   render_tics_for_axis (axis, fp);
+   foreach axis ([p.x1axis, p.y1axis, p.x2axis, p.y2axis])
+     render_tics_for_axis (axis, fp);
 }
 %}}}
 
 private define translate_axis (axis, X) %{{{
 {
    axis.X = vector_sum (axis.X, X);
-   if (axis.line != NULL)
-     axis.line.translate(X);
-   if (axis.major_tic_marks != NULL)
-     axis.major_tic_marks.translate(X);
-   if (axis.minor_tic_marks != NULL)
-     axis.minor_tic_marks.translate(X);
-   if (axis.tic_label_objects != NULL)
-     axis.tic_label_objects.translate(X);
-   if (axis.axis_label != NULL)
-     axis.axis_label.translate(X);
+   variable object;
+   foreach object (get_axis_objects (axis))
+     object.translate (X);
 }
 %}}}
 
@@ -1191,16 +1150,9 @@ private define plot_translate (p, X) %{{{
 private define rotate_axis (axis, normal, theta)
 {
    axis.X = vector_rotate (axis.X, normal, theta);
-   if (axis.line != NULL)
-     axis.line.rotate(normal, theta);
-   if (axis.major_tic_marks != NULL)
-     axis.major_tic_marks.rotate(normal, theta);
-   if (axis.minor_tic_marks != NULL)
-     axis.minor_tic_marks.rotate(normal, theta);
-   if (axis.tic_label_objects != NULL)
-     axis.tic_label_objects.rotate(normal, theta);
-   if (axis.axis_label != NULL)
-     axis.axis_label.rotate(normal, theta);
+   variable object;
+   foreach object (get_axis_objects (axis))
+     object.rotate (normal, theta);
 }
 %}}}
 
@@ -1232,21 +1184,20 @@ private define plot_scale () %{{{
    p.plot_width *= sx;
    p.plot_height *= sy;
 
-   variable axis, field;
+   variable axis, object;
    foreach axis ([p.x1axis, p.y1axis, p.x2axis, p.y2axis])
    {
      foreach X ([axis.X, axis.dX])
        X.x *= sx, X.y *= sy, X.z *= sz;
-     foreach field ([axis.tic_label_objects, axis.line, axis.major_tic_marks, axis.minor_tic_marks, axis.axis_label])
-       if(field != NULL)
-         field.scale(sx, sy, sz);
+     foreach object (get_axis_objects (axis))
+	object.scale (sx, sy, sz);
      axis.max_tic_w *= sx;
      axis.max_tic_h *= sy;
    }
 
-   foreach field ([p.object_list, p.title_object, p.legend])
-     if(field != NULL)
-       field.scale(sx, sy, sz);
+   foreach object ([p.object_list, p.title_object, p.legend])
+     if(object != NULL)
+       object.scale (sx, sy, sz);
 }
 %}}}
 
@@ -1256,20 +1207,12 @@ private define plot_set_attr (p, attr, val)
 
 private define get_axis_bbox (axis) %{{{
 {
-   variable x0, x1, y0, y1, z0, z1;
-   (x0, x1, y0, y1, z0, z1) = xfig_new_compound (axis.line, axis.tic_label_objects, axis.axis_label).get_bbox ();
-
-   variable X0 = axis.X, X1 = X0+axis.dX;
-   variable x = [X0.x, X1.x];
-   variable y = [X0.y, X1.y];
-   variable z = [X0.z, X1.z];
-   return min([x,x0]), max([x,x1]), min([y,y0]), max([y,y1]), min([z,z0]), max([z,z1]);
+   return xfig_new_compound (get_axis_objects (axis; on_stack)).get_bbox ();
 }
 %}}}
 
 private define plot_get_bbox (p) %{{{
 {
-   if (0) vmessage ("Warning: plot bounding box not fully supported");
    p = p.plot_data;
    variable xmin, xmax, ymin, ymax, zmin, zmax;
    variable x0, x1, y0, y1, z0, z1;
