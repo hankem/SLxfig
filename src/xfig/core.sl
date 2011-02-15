@@ -612,10 +612,10 @@ define xfig_close_file (dev)
    if (fmt == NULL)
      return;
 
-   (fmt,) = strreplace (fmt, "%P", dev.papersize, strlen(fmt));
-   (fmt,) = strreplace (fmt, "%I", dev.figfile, strlen(fmt));
-   (fmt,) = strreplace (fmt, "%O", dev.devfile, strlen(fmt));
-   (fmt,) = strreplace (fmt, "%B", path_sans_extname(dev.figfile), strlen(fmt));
+   fmt = strreplace (fmt, "%P", dev.papersize);
+   fmt = strreplace (fmt, "%I", dev.figfile);
+   fmt = strreplace (fmt, "%O", dev.devfile);
+   fmt = strreplace (fmt, "%B", path_sans_extname(dev.figfile));
 
    if (qualifier ("verbose", _XFig_Verbose) >= 0)  message("$ "+fmt);
    () = system_intr (fmt);
@@ -961,12 +961,11 @@ private define set_fill_color_compound (c, x)
      }
 }
 
-private variable Infinity = 1e38;
 private define get_bbox_compound (c)
 {
    variable x0, x1, y0, y1, z0, z1;
-   variable xmin = Infinity, ymin = Infinity, zmin = Infinity;
-   variable xmax = -Infinity, ymax = -Infinity, zmax = -Infinity;
+   variable xmin =  _Inf, ymin =  _Inf, zmin =  _Inf;
+   variable xmax = -_Inf, ymax = -_Inf, zmax = -_Inf;
 
    foreach (c.list)
      {
