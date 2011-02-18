@@ -477,6 +477,7 @@ xfig_new_pict
   object containing the image will be centered at (0,0,0).
 
  QUALIFIERS
+  ; depth: XFig depth
   ; x0: x-position (default: 0)
   ; y0: y-position (default: 0)
   ; z0: z-position (default: 0)
@@ -495,6 +496,31 @@ xfig_new_pict
 
  SEE ALSO
   xfig_new_text, xfig_justify_object
+
+--------------------------------------------------------------
+
+xfig_new_png
+
+ SYNOPSIS
+  Create an object that encapsulates a png image
+
+ USAGE
+  obj = xfig_new_png(String_Type filename);
+
+ QUALIFIERS
+  ; depth: XFig depth
+  ; x0: x-position (default: 0)
+  ; y0: y-position (default: 0)
+  ; z0: z-position (default: 0)
+  ; just=[jx,jy]: justification (default: [0,0])
+
+ DESCRIPTION
+  `xfig_new_png' reads the image dimensions from the file header
+  and passes them to `xfig_new_pict'. See its documentation for
+  a detailed description of the qualifiers.
+
+ SEE ALSO
+  xfig_new_pict
 
 --------------------------------------------------------------
 

@@ -50,6 +50,22 @@ private define read_png_chunk (fd)
 % Interlace method:   1 byte
 
 define xfig_new_png (file)
+%!%+
+%\function{xfig_new_png}
+%\synopsis{Create an object that encapsulates a png image}
+%\usage{obj = xfig_new_png(String_Type filename);}
+%\qualifiers
+%\qualifier{depth}{XFig depth}
+%\qualifier{x0}{x-position}{0}
+%\qualifier{y0}{y-position}{0}
+%\qualifier{z0}{z-position}{0}
+%\qualifier{just=[jx,jy]}{justification}{[0,0]}
+%\description
+%  \sfun{xfig_new_png} reads the image dimensions from the file header
+%  and passes them to \sfun{xfig_new_pict}. See its documentation for
+%  a detailed description of the qualifiers.
+%\seealso{xfig_new_pict}
+%!%-
 {
    variable fd = open_png (file);
    variable length, type, data, crc;
@@ -65,5 +81,5 @@ define xfig_new_png (file)
    width *= xfig_get_display_pix_size ();
    height *= xfig_get_display_pix_size ();
    
-   return xfig_new_pict (file, width, height);
+   return xfig_new_pict (file, width, height;; __qualifiers);
 }

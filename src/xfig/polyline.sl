@@ -926,8 +926,8 @@ private define pict_center_pict (pict, X, dx, dy)
 %  This function creates an object containing the specified image file
 %  and scales it to the specified width an height.  The resulting
 %  object containing the image will be centered at (0,0,0).
-% 
 %\qualifiers
+%\qualifier{depth}{XFig depth}
 %\qualifier{x0}{x-position}{0}
 %\qualifier{y0}{y-position}{0}
 %\qualifier{z0}{z-position}{0}
