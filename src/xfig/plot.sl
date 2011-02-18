@@ -1109,39 +1109,17 @@ private define get_axis_objects (axis) %{{{
 }
 %}}}
 
-private define render_tics_for_axis (axis, fp) %{{{
-{
-   variable object;
-   foreach object (get_axis_objects (axis))
-     object.render (fp);
-}
-%}}}
-
-private define render_plot_axes (p, fp) %{{{
-{
-   variable axis;
-   foreach axis ([p.x1axis, p.y1axis, p.x2axis, p.y2axis])
-     render_tics_for_axis (axis, fp);
-}
-%}}}
-
-private define translate_axis (axis, X) %{{{
-{
-   axis.X = vector_sum (axis.X, X);
-   variable object;
-   foreach object (get_axis_objects (axis))
-     object.translate (X);
-}
-%}}}
-
 private define plot_translate (p, X) %{{{
 {
    p = p.plot_data;
    p.X = vector_sum (p.X, X);
-   translate_axis (p.x1axis, X);
-   translate_axis (p.x2axis, X);
-   translate_axis (p.y1axis, X);
-   translate_axis (p.y2axis, X);
+   variable axis, object;
+   foreach axis ([p.x1axis, p.x2axis, p.y1axis, p.y2axis])
+     {
+	axis.X = vector_sum (axis.X, X);
+	foreach object (get_axis_objects (axis))
+	  object.translate (X);
+     }
    p.object_list.translate(X);
    if (p.title_object != NULL)
      p.title_object.translate(X);
@@ -1266,7 +1244,10 @@ private define plot_render (p, fp) %{{{
      p.title_object.render (fp);
 
    % It looks better when the axes are rendered after the plot object
-   render_plot_axes (p, fp);
+   variable axis, object;
+   foreach axis ([p.x1axis, p.y1axis, p.x2axis, p.y2axis])
+     foreach object (get_axis_objects (axis))
+       object.render (fp);
 }
 %}}}
 
