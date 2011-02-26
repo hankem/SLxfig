@@ -175,3 +175,5 @@ Changes since 0.1.0
     (Manfred Hanke).
 88. src/xfig/plot.sl: Change 67 introduced duplicate tic marks for grids running
     from, e.g, 0 to 30000.
+89. src/xfig/plot.sl: Remove NaNs and Infs when determining the axis
+    limits from the data.
