@@ -32,7 +32,6 @@
 
  QUALIFIERS
   ; verbose=intval: if >=0, the fig2dev command is displayed
-  ; clean: remove the .fig file
 
  SEE ALSO
   xfig_set_verbose

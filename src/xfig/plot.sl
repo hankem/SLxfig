@@ -1739,7 +1739,8 @@ private define do_world_method (nth, nargs) %{{{
      {
 	if (xlog) xdata = xdata[where (xdata>0)];
 	if (ylog) ydata = ydata[where (ydata>0)];
-
+	xdata = xdata [wherenot (isnan(xdata) or isinf(xdata))];
+	ydata = ydata [wherenot (isnan(ydata) or isinf(ydata))];
 	(x0, x1) = (min(xdata), max(xdata));
 	(y0, y1) = (min(ydata), max(ydata));
      }
