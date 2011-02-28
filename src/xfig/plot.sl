@@ -1210,12 +1210,9 @@ private define get_list_bbox (list)
 private define get_axis_bbox (axis)
 {
    variable X0 = axis.X, X1 = X0+axis.dX;
-   variable bbox = [_min(X0.x,X1.x),
-		    _max(X0.x,X1.x),
-		    _max(X0.y,X1.y),
-		    _max(X0.y,X1.y),
-		    _max(X0.z,X1.z),
-		    _max(X0.z,X1.z)];
+   variable bbox = [_min(X0.x,X1.x), _max(X0.x,X1.x),
+		    _min(X0.y,X1.y), _max(X0.y,X1.y),
+		    _min(X0.z,X1.z), _max(X0.z,X1.z)];
    return merge_bbox (bbox, get_list_bbox (get_axis_objects(axis)));
 }
 
