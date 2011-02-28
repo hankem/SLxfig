@@ -185,3 +185,5 @@ Changes since 0.1.0
       - plots can include Xfig arrows
       - filled plot symbols do not require explicit area fill style = 20
       - plots support depth qualifier for pngs / picts
+91. src/xfig/plot.sl: tweaked the axis bbox code to fix a bbox problem in
+    #90.

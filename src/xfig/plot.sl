@@ -1093,19 +1093,19 @@ private define add_axis (p, axis, wcs_type, major_tics, minor_tics) %{{{
 
 private define get_axis_objects (axis) %{{{
 {
-   variable object, objects = {};
-   if (axis!=NULL)
-     foreach object ([axis.line,
-		      axis.major_tic_marks,
-		      axis.tic_label_objects,
-		      axis.minor_tic_marks,
-		      axis.axis_label
-		     ])
-       if (object!=NULL)
-	 list_append(objects, object);
+   if (axis == NULL)
+     return {};
 
-   return qualifier_exists("on_stack") ? __push_list(objects)
-				       : objects;  % list_to_array(objects, Struct_Type);
+   variable objects =
+     {
+	axis.line,
+	axis.major_tic_marks,
+	axis.tic_label_objects,
+	axis.minor_tic_marks,
+	axis.axis_label,
+     };
+
+   return objects [wherenot (_isnull(list_to_array(objects, Struct_Type)))];
 }
 %}}}
 
@@ -1183,11 +1183,41 @@ private define plot_set_attr (p, attr, val)
 {
 }
 
-private define get_axis_bbox (axis) %{{{
+private define merge_bbox (bbox1, bbox2)
 {
-   return xfig_new_compound (get_axis_objects (axis; on_stack)).get_bbox ();
+   if (bbox1 == NULL)
+     return bbox2;
+   if (bbox2 == NULL)
+     return bbox1;
+
+   variable bbox = _max(bbox1, bbox2);
+   bbox[[::2]] = _min(bbox1, bbox2)[[::2]];
+   return bbox;
 }
-%}}}
+
+private define get_list_bbox (list)
+{
+   variable bbox = NULL;
+   foreach (list)
+     {
+	variable object = ();
+	if (object == NULL) continue;
+	bbox = merge_bbox (bbox, [object.get_bbox ()]);
+     }
+   return bbox;
+}
+
+private define get_axis_bbox (axis)
+{
+   variable X0 = axis.X, X1 = X0+axis.dX;
+   variable bbox = [_min(X0.x,X1.x),
+		    _max(X0.x,X1.x),
+		    _max(X0.y,X1.y),
+		    _max(X0.y,X1.y),
+		    _max(X0.z,X1.z),
+		    _max(X0.z,X1.z)];
+   return merge_bbox (bbox, get_list_bbox (get_axis_objects(axis)));
+}
 
 private define plot_get_bbox (p) %{{{
 {
@@ -1195,43 +1225,23 @@ private define plot_get_bbox (p) %{{{
    variable xmin, xmax, ymin, ymax, zmin, zmax;
    variable x0, x1, y0, y1, z0, z1;
 
-   (xmin, xmax, ymin, ymax, zmin, zmax) = get_axis_bbox (p.x1axis);
-   foreach ([p.x2axis, p.y1axis, p.y2axis])
-     {
-	variable axis = ();
-	(x0, x1, y0, y1, z0, z1) = get_axis_bbox (axis);
-	if (x0 < xmin) xmin = x0;
-	if (x1 > xmax) xmax = x1;
-	if (y0 < ymin) ymin = y0;
-	if (y1 > ymax) ymax = y1;
-	if (z0 < zmin) zmin = z0;
-	if (z1 > zmax) zmax = z1;
-     }
-   foreach (p.object_list)
-     {
-	variable obj = ();
-	(x0, x1, y0, y1, z0, z1) = obj.get_bbox ();
-	if (x0 < xmin) xmin = x0;
-	if (x1 > xmax) xmax = x1;
-	if (y0 < ymin) ymin = y0;
-	if (y1 > ymax) ymax = y1;
-	if (z0 < zmin) zmin = z0;
-	if (z1 > zmax) zmax = z1;
-     }
+   variable bbox = get_axis_bbox (p.x1axis);
+   bbox = merge_bbox (bbox, get_axis_bbox (p.x2axis));
+   bbox = merge_bbox (bbox, get_axis_bbox (p.y1axis));
+   bbox = merge_bbox (bbox, get_axis_bbox (p.y2axis));
 
-   obj = p.title_object;
-   if (obj != NULL)
+   foreach ({p.object_list, {p.title_object}})
      {
-	(x0, x1, y0, y1, z0, z1) = obj.get_bbox ();
-	if (x0 < xmin) xmin = x0;
-	if (x1 > xmax) xmax = x1;
-	if (y0 < ymin) ymin = y0;
-	if (y1 > ymax) ymax = y1;
-	if (z0 < zmin) zmin = z0;
-	if (z1 > zmax) zmax = z1;
+	variable objects = ();
+	foreach (objects)
+	  {
+	     variable o = ();
+	     if (o == NULL)
+	       continue;
+	     bbox = merge_bbox (bbox, [o.get_bbox ()]);
+	  }
      }
-
-   return xmin, xmax, ymin, ymax, zmin, zmax;
+   return bbox[0], bbox[1], bbox[2], bbox[3], bbox[4], bbox[5];
 }
 %}}}
 
