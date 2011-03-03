@@ -971,12 +971,9 @@ private define get_bbox_compound (c)
      {
 	variable obj = ();
 	(x0, x1, y0, y1, z0, z1) = obj.get_bbox ();
-	if (x0 < xmin) xmin = x0;
-	if (x1 > xmax) xmax = x1;
-	if (y0 < ymin) ymin = y0;
-	if (y1 > ymax) ymax = y1;
-	if (z0 < zmin) zmin = z0;
-	if (z1 > zmax) zmax = z1;
+	xmin = _min(xmin, x0); xmax = _max(xmax, x1);
+	ymin = _min(ymin, y0); ymax = _max(ymax, y1);
+	zmin = _min(zmin, z0); zmax = _max(zmax, z1);
      }
    return xmin, xmax, ymin, ymax, zmin, zmax;
 }
