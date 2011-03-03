@@ -10,7 +10,7 @@ define xfig_new_grid (nx, ny, dx, dy)
 {
    variable lenx, leny;
    variable X;
-   
+
    leny = ny * dy;
    lenx = nx * dx;
 
@@ -30,7 +30,7 @@ define xfig_new_grid (nx, ny, dx, dy)
 	list.insert (X);
 	x += dx;
      }
-   
+
    xs = [0, lenx];
    y = 0;
    loop (ny)
@@ -39,7 +39,7 @@ define xfig_new_grid (nx, ny, dx, dy)
 	list.insert (X);
 	y += dy;
      }
-   
+
    %return list;
    return xfig_new_compound (border, list);
 }
@@ -48,7 +48,7 @@ define xfig_new_grid (nx, ny, dx, dy)
 
 define xfig_new_block (dx, dy, dz)
 {
-   variable block = xfig_new_polygon_list ();   
+   variable block = xfig_new_polygon_list ();
    variable X, p, obj;
 
    variable zeros = [0,0,0,0,0];
@@ -101,7 +101,7 @@ define xfig_new_random_polyline (dx, dy, dz, max_points)
    x = 2*(0.5-urand(max_points));
    y = 2*(0.5-urand(max_points));
    z = 2*(0.5-urand(max_points));
-   
+
    variable i = where (x*x + y*y + z*z < 1.0);
    return xfig_new_polyline (vector (dx*x[i], dy*y[i], dz*z[i]));
 }
@@ -176,8 +176,6 @@ define xfig_new_hedgehog (radius, n)
    return h;
 }
 
-
-
 define xfig_new_polyline_with_arrow (X, width, height)
 {
    variable x = X.x, y = X.y, z = X.z;
@@ -196,4 +194,3 @@ define xfig_new_polyline_with_arrow (X, width, height)
    return xfig_new_compound (line, a);
 }
 
-			      

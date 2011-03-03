@@ -7,17 +7,17 @@
 %       { attributes }
 %    }
 % Then the polyline list would look like:
-% 
+%
 %    { basic methods
 %      attribute_methods
 %      { attributes }
 %      list ...
 %    }
 %  Polygon List would look like:
-%  
+%
 %    { basic methods
 %      }
-%      
+%
 %
 private variable SUBTYPE_POLYLINE	= 1;
 private variable SUBTYPE_BOX		= 2;
@@ -63,7 +63,6 @@ variable XFIG_ARROWTYPE_POINTED  = 3;  % Closed with "pointed" butt
 
 variable XFIG_ARROWSTYLE_HOLLOW  = 0;  % Hollow (actually filled with white)
 variable XFIG_ARROWSTYLE_FILLED  = 1;  % Filled with pen_color
-
 
 private define set_line_style (obj, val)
 {
@@ -161,11 +160,11 @@ private define write_arrow (fp, a, X, i1, i2)
      dX = vector (1, 0, 0);
    (x2,y2) = xfig_project_to_xfig_plane (vector_sum (X2, vector_mul(width, dX)));
    width = sqrt ((x2-x1)^2+(y2-y1)^2);
-   
+
    width = xfig_convert_units (width);
    height = xfig_convert_units (height);
-   xfig_vwrite (fp, " %d %d %g %g %g\n", 
-		a.arrow_type, a.arrow_style, a.arrow_thickness, 
+   xfig_vwrite (fp, " %d %d %g %g %g\n",
+		a.arrow_type, a.arrow_style, a.arrow_thickness,
 		width, height);
 }
 
@@ -174,7 +173,7 @@ private define write_polyline_header (fp, p, n)
    xfig_vwrite (fp, "%d %d %d %d %d %d %d %d %d %g %d %d %d %d %d %d\n",
 		2, p.sub_type, p.line_style, p.thickness, p.pen_color,
 		p.fill_color, p.depth, p.pen_style, p.area_fill, p.style_val,
-		p.join_style, p.cap_style, p.radius, 
+		p.join_style, p.cap_style, p.radius,
 		(p.forward_arrow != NULL), (p.backward_arrow != NULL), n);
 }
 
@@ -183,7 +182,7 @@ private define make_polyline_header_string (p)
    return sprintf ("%d %d %d %d %d %d %d %d %d %g %d %d %d %d %d",
 		   2, p.sub_type, p.line_style, p.thickness, p.pen_color,
 		   p.fill_color, p.depth, p.pen_style, p.area_fill, p.style_val,
-		   p.join_style, p.cap_style, p.radius, 
+		   p.join_style, p.cap_style, p.radius,
 		   (p.forward_arrow != NULL), (p.backward_arrow != NULL));
 }
 
@@ -241,7 +240,7 @@ private define write_one_polyline (fp, p, X)
 
    if (p.forward_arrow != NULL)
      write_arrow (fp, p.forward_arrow, X, -2, -1);
-   
+
    if (p.backward_arrow != NULL)
      write_arrow (fp, p.backward_arrow, X, 1, 0);
 
@@ -269,7 +268,7 @@ private define polyline_scale ()
 
    variable obj, sx, sy, sz;
    (obj, sx, sy, sz) = _xfig_get_scale_args (_NARGS);
-   
+
    variable X = obj.X;
    X.x *= sx;
    X.y *= sy;
@@ -357,7 +356,7 @@ define xfig_new_polyline (X) %{{{
 %\seealso{xfig_create_arrow}
 %!%-
 {
-   if ((_NARGS>1) 
+   if ((_NARGS>1)
        || (typeof(X)!=Vector_Type) && (typeof(X) != Struct_Type))
      {
 	variable x, y, z, zeros = 0*X;
@@ -374,7 +373,7 @@ define xfig_new_polyline (X) %{{{
 	X.y = [X.y, X.y[0]];
 	X.z = [X.z, X.z[0]];
      }
-   
+
    variable p = @Polyline_Type;
    p.sub_type = SUBTYPE_POLYLINE;
    p.X = X;
@@ -418,7 +417,7 @@ define xfig_new_polyline (X) %{{{
 
 %------------------------------------------------------------------------
 % Polyline_List
-% 
+%
 % All objects in the polyline list have the same attributes.
 %------------------------------------------------------------------------
 %{{{
@@ -432,11 +431,11 @@ private define polyline_list_render_to_fp (p, fp)
 	write_one_polyline (fp, p, X);
      }
 #else
-   
+
    % Since a polyline list has the same attributes, avoid the expensive
    % call to write_polyline_header
    variable hdrstr = make_polyline_header_string (p);
-   
+
    foreach (p.list)
      {
 	variable X = ();
@@ -458,7 +457,7 @@ private define polyline_list_render_to_fp (p, fp)
 
 	if (p.forward_arrow != NULL)
 	  write_arrow (fp, p.forward_arrow, X, -2, -1);
-   
+
 	if (p.backward_arrow != NULL)
 	  write_arrow (fp, p.backward_arrow, X, 1, 0);
 
@@ -515,26 +514,20 @@ private define polyline_list_get_bbox (obj)
      {
 	variable X = ();
 	variable tmp;
-	
+
 	tmp = X.x;
-	x0 = min (tmp);
-	if (x0 < xmin) xmin = x0;
-	x1 = max (tmp);
-	if (x1 > xmax) xmax = x1;
-	
+	xmin = _min (xmin, min(tmp));
+	xmax = _max (xmax, max(tmp));
+
 	tmp = X.y;
-	y0 = min (tmp);
-	if (y0 < ymin) ymin = y0;
-	y1 = max (tmp);
-	if (y1 > ymax) ymax = y1;
+	ymin = _min (ymin, min(tmp));
+	ymax = _max (ymax, max(tmp));
 
 	tmp = X.z;
-	z0 = min (tmp);
-	if (z0 < zmin) zmin = z0;
-	z1 = max (tmp);
-	if (z1 > zmax) zmax = z1;
+	zmin = _min (zmin, min(tmp));
+	zmax = _max (zmax, max(tmp));
      }
-   
+
    return xmin, xmax, ymin, ymax, zmin, zmax;
 }
 
@@ -546,7 +539,7 @@ private define polyline_list_insert (p, X)
 define xfig_new_polyline_list ()
 {
    variable p = xfig_new_polyline (vector(0,0,0));
-   
+
    p = struct_combine (p, struct { insert=&polyline_list_insert, list={} });
 
    p.render_to_fp = &polyline_list_render_to_fp;
@@ -594,11 +587,11 @@ define xfig_new_polygon (X)
    variable x0 = vector (x[0], y[0], z[0]);
    variable x1 = vector (x[1], y[1], z[1]);
    variable x2 = vector (x[2], y[2], z[2]);
-   
-   variable p = 
+
+   variable p =
      struct_combine (xfig_new_polyline (X;; __qualifiers()),
 		     struct {
-			n = crossprod (vector_diff (x1, x0), 
+			n = crossprod (vector_diff (x1, x0),
 				       vector_diff (x2, x1))
 		     });
    normalize_vector (p.n);
@@ -606,14 +599,13 @@ define xfig_new_polygon (X)
    return p;
 }
 
-
 %}}}
 
 %------------------------------------------------------------------------
-% Polygon_List 
-% 
+% Polygon_List
+%
 % A Polygon_List_Type consists of a linked list of (closed) polygons.
-% When rendered, it properly takes into account the position of the polygons 
+% When rendered, it properly takes into account the position of the polygons
 % with respect to the viewer.
 %
 % If drawing 3d objects, then use polygons and not polylines.
@@ -686,7 +678,6 @@ private define polygon_list_render_to_fp (obj, fp)
      }
 }
 
-
 private define polygon_list_set_line_style (obj, val)
 {
    foreach (obj.list)
@@ -746,7 +737,6 @@ define xfig_new_polygon_list ()
    });
 }
 
-
 %}}}
 
 %-----------------------------------------------------------------------
@@ -779,8 +769,8 @@ private define pict_get_bbox (p)
 {
    variable X = p.X;
    variable dx, dy, dz, x, y, z;
-   dx = 0.5*max(abs(p.bbox_x));
-   dy = 0.5*max(abs(p.bbox_y));
+   dx = 0.5*maxabs(p.bbox_x);
+   dy = 0.5*maxabs(p.bbox_y);
    dz = 0.0;
    x = X.x; y = X.y; z = X.z;
    return x-dx, x+dx, y-dy, y+dy, z, z+dz;
@@ -881,7 +871,7 @@ private define pict_scale_pict ()
      {
 	(pict, sx, sy) = ();
      }
-   
+
    pict.bbox_x *= sx;
    pict.bbox_y *= sy;
 }
@@ -889,7 +879,7 @@ private define pict_scale_pict ()
 % FIXME: This does not look right
 define pict_get_pict_bbox (pict)
 {
-   return max(abs(pict.bbox_x)), max(abs(pict.bbox_y));
+   return maxabs(pict.bbox_x), maxabs(pict.bbox_y);
 }
 
 %!%+
@@ -899,8 +889,8 @@ define pict_get_pict_bbox (pict)
 %\description
 % This function takes a pict object and centers it in a box whose width
 % is \var{dx} and whose height is \var{dy}.  The vector \var{X} denotes the
-% position of the lower-left corner of the box.  If the pict object is too 
-% big to fit in the box, then its lower-left corner will coincide with the 
+% position of the lower-left corner of the box.  If the pict object is too
+% big to fit in the box, then its lower-left corner will coincide with the
 % lower-left corner of the box.
 %\seealso{xfig_translate_object}
 %!%-
@@ -916,7 +906,6 @@ private define pict_center_pict (pict, X, dx, dy)
      xoff = 0.0*dx;		       %  used to be 0.1*dx
    pict_translate (pict, vector_sum(X, vector (xoff, yoff, 0)));
 }
-
 
 %!%+
 %\function{xfig_new_pict}
@@ -966,7 +955,7 @@ define xfig_new_pict (file, dx, dy)
    p.scale = &pict_scale;
    p.rotate = &pict_rotate;
    p.get_bbox = &pict_get_bbox;
-   
+
    variable just = qualifier ("just");
    if (just != NULL)
      {
@@ -983,7 +972,7 @@ define xfig_new_pict (file, dx, dy)
 define xfig_new_pyramid (n, radius, height)
 {
    variable a = xfig_new_polygon_list ();
-   
+
    variable thetas = [n:0:-1]*(2*PI)/n;
 
    variable xs = radius * cos (thetas);
@@ -992,7 +981,7 @@ define xfig_new_pyramid (n, radius, height)
    % base
    variable X = vector (xs, ys, Double_Type[n+1]);
    a.insert (xfig_new_polygon (X));
-   
+
    _for (0, n-1, 1)
      {
 	variable i = ();
