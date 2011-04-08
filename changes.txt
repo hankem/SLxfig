@@ -190,3 +190,4 @@ Changes since 0.1.0
 92. src/xfig/plot.sl: silly error introduced by #91 fixed (Manfred
     Hanke).
 93. Used _min/_max in various places for bbox computations.
+94. src/xfig/plot.sl: Add support for lists in convert_to_array.

@@ -13,6 +13,8 @@ private define convert_to_array (s, n) %{{{
    variable type = typeof (s);
    if (type == Array_Type)
      return s;
+   if (type == List_Type)
+     return s; % list_to_array (s);
 
    variable a = type[n];
    a[*] = s;
