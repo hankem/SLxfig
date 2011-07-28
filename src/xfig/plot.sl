@@ -1325,7 +1325,7 @@ private define get_reftype_qualifier (name, defval)
    variable val = qualifier (name, defval);
    if (typeof (val) == Ref_Type)
      {
-	if (@val == NULL) @val = defval;
+	if (not __is_initialized (val) || (@val == NULL)) @val = defval;
 	val = @val;
      }
    return val;

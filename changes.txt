@@ -191,3 +191,5 @@ Changes since 0.1.0
     Hanke).
 93. Used _min/_max in various places for bbox computations.
 94. src/xfig/plot.sl: Add support for lists in convert_to_array.
+95. src/xfig/plot.sl: Allow uninitialized reference in
+    get_reftype_qualifier.
