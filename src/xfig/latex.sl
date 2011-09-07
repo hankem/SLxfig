@@ -9,6 +9,12 @@ private variable Latex_Default_Color = "black";
 private variable Latex_Default_Font_Style = "\bf\boldmath"R;
 private variable Use_Eps2Eps = 0;
 
+try
+{
+   require ("chksum");		       %  for sha1
+}
+catch ImportError;
+
 private variable Supported_Font_Sizes =
 [
    "\\tiny", "\\scriptsize", "\\footnotesize", "\\small", "\\normalsize",
@@ -38,10 +44,26 @@ define xfig_get_autoeps_dir ()
    return EPS_Dir;
 }
 
-private define make_autoeps_file (base)
+
+private define make_sha1_cached_filename (sha1, ext)
 {
-   base = path_concat (xfig_get_autoeps_dir (), base);
-   return xfig_make_tmp_file (base, ".eps");
+   variable dir = path_concat (xfig_get_autoeps_dir (),
+			       sprintf ("%c%c", sha1[0], sha1[1]));
+   return path_concat (dir, strcat (sha1, ext));
+}
+
+private define make_autoeps_file (base, sha1)
+{
+   if (sha1 == NULL)
+     {
+	base = path_concat (xfig_get_autoeps_dir (), base);
+	return xfig_make_tmp_file (base, ".eps");
+     }
+   variable file = make_sha1_cached_filename (sha1, ".eps");
+   variable dir = path_dirname (file);
+   if ((-1 == mkdir (dir)) && (errno != EEXIST))
+     throw OSError, sprintf ("Unable to mkdir %s: %s", dir, errno_string());
+   return file;
 }
 
 private define make_tmp_latex_file (base)
@@ -368,6 +390,28 @@ private define escape_latex_string (str)
    return strtrans (str, "\n\t", "\001\002");
 }
 
+private define find_cached_file_sha1 (sha1, ext)
+{
+   variable file = make_sha1_cached_filename (sha1, ext);
+   if (-1 == access (file, R_OK))
+     file = NULL;
+   return file;
+}
+
+private define upgrade_autoeps_file_to_sha1 (epsfile, sha1)
+{
+   variable sha1file = make_sha1_cached_filename (sha1, ".eps");
+   variable dir = path_dirname (sha1file);
+   () = mkdir (dir);
+   if (-1 == rename (epsfile, sha1file))
+     {
+	throw OSError, sprintf ("Unable to rename %s to %s: %s",
+				epsfile, sha1file, errno_string ());
+     }
+   return sha1file;
+}
+
+
 private define add_to_cache (epsfile, escaped_str)
 {
    if (NULL == stat_file (epsfile))
@@ -442,6 +486,9 @@ private define find_cached_file (str)
    if (-1 == access (file, R_OK))
      {
 	assoc_delete_key (Latex_Cache, str);
+#ifexists sha1sum
+	save_cache ();		       %  shrink the cache table on disk
+#endif
 	file = NULL;
      }
    return file;
@@ -451,7 +498,24 @@ private define latex_xxx2eps (env, envargs, xxx, base, fontstruct)
 {
    variable str = make_latex_string (env, envargs, xxx, fontstruct;; __qualifiers);
    variable hash = escape_latex_string (str);
-   variable epsfile = find_cached_file (hash);
+   variable sha1, epsfile;
+
+#ifexists sha1sum
+   sha1 = sha1sum (hash);
+   epsfile = find_cached_file_sha1 (sha1, ".eps");
+   if (epsfile == NULL)
+     {
+	epsfile = find_cached_file (hash);
+	if (epsfile != NULL)
+	  {
+	     epsfile = upgrade_autoeps_file_to_sha1 (epsfile, sha1);
+	     save_cache ();
+	  }
+     }
+#else
+   epsfile = find_cached_file (hash);
+   sha1 = NULL;
+#endif
 
    if (epsfile != NULL)
      {
@@ -463,15 +527,19 @@ private define latex_xxx2eps (env, envargs, xxx, base, fontstruct)
      }
 
    variable tex = make_tmp_latex_file (base);
-   epsfile = make_autoeps_file (base);
+
+   epsfile = make_autoeps_file (base, sha1);
 
    write_latex_file (tex, str);
 
    run_latex (tex);
    run_dvips (path_sans_extname (tex) + ".dvi", epsfile ;; __qualifiers);
 
-   add_to_cache (epsfile, hash);
-   save_cache ();
+   if (sha1 == NULL)
+     {
+	add_to_cache (epsfile, hash);
+	save_cache ();
+     }
 
    return epsfile;
 }

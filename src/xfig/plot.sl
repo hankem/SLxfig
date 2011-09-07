@@ -969,6 +969,8 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
 	axis.major_tics = major_tics[i];
 	if (axis.user_specified_tic_labels != NULL)
 	  axis.user_specified_tic_labels = axis.user_specified_tic_labels[i];
+	if (axis.user_specified_major_tics != NULL)
+	  axis.user_specified_major_tics = axis.user_specified_major_tics[i];
 	if (minor_tics != NULL)
 	  minor_tics = minor_tics[where (xmin <= minor_tics <= xmax)];
 	axis.minor_tics = minor_tics;

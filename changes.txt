@@ -193,3 +193,6 @@ Changes since 0.1.0
 94. src/xfig/plot.sl: Add support for lists in convert_to_array.
 95. src/xfig/plot.sl: Allow uninitialized reference in
     get_reftype_qualifier.
+96. src/xfig/latex.sl: If the chksum module is present, use it create
+    autoeps cache filenames based upon the sha1 checksum of the latex
+    code.  This makes the separate epscache.dat file obsolete.
