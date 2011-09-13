@@ -30,6 +30,7 @@ define xfig_new_legend (labels, colors, linestyles, thicknesses, width) %{{{
 %\qualifiers
 %\qualifier{areafill=intval}{}{20}
 %\qualifier{fillcolor=strval}{}{"white"}
+%\qualifier{labelsize=strval}{}{"large"}
 %\description
 %  The \sfun{xfig_new_legend} function creates a legend object suitable for adding
 %  to a plot.  The legend will consist of ...
@@ -51,7 +52,7 @@ define xfig_new_legend (labels, colors, linestyles, thicknesses, width) %{{{
      {
 	variable i = ();
 
-	variable obj = xfig_new_text (labels[i]);
+	variable obj = xfig_new_text (labels[i]; size=qualifier("labelsize", "large"));
 	xfig_justify_object (obj, vector (x,y,0), vector (-0.5, 0.5, 0));
 	legend.insert (obj);
 

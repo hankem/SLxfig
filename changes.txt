@@ -196,3 +196,4 @@ Changes since 0.1.0
 96. src/xfig/latex.sl: If the chksum module is present, use it create
     autoeps cache filenames based upon the sha1 checksum of the latex
     code.  This makes the separate epscache.dat file obsolete.
+97. Added labelsize qualifier to xfig_new_legend.
