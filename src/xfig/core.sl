@@ -357,6 +357,8 @@ xfig_set_output_driver("ps", "fig2dev -L ps -c -z %P %I %O");
 xfig_set_output_driver("pdf", "fig2dev -L pdf -c -z %P %I %O");
 xfig_set_output_driver("png", "fig2dev -L png %I %O");
 xfig_set_output_driver("gif", "fig2dev -L gif %I %O");
+xfig_set_output_driver("jpg", "fig2dev -L jpeg %I %O");
+xfig_set_output_driver("jpeg", "fig2dev -L jpeg %I %O");
 
 % Colors
 private variable Color_Type = struct
