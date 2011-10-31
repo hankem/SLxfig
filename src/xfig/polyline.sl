@@ -792,16 +792,6 @@ private define pict_scale ()
    %polyline_list_scale (p, sx, sy, sz);
 }
 
-private define pict_rotate (p, axis, theta)
-{
-   p.X = vector_rotate (p.X, axis, theta);
-}
-
-private define pict_translate (p, dX)
-{
-   p.X += dX;
-}
-
 define pict_rotate_pict () %{{{
 %!%+
 %\function{pict.rotate_pict}
@@ -848,6 +838,25 @@ define pict_rotate_pict () %{{{
    pict.bbox_y = bbox_y;
 }
 %}}}
+
+private define pict_rotate (p, axis, theta)
+{
+   p.X = vector_rotate (p.X, axis, theta);
+   % pict objects cannot be rotated at arbitrary angles.
+   variable costheta = dotprod (axis, vector(0,0,1))/vector_norm(axis);
+   if (feqs (abs(costheta), 1))
+     {
+	theta *= 180.0/PI;
+	if (costheta < 0) {theta = -theta; costheta = -costheta;}
+	p.rotate_pict (theta);
+     }
+}
+
+private define pict_translate (p, dX)
+{
+   p.X += dX;
+}
+
 
 private define pict_scale_pict ()
 %!%+

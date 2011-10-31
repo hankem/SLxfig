@@ -197,3 +197,6 @@ Changes since 0.1.0
     autoeps cache filenames based upon the sha1 checksum of the latex
     code.  This makes the separate epscache.dat file obsolete.
 97. Added labelsize qualifier to xfig_new_legend.
+98. src/xfig/core.sl: Added jpeg output option.
+99. src/xfig/polyline.sl: pict.rotate was not rotating the actual pict
+    objec, just its bbox.
