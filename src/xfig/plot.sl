@@ -1331,6 +1331,7 @@ private define get_reftype_qualifier (name, defval)
 	if (not __is_initialized (val) || (@val == NULL)) @val = defval;
 	val = @val;
      }
+   if (val == NULL) val = defval;
    return val;
 }
 
