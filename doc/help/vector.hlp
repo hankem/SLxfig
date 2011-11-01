@@ -1,0 +1,390 @@
+Vector_Type
+
+ SYNOPSIS
+  vector data type
+
+ DESCRIPTION
+  The data type used by various vector functions
+  is defined as a structure with the fields
+
+    x, y, z
+
+  A vector can be initialized, e.g., by
+
+    v = vector(x, y ,z);
+
+  The following common operators can be used for vector arithmetics:
+     +/-  : addition/subtraction of scalars or vectors
+      *   : scaling of vectors or dot product of vectors
+      ^   : cross product of two vectors
+    !=/== : (in)equality of two vectors
+     sqr  : scalar product of a vector with itself
+     abs  : norm of a vector
+
+ SEE ALSO
+  vector
+
+--------------------------------------------------------------
+
+vector
+
+ SYNOPSIS
+  returns a vector object given by its cartesian or spherical coordinates
+
+ USAGE
+  Vector_Type vector(Double_Type x, y, z)
+  % or
+  Vector_Type vector(Double_Type r, phi, theta; sph)
+
+ QUALIFIERS
+  ; sph: consider the given coordinates to be spherical (r, phi, theta)
+
+ DESCRIPTION
+  The components of the vector are returned within the Vector_Type
+  and are accessible like a structure with the fields x, y, and z.
+  If the `sph' qualifier is given, the cartesian coordinates are
+  calculated as
+
+    [x, y, z] =
+        r * [cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]
+
+
+ SEE ALSO
+  Vector_Type
+
+--------------------------------------------------------------
+
+dotprod
+
+ SYNOPSIS
+  calculates the dot product of the given vectors
+
+ USAGE
+  Double_Type dotprod(Vector_Type a, b)
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The dot product is calculated as
+
+    a.x*b.x + a.y*b.y + a.z*b.z
+
+
+ SEE ALSO
+  vector
+
+--------------------------------------------------------------
+
+crossprod
+
+ SYNOPSIS
+  calculates the cross product of the given vectors
+
+ USAGE
+  Vector_Type crossprod(a, b)
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The returned vector is calculated as
+
+    x = a.y*b.z - b.y*a.z
+    y = a.z*b.x - b.z*a.x
+    z = a.x*b.y - b.x*a.y
+
+
+ SEE ALSO
+  vector
+
+--------------------------------------------------------------
+
+vector_sqr
+
+ SYNOPSIS
+  returns the scalar product of the given vector with itself
+
+ USAGE
+  Double_Type vector_sqr(Vector_Type v)
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The scalar product of the given vector is returned using
+
+    dotprod(v, v)
+
+
+ SEE ALSO
+  dotprod, vector
+
+--------------------------------------------------------------
+
+vector_norm
+
+ SYNOPSIS
+  returns the norm of the given vector
+
+ USAGE
+  Double_Type vector_norm(Vector_Type v)
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The norm of the given vector is calculated as
+
+    sqrt(v.x^2 + v.y^2 + v.z^2)
+
+
+ SEE ALSO
+  vector_sqr, vector
+
+--------------------------------------------------------------
+
+normalize_vector
+
+ SYNOPSIS
+  normalizes the given vector
+
+ USAGE
+  normalize_vector(Vector_Type v);
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The given vector is normalized such that
+
+    vector_norm(v) = 1
+
+
+ SEE ALSO
+  vector_norm, vector
+
+--------------------------------------------------------------
+
+unit_vector
+
+ SYNOPSIS
+  normalizes the given vector
+
+ USAGE
+  Vector_Type unit_vector(Vector_Type v)
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The given vector is normalized such that
+
+    vector_norm(v) = 1
+
+
+ SEE ALSO
+  normalize_vector
+
+--------------------------------------------------------------
+
+vector_sum
+
+ SYNOPSIS
+  calculates the sum of two vectors
+
+ USAGE
+  Vector_Type vector_sum(Vector_Type a, b)
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The components of the two given vectors are
+  added and the resulting vector is returned.
+  Instead of calling this function, operator
+  arithmetic can be used as well:
+
+    a + b
+
+
+ SEE ALSO
+  vector_diff, vector
+
+--------------------------------------------------------------
+
+vector_a_plus_bt
+
+ SYNOPSIS
+  calculates the time dependent sum of two vectors
+
+ USAGE
+  Vector_Type vector_a_plus_bt(Vector_Type a, b, Double_Type t)
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The components of the second vector are scaled
+  by t and added to the first vector:
+
+    a + t*b
+
+  This can be done by pure operator arithmetic as
+  well as using other functions like
+
+    vector_sum(a, vector_mul(t, b))
+
+
+ SEE ALSO
+  vector_sum, vector_mul, vector
+
+--------------------------------------------------------------
+
+vector_diff
+
+ SYNOPSIS
+  calculates the difference of two vectors
+
+ USAGE
+  Vector_Type vector_diff(Vector_Type a, b)
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The components of the two given vectors are
+  subtracted and the resulting vector is returned.
+  Instead of calling this function, operator
+  arithmetic can be used as well:
+
+    a - b
+
+
+ SEE ALSO
+  vector_sum, vector
+
+--------------------------------------------------------------
+
+vector_mul
+
+ SYNOPSIS
+  the given vector is scaled by a scalar
+
+ USAGE
+  Vector_Type vector_mul(Double_Type a, Vector_Type v)
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The components of the given vector are scaled
+  by a scalar and the resulting vector is returned.
+  Instead of calling this function, operator
+  arithmetic can be used as well:
+
+    a*v
+
+
+ SEE ALSO
+  vector
+
+--------------------------------------------------------------
+
+vector_change_basis
+
+ SYNOPSIS
+  applies a basis transformation to the given vector
+
+ USAGE
+  Vector_Type vector_change_basis(Vector_Type v, e1, e2, e3)
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The components of the given vector are transformed into
+  the new basis given by the unit vectors e1, e2 and e3:
+
+    v.x*e1 + v.y*e2 + v.z*e3
+
+
+ SEE ALSO
+  unit_vector, vector
+
+--------------------------------------------------------------
+
+vector_rotate
+
+ SYNOPSIS
+  rotates the given vector around another vector
+
+ USAGE
+  Vector_Type vector_rotate(Vector_Type v, n, Double_Type theta)
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The vector v is rotated around the given vector n
+  by the angle theta:
+
+      cos(theta)*v
+    + dotprod(v,n)*(1-cos(theta))*n
+    + sin(theta)*crossprod(n,v)
+
+
+ SEE ALSO
+  dotprod, crossprod, vector
+
+--------------------------------------------------------------
+
+vector_get_transformation
+
+ SYNOPSIS
+  finds a rotation axis and angle that will produce the given basis
+
+ USAGE
+  (Vector_Type, Double_Type) vector_get_transformation(Vector_Type x1_hat, y1_hat);
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The orthonormal basis, given by the unit vectors
+  x1_hat, y1_hat and x1_hat cross y1_hat = z1_hat,
+  can be produced by a transformation of the
+  standard orthonormal basis
+
+    (1,0,0), (0,1,0), (0,0,1)
+
+  by rotation around an axis and angle, which are
+  returned by this function.
+
+ SEE ALSO
+  vector_rotate, vector_change_basis, unit_vector, vector
+
+--------------------------------------------------------------
+
+vector_chs
+
+ SYNOPSIS
+  inverts the given vector
+
+ USAGE
+  Vector_Type vector_chs(Vector_Type v)
+
+ QUALIFIERS
+  none
+
+ DESCRIPTION
+  The components of the given vector are
+  inverted such that
+
+    v + vector_chs(v) = (0, 0, 0)
+
+
+ SEE ALSO
+  vector_sum, vector
+
+--------------------------------------------------------------

@@ -1,5 +1,7 @@
 private define render_ellipse_to_fp (e, fp)
 {
+   ifnot (_xfig_render_depth (e;; __qualifiers))
+     return;
    variable x, y;
    (x,y) = xfig_project_to_xfig_plane (e.X);
    variable center_x = x[0];
@@ -185,6 +187,9 @@ define xfig_new_ellipse () %{{{
 %\qualifier{fillcolor}{}{-1}
 %\qualifier{areafill}{darkness or pattern}{-1 or 20, depending on \exmp{fillcolor}}
 %\qualifier{depth}{XFig depth}{50}
+%\qualifier{x0}{x-position}{0}
+%\qualifier{y0}{y-position}{0}
+%\qualifier{z0}{z-position}{0}
 %!%-
 {
    if (_xfig_check_help (_NARGS, _function_name;; __qualifiers)) return;
@@ -225,7 +230,9 @@ define xfig_new_ellipse () %{{{
 
      % The shape of the ellipse can be described by
      % 3 points that specify the center, major, and minor axes.
-     X = vector ([0,a,0], [0,0,b], [0,0,0])
+     X = vector (qualifier ("x0", 0) + [0,a,0],
+		 qualifier ("y0", 0) + [0,0,b],
+		 qualifier ("z0", 0) + [0,0,0])
    });
 
    obj.render_to_fp = &render_ellipse_to_fp;

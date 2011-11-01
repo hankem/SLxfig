@@ -1072,7 +1072,10 @@ private define position_axis_label (axis) %{{{
 private define add_axis_label (p, axis, label) %{{{
 {
    if (label == NULL)
-     return;
+     {
+	axis.axis_label = NULL;
+	return;
+     }
 
    axis.axis_label = xfig_new_text (label ;; __qualifiers);
 
@@ -1250,16 +1253,16 @@ private define plot_get_bbox (p) %{{{
 private define plot_render (p, fp) %{{{
 {
    p = p.plot_data;
-   p.object_list.render (fp);
+   p.object_list.render (fp;; __qualifiers);
 
    if (p.title_object != NULL)
-     p.title_object.render (fp);
+     p.title_object.render (fp;; __qualifiers);
 
    % It looks better when the axes are rendered after the plot object
    variable axis, object;
    foreach axis ([p.x1axis, p.y1axis, p.x2axis, p.y2axis])
      foreach object (get_axis_objects (axis))
-       object.render (fp);
+       object.render (fp;; __qualifiers);
 }
 %}}}
 
@@ -1788,6 +1791,9 @@ private define world2_method () %{{{
 %!%+
 %\function{xfig_plot.world2}
 %\synopsis{define a plot's second world coordinate system}
+%\qualifiers
+%\qualifier{xticlabels}{flag whether (1) or not (0) to draw ticlabels on x2axis}{1}
+%\qualifier{yticlabels}{flag whether (1) or not (0) to draw ticlabels on y2axis}{1}
 %\seealso{xfig_plot.world}
 %!%-
 {
@@ -1795,8 +1801,8 @@ private define world2_method () %{{{
    variable w, args;
    args = __pop_args (_NARGS-1);
    w = ();
-   w.plot_data.x2axis.draw_tic_labels = 1;
-   w.plot_data.y2axis.draw_tic_labels = 1;
+   w.plot_data.x2axis.draw_tic_labels = qualifier("xticlabels", 1);
+   w.plot_data.y2axis.draw_tic_labels = qualifier("yticlabels", 1);
    return do_world_method (w, __push_args(args), 2, _NARGS ;; __qualifiers);
 }
 %}}}
@@ -1991,7 +1997,7 @@ private define plot_err (p, err_axis, val_const, val_err, err) %{{{
 %\qualifier{eb_color=intval}{color of error bars}{\exmp{color} qualifier}
 %\qualifier{eb_width=intval}{thickness of error bars}{\exmp{width} qualifier}
 %\qualifier{eb_depth=intval}{Xfig depth of error bars}{\exmp{depth} qualifier}
-%\qualifier{[x,y]eb_factor=intval}{terminal size of error bars}{1}
+%\qualifier{[x,y]eb_factor=intval}{terminal size of error bars}{0}
 %\qualifier{[x,y]min_max}{Asymmetric error bars are already min/max values.}
 %\description
 %  Asymmetric error bars are specified as lists of negative and positive errors.
@@ -2042,7 +2048,7 @@ private define plot_err (p, err_axis, val_const, val_err, err) %{{{
    variable val_err0 = scale_coords_for_axis (a_err, len_err, val_err - err_neg);
    variable val_err1 = scale_coords_for_axis (a_err, len_err, val_err + err_pos);
 
-   variable term_factor = qualifier (err_axis+"eb_factor", qualifier ("eb_factor", 1));
+   variable term_factor = qualifier (err_axis+"eb_factor", qualifier ("eb_factor", 0));
    variable dt = abs (ERRBAR_TERMINAL_SIZE * term_factor);
    variable lines = xfig_new_polyline_list ();
    _for i (0, length (val_const)-1, 1)
@@ -2444,27 +2450,24 @@ private define initialize_plot (p, x, y) %{{{
 
    variable logx, logy;
    (logx, logy) = get_log_qualifiers (;;__qualifiers);
-   logx = logx || x1axis.islog;
-   logy = logy || y1axis.islog;
 
-   variable xmin = NULL, xmax = NULL;
    if ((x != NULL) && (y != NULL))
      {
 	if (not d.world1_inited
-	    || (logx && ((x1axis.xmin <= 0) || (x1axis.xmax <= 0)))
-	    || (logy && ((y1axis.xmin <= 0) || (y1axis.xmax <= 0))))
+	    || ((logx || x1axis.islog) && ((x1axis.xmin <= 0) || (x1axis.xmax <= 0)))
+	    || ((logy || y1axis.islog) && ((y1axis.xmin <= 0) || (y1axis.xmax <= 0))))
 	  do_world_method (p, x, y, 1, 3;; __qualifiers);
 
 	if (not d.world2_inited
-	    || (logx && ((x2axis.xmin <= 0) || (x2axis.xmax <= 0)))
-	    || (logy && ((y2axis.xmin <= 0) || (y2axis.xmax <= 0))))
+	    || ((logx || x2axis.islog) && ((x2axis.xmin <= 0) || (x2axis.xmax <= 0)))
+	    || ((logy || y2axis.islog) && ((y2axis.xmin <= 0) || (y2axis.xmax <= 0))))
 	  do_world_method (p, x, y, 2, 3;; __qualifiers);
      }
 
-   check_axis (p, d.x1axis, &x1axis_method, 1, logx);
-   check_axis (p, d.x2axis, &x2axis_method, 0, logx);
-   check_axis (p, d.y1axis, &y1axis_method, 1, logy);
-   check_axis (p, d.y2axis, &y2axis_method, 0, logy);
+   check_axis (p, d.x1axis, &x1axis_method, 1, logx || x1axis.islog);
+   check_axis (p, d.x2axis, &x2axis_method, 0, logx || x2axis.islog);
+   check_axis (p, d.y1axis, &y1axis_method, 1, logy || y1axis.islog);
+   check_axis (p, d.y2axis, &y2axis_method, 0, logy || y2axis.islog);
 }
 %}}}
 
@@ -2561,13 +2564,12 @@ private define plot_histogram (w, xpts, ypts) %{{{
    variable len2 = 2*length(xpts);
    variable x = Double_Type[len2];
    variable y = Double_Type[len2];
-   variable i;
-   y[0] = 0;  % could be generalized by a qualifier
+   y[0] = qualifier("y_first", ypts[0]); 
    x[[0::2]] = xpts;
    x[[1::2]] = xpts;
    y[[1:len2-3:2]] = ypts;
    y[[2:len2-2:2]] = ypts;
-   y[-1] = y[0];
+   y[-1] = qualifier("y_last", ypts[-1]);
 
    y[where (isnan (y))] = 0.0;
    initialize_plot (w, x, y ;;__qualifiers);
@@ -2637,6 +2639,7 @@ private define hplot_method () %{{{
 % % qualifiers to specifiy the world coordinate system,
 %   see \sfun{xfig_plot--wcs}
 %
+% % qualifiers for lines (defaults for error bars):
 %\qualifier{width}{line thickness}
 %\qualifier{color}{line color}
 %\qualifier{line}{line style}
@@ -2646,6 +2649,10 @@ private define hplot_method () %{{{
 %
 % % qualifiers for error bars:
 %   see \sfun{xfig_plot--errorbars}
+%
+% % qualifiers for histogram:
+%\qualifier{y_first}{y-value of first bin's vertical line}
+%\qualifier{y_last}{y-value of last bin's vertical line}
 %\description
 %  \exmp{x} is an array of lower bin boundaries corresponding
 %  to the histogram values \exmp{y}. If \exmp{length(x)==length(y)+1},
@@ -3004,6 +3011,7 @@ private define title_method () %{{{
 
    % remove the existing title
    p.title_object = NULL;
+   if (title == NULL) return;
 
    (,,,y,,z) = w.get_bbox ();
 

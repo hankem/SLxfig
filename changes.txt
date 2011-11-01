@@ -201,3 +201,5 @@ Changes since 0.1.0
 99. src/xfig/polyline.sl: pict.rotate was not rotating the actual pict
     objec, just its bbox.
 100. src/xfig/plot.sl: Allow the depth qualifier to be NULL.
+101. Added patches from Manfred: documentation updates, render to a
+     specified depth, different dvips methods.

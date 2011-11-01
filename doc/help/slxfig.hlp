@@ -31,6 +31,7 @@
   and runs Xfig's `fig2dev' program on it.
 
  QUALIFIERS
+  ; depth=intarray: if specified, only objects of these depths are rendered
   ; verbose=intval: if >=0, the fig2dev command is displayed
 
  SEE ALSO
@@ -125,6 +126,32 @@ xfig_clip_polyline2d
 
  SEE ALSO
   xfig_clip_polygon2d, xfig_new_polyline_list
+
+--------------------------------------------------------------
+
+xfig_compound.append
+
+ SYNOPSIS
+  Append one or more xfig objects to a compound
+
+ USAGE
+  xfig_compound.append(<xfig_object> o[, ...]);
+
+ SEE ALSO
+  xfig_compound.insert
+
+--------------------------------------------------------------
+
+xfig_compound.insert
+
+ SYNOPSIS
+  Insert one or more xfig objects to a compound
+
+ USAGE
+  xfig_compound.insert(<xfig_object> o[, ...]);
+
+ SEE ALSO
+  xfig_compound.append
 
 --------------------------------------------------------------
 
@@ -422,6 +449,25 @@ xfig_new_ellipse
   ; fillcolor: (default: -1)
   ; areafill: darkness or pattern (default: -1 or 20, depending on `fillcolor')
   ; depth: XFig depth (default: 50)
+  ; x0: x-position (default: 0)
+  ; y0: y-position (default: 0)
+  ; z0: z-position (default: 0)
+
+--------------------------------------------------------------
+
+xfig_new_eps
+
+ SYNOPSIS
+  Create an SLxfig picture object from an eps file
+
+ USAGE
+  obj = xfig_new_eps(String_Type filename);
+
+ QUALIFIERS
+  All qualifiers are passed to the `xfig_new_pict' function.
+
+ SEE ALSO
+  xfig_new_pict
 
 --------------------------------------------------------------
 
@@ -455,6 +501,7 @@ xfig_new_legend
  QUALIFIERS
   ; areafill=intval: (default: 20)
   ; fillcolor=strval: (default: "white")
+  ; labelsize=strval: (default: "large")
 
  DESCRIPTION
   The `xfig_new_legend' function creates a legend object suitable for adding
@@ -573,7 +620,7 @@ xfig_new_text
   ; style=strval: (default: "\bf\boldmath"R)
   ; size=strval: (default: "\normalsize"R)
   ; rotate=angle: rotate text by `angle' in degrees (default: 0)
-  ; eps2eps: run eps2eps after dvips -- still experimental!
+  ; dvi2eps_method:
   ; x0: x-position (default: 0)
   ; y0: y-position (default: 0)
   ; z0: z-position (default: 0)
@@ -633,7 +680,7 @@ xfig_plot--errorbars
   ; eb_color=intval: color of error bars (default: `color' qualifier)
   ; eb_width=intval: thickness of error bars (default: `width' qualifier)
   ; eb_depth=intval: Xfig depth of error bars (default: `depth' qualifier)
-  ; [x,y]eb_factor=intval: terminal size of error bars (default: 1)
+  ; [x,y]eb_factor=intval: terminal size of error bars (default: 0)
   ; [x,y]min_max: Asymmetric error bars are already min/max values.
 
  DESCRIPTION
@@ -808,6 +855,7 @@ xfig_plot.hplot
  % qualifiers to specifiy the world coordinate system,
    see `xfig_plot--wcs'
 
+ % qualifiers for lines (defaults for error bars):
   ; width: line thickness
   ; color: line color
   ; line: line style
@@ -817,6 +865,10 @@ xfig_plot.hplot
 
  % qualifiers for error bars:
    see `xfig_plot--errorbars'
+
+ % qualifiers for histogram:
+  ; y_first: y-value of first bin's vertical line
+  ; y_last: y-value of last bin's vertical line
 
  DESCRIPTION
   `x' is an array of lower bin boundaries corresponding
@@ -1006,6 +1058,10 @@ xfig_plot.world2
 
  SYNOPSIS
   define a plot's second world coordinate system
+
+ QUALIFIERS
+  ; xticlabels: flag whether (1) or not (0) to draw ticlabels on x2axis (default: 1)
+  ; yticlabels: flag whether (1) or not (0) to draw ticlabels on y2axis (default: 1)
 
  SEE ALSO
   xfig_plot.world

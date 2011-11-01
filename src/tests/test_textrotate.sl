@@ -2,35 +2,35 @@
 
 define slsh_main ()
 {
-   variable angle, col, tone, files={};
-   variable failed = 0;
-   variable passed = 0;
-   foreach angle ([0, 30, 180.0/PI])
+   variable method, angle, col, tone, fname, e, t;
+   variable autoepsdir = xfig_get_autoeps_dir();
+   foreach method ([0, 2, 3, 4, 1])
      {
-	foreach col (["blue", "green", "red"])
-	  foreach tone (["4", ""])
-	    {
-	       variable q = struct { color=col+tone };
-	       if (angle!=0) q = struct { @q, rotate=angle };
-	       variable fname
-		 = sprintf ("rotate%d-%s%s.png", int(angle), col, tone);
-	       message("Trying "+fname+"...");
-	       variable e;
-	       try (e)
-		 {
-		    variable t = xfig_new_text(fname;; q);
-		 }
-	       catch AnyError:
-		 {
-		    failed++;
-		    vmessage ("ERROR:%s:%s:%S",__argv[0], fname, e.message);
-		    continue;
-		 }
-	       t.render(path_concat (OutDir, fname));
-	       list_append(files, fname);
-	       passed++;
-	    }
+        vmessage ("\ndvi2eps_method=%d", method);
+        xfig_set_autoeps_dir ("$autoepsdir/$method"$);
+	variable outdir = "$OutDir/$method"$;
+	() = mkdir (outdir);
+	variable failed=0, passed=0;
+	foreach angle ([0, 30, 180/PI])
+	  foreach col (["black", "blue", "green", "red"])
+	    foreach tone (col=="black" ? [""] : ["4", ""])
+	      {
+		 fname = sprintf ("rotate%.f-%s%s", angle, col, tone);
+		 vmessage ("  trying %s...", fname);
+		 try (e)
+		   t = xfig_new_text (fname; dvi2eps_method=method, rotate=angle, color=col+tone);
+		 catch AnyError:
+		   {
+		      failed++;
+		      vmessage ("  ERROR:%s:%s:%S", __argv[0], fname, e.message);
+		      continue;
+		   }
+		 t.render (path_concat (outdir, fname+".eps"));
+		 t.render (path_concat (outdir, fname+".png"));
+		 t.render (path_concat (outdir, fname+".pdf"));
+		 passed++;
+	      }
+	if (failed) vmessage ("***%s: Failed: %d/%d", __argv[0], failed, failed+passed);
+	vmessage ("Check output files in %s", outdir);
      }
-   if (failed) vmessage ("***%s: Failed: %d/%d", __argv[0], failed, failed+passed);
-   vmessage ("Check output files in %s", OutDir);
 }

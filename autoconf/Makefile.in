@@ -3,8 +3,17 @@
 @SET_MAKE@
 SHELL = /bin/sh
 
-all:
+all: makefiles
 	cd src; $(MAKE) all
+Makefile: configure autoconf/Makefile.in
+	@echo "Makefile is older than the configure script".
+	@echo "Please re-run the configure script."
+	@exit 1
+src/Makefile: configure src/Makefile.in src/config.hin
+	@echo "src/Makefile is older than its dependencies".
+	@echo "Please re-run the configure script."
+	@exit 1
+makefiles: Makefile src/Makefile
 clean:
 	cd src; $(MAKE) clean
 	cd examples/plot; $(MAKE) clean	
@@ -12,6 +21,8 @@ clean:
 distclean: clean
 	cd src; $(MAKE) distclean
 	/bin/rm -f config.log config.cache config.status Makefile
+update-help:
+	cd doc/tm; $(MAKE) install clean
 install:
 	cd src; $(MAKE) install
 #
@@ -23,5 +34,5 @@ autoconf/config.guess: /usr/share/misc/config.guess
 autoconf/config.sub: /usr/share/misc/config.sub
 	/bin/cp -f /usr/share/misc/config.sub autoconf/config.sub
 #
-.PHONY: all install clean update
+.PHONY: all install clean update makefiles
 #

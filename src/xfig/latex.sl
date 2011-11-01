@@ -3,26 +3,11 @@
 
 %{{{ Tmpfile and Dir handling Functions
 
-private variable Latex_Packages = {"amsmath", "color"};
-private variable Latex_Font_Size = 12;
-private variable Latex_Default_Color = "black";
-private variable Latex_Default_Font_Style = "\bf\boldmath"R;
-private variable Use_Eps2Eps = 0;
+try require ("chksum");		       %  for sha1
+catch AnyError;
 
-try
-{
-   require ("chksum");		       %  for sha1
-}
-catch ImportError;
-
-private variable Supported_Font_Sizes =
-[
-   "\\tiny", "\\scriptsize", "\\footnotesize", "\\small", "\\normalsize",
-     "\\large","\\Large", "\\LARGE", "\\huge", "\\Huge"
-];
-
-private variable Preamble_Commands = NULL;
 private variable EPS_Dir = NULL;
+private variable Latex_Cache = NULL;
 
 define xfig_set_autoeps_dir (dir)
 {
@@ -34,6 +19,7 @@ define xfig_set_autoeps_dir (dir)
 	  dir = path_concat(cwd, dir);
      }
    EPS_Dir = dir;
+   Latex_Cache = NULL;
 }
 
 define xfig_get_autoeps_dir ()
@@ -43,7 +29,6 @@ define xfig_get_autoeps_dir ()
 
    return EPS_Dir;
 }
-
 
 private define make_sha1_cached_filename (sha1, ext)
 {
@@ -75,11 +60,8 @@ private define make_tmp_latex_file (base)
 
 %{{{ Running LaTeX and dvips
 
-private variable LaTeX_Pgm = "latex -halt-on-error -interaction=batchmode";
-private variable LaTeX_Pgm = "latex -interaction=batchmode";
 private variable LaTeX_Pgm = "latex";
-private variable Dvips_Pgm = "dvips -E";
-private variable Eps2eps_Pgm = "ps2epsi";
+private variable Dvi2Eps_Method = 0;
 
 private define run_cmd (do_error, cmd)
 {
@@ -119,18 +101,51 @@ private define run_latex (file)
 
 private define run_dvips (dvi, eps)
 {
-   if (qualifier_exists("eps2eps") || Use_Eps2Eps)
-     {
-	variable tmp_eps = xfig_make_tmp_file (path_basename_sans_extname(eps), ".eps");
-	() = run_cmd (1, sprintf ("%s %s -o %s", Dvips_Pgm, dvi, tmp_eps));
-	() = run_cmd (1, sprintf ("%s '%s' '%s'", Eps2eps_Pgm, tmp_eps, eps));
-	() = remove (tmp_eps);
-	return;
-     }
-   () = run_cmd (1, sprintf ("%s '%s' -o '%s'", Dvips_Pgm, dvi, eps));
+   variable tmp_eps = xfig_make_tmp_file (path_basename_sans_extname(eps), ".eps");
+   variable tmp_ps = path_sans_extname (tmp_eps) + ".ps";
+
+   switch (qualifier ("dvi2eps_method", Dvi2Eps_Method))
+    { case 0:  % works fine for non-rotated text, but clips BoundingBox for rotated text
+	() = run_cmd (1, sprintf ("dvips -E '%s' -o '%s'", dvi, eps));
+    }
+    { case 1:  % eps output is ugly, also when converted to png, but okay when converted to pdf.
+	       % eps2eps does not preserve the text (in vector format)!
+	       % eps2eps sometimes generates 0 size bounding box, causing gs to produce NaNs.
+	() = run_cmd (1, sprintf ("dvips -E '%s' -o '%s'", dvi, tmp_eps));
+	() = run_cmd (1, sprintf ("eps2eps '%s' '%s'", tmp_eps, eps));
+    }
+    { case 2:  % ps2epsi fails for some colors including #FF00000
+	() = run_cmd (1, sprintf ("dvips -E '%s' -o '%s'", dvi, tmp_eps));
+	() = run_cmd (1, sprintf ("ps2epsi '%s' '%s'", tmp_eps, eps));
+      % () = remove (tmp_eps);	% tidy up tmp dir?
+    }
+    { case 3:  % ps2eps sometimes clips BoundingBox for rotated text (despite the -B option)
+	() = run_cmd (1, sprintf ("dvips '%s' -o '%s'", dvi, tmp_ps));
+	() = run_cmd (1, sprintf ("ps2eps -B -f '%s'", tmp_ps));
+	() = run_cmd (1, sprintf ("mv '%s' '%s'", tmp_eps, eps));  % S-Lang's `rename' might fail
+      % () = remove (tmp_ps);  % tidy up tmp dir?
+    }
+    { case 4:  % ps2eps with --loose (does not produce a tight BoundingBox)
+	() = run_cmd (1, sprintf ("dvips '%s' -o '%s'", dvi, tmp_ps));
+	() = run_cmd (1, sprintf ("ps2eps -l -B -f '%s'", tmp_ps));
+	() = run_cmd (1, sprintf ("mv '%s' '%s'", tmp_eps, eps));  % S-Lang's `rename' might fail
+      % () = remove (tmp_ps);  % tidy up tmp dir?
+    }
 }
 
 %}}}
+
+private variable Latex_Packages = {"amsmath", "color"};
+private variable Latex_Font_Size = 12;
+private variable Latex_Default_Color = "black";
+private variable Latex_Default_Font_Style = `\bf\boldmath`;
+private variable Supported_Font_Sizes =
+[
+ `\tiny`, `\scriptsize`, `\footnotesize`, `\small`, `\normalsize`,
+ `\large`, `\Large`, `\LARGE`, `\huge`, `\Huge`
+];
+
+private variable Preamble_Commands = NULL;
 
 define xfig_get_eps_bbox (file)
 {
@@ -176,8 +191,6 @@ define xfig_get_eps_bbox (file)
      }
    verror ("Bad or no bounding box in EPS file %s", file);
 }
-
-private variable Equation_Number = 0;
 
 private define output (fp, s)
 {
@@ -383,8 +396,6 @@ private define make_latex_string (env, envargs, text, fontstruct)
    return strcat (str, make_latex_env (env, envargs, text));
 }
 
-private variable Latex_Cache = NULL;
-
 private define escape_latex_string (str)
 {
    return strtrans (str, "\n\t", "\001\002");
@@ -410,7 +421,6 @@ private define upgrade_autoeps_file_to_sha1 (epsfile, sha1)
      }
    return sha1file;
 }
-
 
 private define add_to_cache (epsfile, escaped_str)
 {
@@ -549,6 +559,8 @@ private define xfig_text2eps (text, fontstruct)
    return latex_xxx2eps (NULL, NULL, text, "text", fontstruct;; __qualifiers);
 }
 
+private variable Equation_Number = 0;
+
 private define equation_function_env (eq, env, fontstruct)
 {
    Equation_Number++;
@@ -580,6 +592,14 @@ define xfig_eqnarray2eps ()
 }
 
 define xfig_new_eps (file)
+%!%+
+%\function{xfig_new_eps}
+%\synopsis{Create an SLxfig picture object from an eps file}
+%\usage{obj = xfig_new_eps(String_Type filename);}
+%\qualifiers
+%  All qualifiers are passed to the \sfun{xfig_new_pict} function.
+%\seealso{xfig_new_pict}
+%!%-
 {
    variable x0, x1, y0, y1;
    (x0, y0, x1, y1) = xfig_get_eps_bbox (file);
@@ -616,7 +636,7 @@ define xfig_new_text () %{{{
 %\qualifier{style=strval}{}{"\\bf\\boldmath"R}
 %\qualifier{size=strval}{}{"\\normalsize"R}
 %\qualifier{rotate=angle}{rotate text by \exmp{angle} in degrees}{0}
-%\qualifier{eps2eps}{run eps2eps after dvips -- still experimental!}
+%\qualifier{dvi2eps_method}{}
 %\qualifier{x0}{x-position}{0}
 %\qualifier{y0}{y-position}{0}
 %\qualifier{z0}{z-position}{0}
@@ -640,7 +660,7 @@ define xfig_new_text () %{{{
 %#c  |   |   +-> extra_packages
 %#c  |   |   +-> preamble
 %#c  |   + run_dvips
-%#c  |     +-> eps2eps
+%#c  |     +-> dvi2eps_method
 %#c  + xfig_new_eps
 %#c    + xfig_new_pict
 %#c      +-> x0, y0, z0
@@ -663,7 +683,7 @@ define xfig_new_text () %{{{
         if (rotate mod 90 != 0)
           {
              text = sprintf ("\\rotatebox{%S}{%s}", rotate, text);
-             q = struct_combine (q, struct{extra_packages="graphicx", eps2eps=1});
+             q = struct_combine (struct{extra_packages="graphicx", dvi2eps_method=2}, q);
           }
         else
           theta = rotate;
@@ -728,7 +748,7 @@ define xfig_get_latex_preamble ()
    return Preamble_Commands;
 }
 
-define xfig_use_eps2eps (enable)
+define xfig_dvi2eps_method (method)
 {
-   Use_Eps2Eps = enable;
+   Dvi2Eps_Method = method;
 }

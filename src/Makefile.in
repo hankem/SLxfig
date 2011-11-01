@@ -6,7 +6,7 @@
 MODULES = gcontour-module.so
 SL_FILES = gcontour.sl xfig.sl vector.sl
 XFIG_SL_FILES = xfig/*.sl
-HLP_FILES = ../doc/help/slxfig.hlp ../doc/help/gcontour.hlp
+HLP_FILES = ../doc/help/slxfig.hlp ../doc/help/gcontour.hlp ../doc/help/vector.hlp
 MODULE_VERSION	= `./mkversion.sh`
 
 #---------------------------------------------------------------------------

@@ -23,6 +23,8 @@
 @examples/Makefile.sub
 @examples/run.sl 0755
 @examples/slxfigrc
+@examples/3d/rotating_cube.sl
+@examples/3d/Makefile
 @examples/draw/inclinometer.sl
 @examples/draw/Makefile
 @examples/pict/colormaps.sl
@@ -74,3 +76,4 @@
 @src/tests/test_plot_scale.sl
 @src/tests/test_plot_ticlabels-confine.sl
 @src/tests/test_textrotate.sl
+@src/tests/test_world1log_world2lin.sl

@@ -31,7 +31,6 @@ define _xfig_check_help (nargs, fname)
    return 1;
 }
 
-
 private variable Focus = vector (0, 0, 0);
 private variable Eye = vector (0, 0, 1e6);
 private variable EF_Len, EF_x, EF_y, EF_z;
@@ -154,7 +153,6 @@ define xfig_get_eye ()
    return Eye;
 }
 
-
 define xfig_set_focus (X)
 %!%+
 %\function{xfig_set_focus}
@@ -177,7 +175,6 @@ define xfig_get_focus ()
 {
    return Focus;
 }
-
 
 define xfig_convert_inches (x)
 {
@@ -672,11 +669,12 @@ private define default_render ()
 %  \sfun{xfig_close_file} finally closes the file
 %  and runs Xfig's \exmp{fig2dev} program on it.
 %\qualifiers
+%\qualifier{depth=intarray}{if specified, only objects of these depths are rendered}
 %\qualifier{verbose=intval}{if >=0, the fig2dev command is displayed}
 %\seealso{xfig_set_verbose}
 %!%-
 {
-   if (_xfig_check_help (0, "<xfig_object>.render";; __qualifiers))  return;
+   if (_xfig_check_help (_NARGS, "<xfig_object>.render";; __qualifiers))  return;
    variable dev=(), obj=();
 
    variable rac;
@@ -700,7 +698,7 @@ private define default_render ()
 	  begin_render_as_compound (obj, fp);
      }
 
-   obj.render_to_fp (fp);
+   obj.render_to_fp (fp;; __qualifiers);
 
    if (rac)
      end_render_as_compound (obj, fp);
@@ -787,7 +785,6 @@ private define default_justify ()
    xfig_justify_object (__push_list (args);; __qualifiers);
 }
 
-
 private define default_method1 (obj, arg1);
 private define default_method2 (obj, arg1, arg2);
 private define default_method3 (obj, arg1, arg2, arg3);
@@ -863,6 +860,12 @@ define _xfig_get_scale_args (nargs)
      }
 
    usage (".scale: Expecting 1, 2, or 3 scale parameters");
+}
+
+define _xfig_render_depth (obj)
+{
+   variable depth = qualifier ("depth");
+   return depth==NULL ? 1 : any (obj.depth==depth);
 }
 
 private define translate_compound (c, dX)
@@ -989,14 +992,32 @@ private define render_compound_to_fp (c, fp)
      }
 }
 
-private define compound_insert (obj, item)
+private define compound_insert ()
+%!%+
+%\function{xfig_compound.insert}
+%\synopsis{Insert one or more xfig objects to a compound}
+%\usage{xfig_compound.insert(<xfig_object> o[, ...]);}
+%\seealso{xfig_compound.append}
+%!%-
 {
-   list_insert (obj.list, item);
+   variable arg = __pop_list (_NARGS-1);
+   variable list = ().list;
+   foreach arg (arg)
+     list_insert (list, arg);
 }
 
-private define compound_append (obj, item)
+private define compound_append ()
+%!%+
+%\function{xfig_compound.append}
+%\synopsis{Append one or more xfig objects to a compound}
+%\usage{xfig_compound.append(<xfig_object> o[, ...]);}
+%\seealso{xfig_compound.insert}
+%!%-
 {
-   list_append (obj.list, item);
+   variable arg = __pop_list (_NARGS-1);
+   variable list = ().list;
+   foreach arg (arg)
+     list_append (list, arg);
 }
 
 define xfig_new_compound_list ()
@@ -1045,7 +1066,6 @@ define xfig_new_compound ()
      }
    return c;
 }
-
 
 define xfig_new_vbox_compound ()
 %!%+
@@ -1236,7 +1256,6 @@ define xfig_set_verbose (n)
 {
    _XFig_Verbose = n;
 }
-
 
 private variable Temp_File_List = {};
 define xfig_add_tmp_file (file)

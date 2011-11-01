@@ -31,3 +31,7 @@
 
 * duplicate method for XFig_Object's
 -> allow xfig_multiplot to operate on copies of plots
+
+
+* define an empty picture object that could be returned
+  by xfig_new_text when called with NULL or ""

@@ -10,19 +10,17 @@ SL2TM = tm-strip
 TMSORT = tm-sort
 
 MODULE = slxfig
-GCONTOUR = gcontour
-HLPFUNS_TM = 
-AUTOGEN_TM = slxfigfuns.tm 
+AUTOGEN_TM = $(MODULE)funs.tm
 MODULE_DEPS = $(AUTOGEN_TM)
 
-TXT_FILES = $(MODULE).txt 
+TXT_FILES = $(MODULE).txt
 SGML_FILES = $(MODULE).sgml
 HTML_FILES = $(MODULE).html
 TEX_FILES = $(MODULE).tex
-PS_FILES = $(MODULE).ps 
+PS_FILES = $(MODULE).ps
 PDF_FILES = $(MODULE).pdf
 HLP_FILE = $(MODULE).hlp
-HLP_FILES = $(HLP_FILE) gcontour.hlp
+HLP_FILES = $(HLP_FILE) gcontour.hlp vector.hlp
 
 SGML2LATEX = sgml2latex -p letter -o tex
 SGML2HTML = sgml2html
@@ -42,10 +40,10 @@ SRCDIR = `pwd`
 
 text-files: $(TXT_FILES) $(HLP_FILES)
 all: $(SGML_FILES) $(HTML_FILES) $(TEX_FILES) $(TXT_FILES)
-slxfigfuns.tm: ../../src/xfig/*.sl
-	$(SL2TM) ../../src/xfig/*.sl > slxfigfuns.tm
-	$(TMSORT) slxfigfuns.tm
-	-rm -f slxfigfuns.tm.BAK
+$(AUTOGEN_TM): ../../src/xfig/*.sl
+	$(SL2TM) $+ > $@
+	$(TMSORT) $@
+	-rm -f $@.BAK
 #----- SGML Files -----------------------------------------------------------
 $(MODULE).sgml : $(MODULE).tm $(MODULE_DEPS)
 	$(TMEXPAND) $(MODULE).tm $(MODULE).sgml
@@ -73,10 +71,12 @@ $(MODULE).txt: $(MODULE).sgml
 	$(SGML2TXT) $(MODULE).sgml
 #----------------------------------------------------------------------------
 help-files: $(HLP_FILES)
-$(HLP_FILE): slxfigfuns.tm
-	$(TM2HLP) slxfigfuns.tm $(HLP_FILE)
-gcontour.hlp:
-	$(SL2TM) ../../src/gcontour.sl | $(TM2HLP) - gcontour.hlp
+$(HLP_FILE): $(AUTOGEN_TM)
+	$(TM2HLP) $< $(HLP_FILE)
+gcontour.hlp: ../../src/gcontour.sl
+	$(SL2TM) $+ | $(TM2HLP) - $@
+vector.hlp: ../../src/vector.sl
+	$(SL2TM) $+ | $(TM2HLP) - $@
 texclean:
 	-rm -f *.dvi *.log *.aux *.toc *.out
 clean: texclean

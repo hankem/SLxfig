@@ -1,10 +1,11 @@
 SUBDIRS = \
+  3d \
   draw \
   pict \
   plot \
   polyline
 
-png clean distclean:
+all clean distclean:
 	@for subdir in $(SUBDIRS); do \
 	  make -C $$subdir $@; \
 	done

@@ -249,6 +249,8 @@ private define write_one_polyline (fp, p, X)
 
 private define polyline_render_to_fp (p, fp)
 {
+   ifnot (_xfig_render_depth (p;; __qualifiers))
+     return;
    write_one_polyline (fp, p, p.X);
 }
 
@@ -424,6 +426,8 @@ define xfig_new_polyline (X) %{{{
 
 private define polyline_list_render_to_fp (p, fp)
 {
+   ifnot (_xfig_render_depth (p;; __qualifiers))
+     return;
 #iffalse
    foreach (p.list)
      {
@@ -560,6 +564,8 @@ define xfig_new_polyline_list ()
 %{{{
 private define polygon_render_to_fp (obj, fp)
 {
+   ifnot (_xfig_render_depth (obj;; __qualifiers))
+     return;
    variable eye = xfig_get_eye ();
    variable n = obj.n;
    variable X = obj.X;
@@ -648,6 +654,8 @@ private define sort_polygons (list)
 
 private define polygon_list_render_to_fp (obj, fp)
 {
+   ifnot (_xfig_render_depth (obj;; __qualifiers))
+     return;
    variable ps = sort_polygons (obj.list);
    variable eye = xfig_get_eye ();
    variable hide_interior = not qualifier_exists("show_interior");
@@ -746,6 +754,8 @@ define xfig_new_polygon_list ()
 %{{{
 private define pict_render_to_fp (p, fp)
 {
+   ifnot (_xfig_render_depth (p;; __qualifiers))
+     return;
    variable flipped = 0;
    variable x0, y0, x1, y1, x, y;
 

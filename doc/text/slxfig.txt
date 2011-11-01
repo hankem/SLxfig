@@ -1,6 +1,7 @@
   SLxfig Reference
-  John E. Davis, with small contributions from Manfred Hanke
-  Dec 6, 2010
+  John E. Davis, with numerous contributions from Manfred
+  Hanke
+  Oct 31, 2011
   ____________________________________________________________
 
   Table of Contents
@@ -18,67 +19,71 @@
      2.5 xfig_add_latex_package
      2.6 xfig_center_pict_in_box
      2.7 xfig_clip_polyline2d
-     2.8 xfig_create_arrow
-     2.9 xfig_ellipse.rotate
-     2.10 xfig_get_eye
-     2.11 xfig_get_eye_roll
-     2.12 xfig_get_focus
-     2.13 xfig_get_latex_preamble
-     2.14 xfig_justify_object
-     2.15 xfig_make_font
-     2.16 xfig_meshgrid
-     2.17 xfig_multiplot
-     2.18 xfig_new_color
-     2.19 xfig_new_compound
-     2.20 xfig_new_ellipse
-     2.21 xfig_new_hbox_compound
-     2.22 xfig_new_legend
-     2.23 xfig_new_pict
-     2.24 xfig_new_polyline
-     2.25 xfig_new_text
-     2.26 xfig_new_vbox_compound
-     2.27 xfig_pict.scale
-     2.28 xfig_plot--errorbars
-     2.29 xfig_plot--initialize_plot
-     2.30 xfig_plot--wcs
-     2.31 xfig_plot.add_object
-     2.32 xfig_plot.axis
-     2.33 xfig_plot.get_world
-     2.34 xfig_plot.hplot
-     2.35 xfig_plot.plot
-     2.36 xfig_plot.plot_pict
-     2.37 xfig_plot.plot_png
-     2.38 xfig_plot.shade_region
-     2.39 xfig_plot.title
-     2.40 xfig_plot.world
-     2.41 xfig_plot.world1
-     2.42 xfig_plot.world2
-     2.43 xfig_plot.x1axis
-     2.44 xfig_plot.x2axis
-     2.45 xfig_plot.x2label
-     2.46 xfig_plot.xaxis
-     2.47 xfig_plot.xfig_coords
-     2.48 xfig_plot.xlabel
-     2.49 xfig_plot.xylabel
-     2.50 xfig_plot.y1axis
-     2.51 xfig_plot.y2axis
-     2.52 xfig_plot.y2label
-     2.53 xfig_plot.yaxis
-     2.54 xfig_plot.ylabel
-     2.55 xfig_plot_add_symbol
-     2.56 xfig_plot_add_transform
-     2.57 xfig_plot_get_symbol_names
-     2.58 xfig_plot_new
-     2.59 xfig_plot_new_png
-     2.60 xfig_plot_text
-     2.61 xfig_render_object
-     2.62 xfig_set_eye
-     2.63 xfig_set_eye_roll
-     2.64 xfig_set_focus
-     2.65 xfig_set_font_style
-     2.66 xfig_set_latex_preamble
-     2.67 xfig_set_output_driver
-     2.68 xfig_set_verbose
+     2.8 xfig_compound.append
+     2.9 xfig_compound.insert
+     2.10 xfig_create_arrow
+     2.11 xfig_ellipse.rotate
+     2.12 xfig_get_eye
+     2.13 xfig_get_eye_roll
+     2.14 xfig_get_focus
+     2.15 xfig_get_latex_preamble
+     2.16 xfig_justify_object
+     2.17 xfig_make_font
+     2.18 xfig_meshgrid
+     2.19 xfig_multiplot
+     2.20 xfig_new_color
+     2.21 xfig_new_compound
+     2.22 xfig_new_ellipse
+     2.23 xfig_new_eps
+     2.24 xfig_new_hbox_compound
+     2.25 xfig_new_legend
+     2.26 xfig_new_pict
+     2.27 xfig_new_png
+     2.28 xfig_new_polyline
+     2.29 xfig_new_text
+     2.30 xfig_new_vbox_compound
+     2.31 xfig_pict.scale
+     2.32 xfig_plot--errorbars
+     2.33 xfig_plot--initialize_plot
+     2.34 xfig_plot--wcs
+     2.35 xfig_plot.add_object
+     2.36 xfig_plot.axis
+     2.37 xfig_plot.get_world
+     2.38 xfig_plot.hplot
+     2.39 xfig_plot.plot
+     2.40 xfig_plot.plot_pict
+     2.41 xfig_plot.plot_png
+     2.42 xfig_plot.shade_region
+     2.43 xfig_plot.title
+     2.44 xfig_plot.world
+     2.45 xfig_plot.world1
+     2.46 xfig_plot.world2
+     2.47 xfig_plot.x1axis
+     2.48 xfig_plot.x2axis
+     2.49 xfig_plot.x2label
+     2.50 xfig_plot.xaxis
+     2.51 xfig_plot.xfig_coords
+     2.52 xfig_plot.xlabel
+     2.53 xfig_plot.xylabel
+     2.54 xfig_plot.y1axis
+     2.55 xfig_plot.y2axis
+     2.56 xfig_plot.y2label
+     2.57 xfig_plot.yaxis
+     2.58 xfig_plot.ylabel
+     2.59 xfig_plot_add_symbol
+     2.60 xfig_plot_add_transform
+     2.61 xfig_plot_get_symbol_names
+     2.62 xfig_plot_new
+     2.63 xfig_plot_new_png
+     2.64 xfig_plot_text
+     2.65 xfig_render_object
+     2.66 xfig_set_eye
+     2.67 xfig_set_eye_roll
+     2.68 xfig_set_focus
+     2.69 xfig_set_font_style
+     2.70 xfig_set_latex_preamble
+     2.71 xfig_set_output_driver
+     2.72 xfig_set_verbose
 
 
   ______________________________________________________________________
@@ -160,6 +165,8 @@
         program on it.
 
       Qualifiers
+        ; depth=intarray: if specified, only objects of these depths are
+        rendered
         ; verbose=intval: if >=0, the fig2dev command is displayed
 
       See Also
@@ -190,8 +197,6 @@
 
       Description
         A picture object can only be rotated by multiples of 90 degrees.
-
-
   2.5.  xfig_add_latex_package
 
 
@@ -252,7 +257,31 @@
       See Also
         ``xfig_clip_polygon2d'', ``xfig_new_polyline_list''
 
-  2.8.  xfig_create_arrow
+  2.8.  xfig_compound.append
+
+
+      Synopsis
+        Append one or more xfig objects to a compound
+
+      Usage
+        xfig_compound.append(<xfig_object> o[, ...]);
+
+      See Also
+        ``xfig_compound.insert''
+
+  2.9.  xfig_compound.insert
+
+
+      Synopsis
+        Insert one or more xfig objects to a compound
+
+      Usage
+        xfig_compound.insert(<xfig_object> o[, ...]);
+
+      See Also
+        ``xfig_compound.append''
+
+  2.10.  xfig_create_arrow
 
 
       Synopsis
@@ -290,7 +319,7 @@
       See Also
         ``xfig_new_polyline''
 
-  2.9.  xfig_ellipse.rotate
+  2.11.  xfig_ellipse.rotate
 
 
       Usage
@@ -302,7 +331,7 @@
 
         The rotation angle theta is measured in radians.
 
-  2.10.  xfig_get_eye
+  2.12.  xfig_get_eye
 
 
       Synopsis
@@ -314,7 +343,7 @@
       See Also
         ``xfig_set_eye''
 
-  2.11.  xfig_get_eye_roll
+  2.13.  xfig_get_eye_roll
 
 
       Synopsis
@@ -330,7 +359,7 @@
       See Also
         ``xfig_set_eye_roll'', ``xfig_set_eye''
 
-  2.12.  xfig_get_focus
+  2.14.  xfig_get_focus
 
 
       Synopsis
@@ -342,7 +371,7 @@
       See Also
         ``xfig_set_focus''
 
-  2.13.  xfig_get_latex_preamble
+  2.15.  xfig_get_latex_preamble
 
 
       Usage
@@ -351,7 +380,7 @@
       See Also
         ``xfig_set_latex_preamble''
 
-  2.14.  xfig_justify_object
+  2.16.  xfig_justify_object
 
 
       Synopsis
@@ -390,6 +419,7 @@
         centered and vertically aligned at its lower baseline): X is the
         horizontal center of the upper vertical baseline of o such that
         obj will be placed on top of o.
+
         For dX = vector (0,-0.5,0), together with the inside qualifier:
         X is the horizontal center of the lower vertical baseline of o
         such that obj will be coaligned with o at their lower baselines.
@@ -398,7 +428,7 @@
         ``<xfig_object>.justify'', ``<xfig_object>.get_bbox'',
         ``<xfig_object>.translate''
 
-  2.15.  xfig_make_font
+  2.17.  xfig_make_font
 
 
       Synopsis
@@ -423,7 +453,7 @@
       See Also
         ``xfig_new_text''
 
-  2.16.  xfig_meshgrid
+  2.18.  xfig_meshgrid
 
 
       Synopsis
@@ -431,7 +461,6 @@
 
       Usage
         (xx,yy) = xfig_meshgrid (xx, yy)
-
       Description
         This function takes two 1-d vectors representing the orthogonal
         grids for a rectangular region in the (x,y) plane and returns
@@ -449,12 +478,13 @@
 
 
 
-  2.17.  xfig_multiplot
+  2.19.  xfig_multiplot
 
 
       Synopsis
         Create a multiplot from individual panels that share the same x-
         axes
+
       Usage
         compound = xfig_multiplot (xfig_plot p1[], p2[], ...);
 
@@ -489,11 +519,12 @@
         or whether the corresponding labels of the first or last plot
         are set (possibly overwritten).
 
-  2.18.  xfig_new_color
+  2.20.  xfig_new_color
 
 
       Synopsis
         Add a new color definition
+
 
       Usage
         xfig_new_color (name, RGB [,&id]
@@ -508,7 +539,7 @@
       See Also
         ``xfig_lookup_color_rgb'', ``xfig_lookup_color''
 
-  2.19.  xfig_new_compound
+  2.21.  xfig_new_compound
 
 
       Synopsis
@@ -521,10 +552,11 @@
         An empty compound list is created with xfig_new_compound_list.
         All arguments passed to the xfig_new_compound function are
         inserted in the newly created list.
+
       See Also
         ``xfig_new_vbox_compound'', ``xfig_new_hbox_compound''
 
-  2.20.  xfig_new_ellipse
+  2.22.  xfig_new_ellipse
 
 
       Synopsis
@@ -541,8 +573,26 @@
         ; areafill: darkness or pattern (default: -1 or 20, depending on
         fillcolor)
         ; depth: XFig depth (default: 50)
+        ; x0: x-position (default: 0)
+        ; y0: y-position (default: 0)
+        ; z0: z-position (default: 0)
 
-  2.21.  xfig_new_hbox_compound
+  2.23.  xfig_new_eps
+
+
+      Synopsis
+        Create an SLxfig picture object from an eps file
+
+      Usage
+        obj = xfig_new_eps(String_Type filename);
+
+      Qualifiers
+        All qualifiers are passed to the xfig_new_pict function.
+
+      See Also
+        ``xfig_new_pict''
+
+  2.24.  xfig_new_hbox_compound
 
 
       Synopsis
@@ -561,7 +611,7 @@
       See Also
         ``xfig_new_vbox_compound'', ``xfig_new_compound''
 
-  2.22.  xfig_new_legend
+  2.25.  xfig_new_legend
 
 
       Synopsis
@@ -574,12 +624,13 @@
       Qualifiers
         ; areafill=intval: (default: 20)
         ; fillcolor=strval: (default: "white")
+        ; labelsize=strval: (default: "large")
 
       Description
         The xfig_new_legend function creates a legend object suitable
         for adding to a plot. The legend will consist of ...
 
-  2.23.  xfig_new_pict
+  2.26.  xfig_new_pict
 
 
       Synopsis
@@ -587,6 +638,7 @@
 
       Usage
         obj = xfig_new_pict(filename, width, height [; qualifiers])
+
       Description
         This function creates an object containing the specified image
         file and scales it to the specified width an height. The
@@ -594,6 +646,7 @@
         (0,0,0).
 
       Qualifiers
+        ; depth: XFig depth
         ; x0: x-position (default: 0)
         ; y0: y-position (default: 0)
         ; z0: z-position (default: 0)
@@ -604,18 +657,43 @@
         image scaled with respect to the bounding box. Examples include:
 
 
-              just=[0,0]           Center object upon the origin (default)
-              just=[-0.5,-0.5]     Put the lower-left corner at the origin
-              just=[0.5,-0.5]      Put the lower-right corner at the origin
-              just=[0.5,0.5]       Put the upper-right corner at the origin
-              just=[-0.5,-0.5]     Put the upper-left corner at the origin
+
+         just=[0,0]           Center object upon the origin (default)
+         just=[-0.5,-0.5]     Put the lower-left corner at the origin
+         just=[0.5,-0.5]      Put the lower-right corner at the origin
+         just=[0.5,0.5]       Put the upper-right corner at the origin
+         just=[-0.5,-0.5]     Put the upper-left corner at the origin
 
 
 
       See Also
         ``xfig_new_text'', ``xfig_justify_object''
 
-  2.24.  xfig_new_polyline
+  2.27.  xfig_new_png
+
+
+      Synopsis
+        Create an object that encapsulates a png image
+
+      Usage
+        obj = xfig_new_png(String_Type filename);
+
+      Qualifiers
+        ; depth: XFig depth
+        ; x0: x-position (default: 0)
+        ; y0: y-position (default: 0)
+        ; z0: z-position (default: 0)
+        ; just=[jx,jy]: justification (default: [0,0])
+
+      Description
+        xfig_new_png reads the image dimensions from the file header and
+        passes them to xfig_new_pict. See its documentation for a
+        detailed description of the qualifiers.
+
+      See Also
+        ``xfig_new_pict''
+
+  2.28.  xfig_new_polyline
 
 
       Synopsis
@@ -650,9 +728,7 @@
       See Also
         ``xfig_create_arrow''
 
-
-
-  2.25.  xfig_new_text
+  2.29.  xfig_new_text
 
 
       Synopsis
@@ -668,10 +744,11 @@
         ; style=strval: (default: "\bf\boldmath"R)
         ; size=strval: (default: "\normalsize"R)
         ; rotate=angle: rotate text by angle in degrees (default: 0)
-        ; eps2eps: run eps2eps after dvips -- still experimental!
+        ; dvi2eps_method:
         ; x0: x-position (default: 0)
         ; y0: y-position (default: 0)
         ; z0: z-position (default: 0)
+        ; depth: Xfig depth
         ; just=[jx,jy]: justification, see xfig_new_pict (default:
         [0,0])
 
@@ -687,7 +764,7 @@
         ``xfig_make_font'', ``xfig_add_latex_package'',
         ``xfig_set_latex_preamble'', ``xfig_new_pict''
 
-  2.26.  xfig_new_vbox_compound
+  2.30.  xfig_new_vbox_compound
 
 
       Synopsis
@@ -705,11 +782,12 @@
       See Also
         ``xfig_new_hbox_compound'', ``xfig_new_compound''
 
-  2.27.  xfig_pict.scale
+  2.31.  xfig_pict.scale
 
 
       Synopsis
         Scale an xfig pict object
+
 
       Usage
         xfig_pict.scale (s);
@@ -718,7 +796,8 @@
 
       See Also
         ``xfig_new_pict''
-  2.28.  xfig_plot--errorbars
+
+  2.32.  xfig_plot--errorbars
 
 
       Qualifiers
@@ -731,7 +810,7 @@
         ; eb_depth=intval: Xfig depth of error bars (default: depth
         qualifier)
         ; [x,y]eb_factor=intval: terminal size of error bars (default:
-        1)
+        0)
         ; [x,y]min_max: Asymmetric error bars are already min/max
         values.
 
@@ -756,7 +835,7 @@
       See Also
         ``xfig_plot.plot'', ``xfig_plot.hplot''
 
-  2.29.  xfig_plot--initialize_plot
+  2.33.  xfig_plot--initialize_plot
 
 
       Synopsis
@@ -774,15 +853,17 @@
         initialized through the following functions, unless they are
         already set before:
 
+
       See Also
         ``xfig_plot.plot'', ``xfig_plot.hplot'', ``xfig_plot.plot_png'',
         ``xfig_plot.plot_pict'', ``xfig_plot.shade_region''
 
-  2.30.  xfig_plot--wcs
+  2.34.  xfig_plot--wcs
 
 
       Synopsis
         Qualifiers to specify a plot's world coordinate system
+
       Qualifiers
         ; world0: use device coordinates for x- and y-axes
         ; world1: use first coordinate system for x- and y-axes
@@ -810,7 +891,7 @@
         ``xfig_plot.world'', ``xfig_plot.world1'', ``xfig_plot.world2'',
         ``xfig_plot--initialize_plot''
 
-  2.31.  xfig_plot.add_object
+  2.35.  xfig_plot.add_object
 
 
       Synopsis
@@ -835,7 +916,8 @@
       See Also
         ``xfig_plot--wcs''
 
-  2.32.  xfig_plot.axis
+  2.36.  xfig_plot.axis
+
 
 
       Usage
@@ -888,7 +970,7 @@
         ``xfig_plot.xaxis'', ``xfig_plot.x1axis'', ``xfig_plot.x2axis'',
         ``xfig_plot.yaxis'', ``xfig_plot.y1axis'', ``xfig_plot.y2axis''
 
-  2.33.  xfig_plot.get_world
+  2.37.  xfig_plot.get_world
 
 
       Synopsis
@@ -903,7 +985,8 @@
       See Also
         ``xfig_plot--wcs''
 
-  2.34.  xfig_plot.hplot
+
+  2.38.  xfig_plot.hplot
 
 
       Usage
@@ -918,16 +1001,21 @@
         % qualifiers to specifiy the world coordinate system, see
         xfig_plot--wcs
 
-        ; width: line thickness
+        % qualifiers for lines (defaults for error bars): ; width: line
+        thickness
         ; color: line color
         ; line: line style
         ; fillcolor=fcol: fill histogram with color fcol (default:
         color)
         ; fill[=area_fill]: use style area_fill for shaded histogram
         (default: 20, if set)
-        ; depth: XFig depth
+        ; depth: Xfig depth
 
         % qualifiers for error bars: see xfig_plot--errorbars
+
+        % qualifiers for histogram: ; y_first: y-value of first bin's
+        vertical line
+        ; y_last: y-value of last bin's vertical line
 
       Description
         x is an array of lower bin boundaries corresponding to the
@@ -940,7 +1028,7 @@
         ``xfig_plot--initialize_plot'', ``xfig_plot--wcs'',
         ``xfig_plot--errorbars''
 
-  2.35.  xfig_plot.plot
+  2.39.  xfig_plot.plot
 
 
       Usage
@@ -960,14 +1048,16 @@
         ; width=intval: thickness of lines and error bars
         ; depth=intval: Xfig depth
         ; line=intval: line style for lines and error bars
+        ; forward_arrow: see xfig_create_arrow (default: NULL)
+        ; backward_arrow: see xfig_create_arrow (default: NULL)
 
         % qualifiers for error bars: see xfig_plot--errorbars
-
         % qualifiers for symbols: ; sym=strval: symbol, see
         xfig_plot_get_symbol_names
         ; symcolor=strval: color of symbols (default: color qualifier)
         ; size=val: symbol point size
-        ; fill=intval (from -1 to 20): area fill style
+        ; fill[=intval]: area fill style (default: 20, if set; otherwise
+        -1)
         ; fillcolor=strval: color for filled symbols
         ; symlinestyle=intval: line style to draw symbols
         ; symwidth=intval: thickness of symbol lines (default: width
@@ -980,22 +1070,26 @@
         symbol is specified, no lines are drawn unless the line
         qualifier is also specified.
 
-
       See Also
         ``xfig_plot--initialize_plot'', ``xfig_plot--wcs'',
         ``xfig_plot--errorbars''
 
-  2.36.  xfig_plot.plot_pict
+  2.40.  xfig_plot.plot_pict
 
 
       Usage
         xfig_plot.plot_pict (String_Type imgfile);
 
       Qualifiers
+        ; depth: Xfig depth
+
         % qualifiers to initialize the first plot only, see
         xfig_plot--initialize_plot
 
-  2.37.  xfig_plot.plot_png
+      See Also
+        ``xfig_plot.plot_png''
+
+  2.41.  xfig_plot.plot_png
 
 
       Synopsis
@@ -1007,6 +1101,8 @@
         xfig_plot.plot_png (Array_Type image);
 
       Qualifiers
+        ; depth: Xfig depth
+
         % qualifiers to initialize the first plot only, see
         xfig_plot--initialize_plot ; cmap: name of the color map used by
         png_gray_to_rgb
@@ -1020,10 +1116,13 @@
         qualifiers are forwarded to png_gray_to_rgb.
 
       See Also
+        ``xfig_plot_new_png'', ``xfig_plot.plot_pict'',
         ``xfig_set_tmp_dir'', ``png_gray_to_rgb''
+  2.42.  xfig_plot.shade_region
 
-  2.38.  xfig_plot.shade_region
 
+      Synopsis
+        Add a filled rectangle or polygon to the plot
 
       Usage
         xfig_plot.shade_region (x[], y[]);
@@ -1031,13 +1130,23 @@
         xfig_plot.shade_region (xmin, xmax, ymin, ymax);
 
       Qualifiers
-        % qualifiers to initialize the first plot only % qualifiers to
-        specifiy the world coordinate system
+        % qualifiers to initialize the first plot only see
+        xfig_plot--initialize_plot
+
+        % qualifiers to specifiy the world coordinate system see
+        xfig_plot--wcs
+
+        ; line: line style
+        ; width: line thickness
+        ; color: line color
+        ; fillcolor: fill color (default: color)
+        ; fill: area fill style (default: 20)
+        ; depth: Xfig depth of shaded region
 
       See Also
         ``xfig_plot--initialize_plot'', ``xfig_plot--wcs''
 
-  2.39.  xfig_plot.title
+  2.43.  xfig_plot.title
 
 
       Synopsis
@@ -1047,6 +1156,7 @@
         xfig_plot.title (String_Type title);
         % or
         xfig_plot.title (XFig_Object title);
+
       Description
         The title is created from the string with the xfig_new_text
         function using all applied qualifiers.  If title is no string,
@@ -1054,7 +1164,7 @@
         The title is centered above the plot area.  Any previously
         existing title object is removed.
 
-  2.40.  xfig_plot.world
+  2.44.  xfig_plot.world
 
 
       Synopsis
@@ -1077,7 +1187,7 @@
       See Also
         ``xfig_plot.world1'', ``xfig_plot.world2''
 
-  2.41.  xfig_plot.world1
+  2.45.  xfig_plot.world1
 
 
       Synopsis
@@ -1086,16 +1196,22 @@
       See Also
         ``xfig_plot.world''
 
-  2.42.  xfig_plot.world2
+  2.46.  xfig_plot.world2
 
 
       Synopsis
         define a plot's second world coordinate system
 
+      Qualifiers
+        ; xticlabels: flag whether (1) or not (0) to draw ticlabels on
+        x2axis (default: 1)
+        ; yticlabels: flag whether (1) or not (0) to draw ticlabels on
+        y2axis (default: 1)
+
       See Also
         ``xfig_plot.world''
 
-  2.43.  xfig_plot.x1axis
+  2.47.  xfig_plot.x1axis
 
 
       Usage
@@ -1108,11 +1224,12 @@
       See Also
         ``xfig_plot.axis''
 
-  2.44.  xfig_plot.x2axis
+  2.48.  xfig_plot.x2axis
 
 
       Usage
         xfig_plot.x2axis([; qualifiers]);
+
       Description
         This method allows for the configuration of the second x-axis
         via qualifiers -- see xfig_plot.axis for further information.
@@ -1120,7 +1237,7 @@
       See Also
         ``xfig_plot.axis''
 
-  2.45.  xfig_plot.x2label
+  2.49.  xfig_plot.x2label
 
 
       Synopsis
@@ -1136,13 +1253,14 @@
       See Also
         ``xfig_new_text''
 
-  2.46.  xfig_plot.xaxis
+  2.50.  xfig_plot.xaxis
 
 
       Usage
         xfig_plot.xaxis([; qualifiers]);
 
       Qualifiers
+        ; ticlabels1: overwrites the ticlabels qualifier for the x1axis
         ; ticlabels2: overwrites the ticlabels qualifier for the x2axis
 
       Description
@@ -1152,7 +1270,7 @@
       See Also
         ``xfig_plot.axis''
 
-  2.47.  xfig_plot.xfig_coords
+  2.51.  xfig_plot.xfig_coords
 
 
       Usage
@@ -1169,7 +1287,7 @@
       See Also
         ``xfig_plot--wcs''
 
-  2.48.  xfig_plot.xlabel
+  2.52.  xfig_plot.xlabel
 
 
       Synopsis
@@ -1178,7 +1296,6 @@
       Usage
         xfig_plot.xlabel (String_Type xlabel);
 
-
       Description
         The x-label is created from the string with the xfig_new_text
         function using all applied qualifiers.
@@ -1186,11 +1303,11 @@
       See Also
         ``xfig_new_text''
 
-  2.49.  xfig_plot.xylabel
+  2.53.  xfig_plot.xylabel
 
 
       Usage
-        xfig_plot.xylabel (String_Type text, Double_Type x, y[, dx,
+        xfig_plot.xylabel (Double_Type x, y, String_Type text[, dx,
         dy]);
 
       Qualifiers
@@ -1199,8 +1316,7 @@
 
       See Also
         ``xfig_plot_text'', ``xfig_plot--wcs''
-
-  2.50.  xfig_plot.y1axis
+  2.54.  xfig_plot.y1axis
 
 
       Usage
@@ -1213,7 +1329,7 @@
       See Also
         ``xfig_plot.axis''
 
-  2.51.  xfig_plot.y2axis
+  2.55.  xfig_plot.y2axis
 
 
       Usage
@@ -1226,7 +1342,7 @@
       See Also
         ``xfig_plot.axis''
 
-  2.52.  xfig_plot.y2label
+  2.56.  xfig_plot.y2label
 
 
       Synopsis
@@ -1242,15 +1358,14 @@
       See Also
         ``xfig_new_text''
 
-
-
-  2.53.  xfig_plot.yaxis
+  2.57.  xfig_plot.yaxis
 
 
       Usage
         xfig_plot.yaxis([; qualifiers]);
 
       Qualifiers
+        ; ticlabels1: overwrites the ticlabels qualifier for the y1axis
         ; ticlabels2: overwrites the ticlabels qualifier for the y2axis
 
       Description
@@ -1260,11 +1375,12 @@
       See Also
         ``xfig_plot.axis''
 
-  2.54.  xfig_plot.ylabel
+  2.58.  xfig_plot.ylabel
 
 
       Synopsis
         Add a y-axis label to a plot
+
 
       Usage
         xfig_plot.ylabel (String_Type ylabel);
@@ -1276,7 +1392,7 @@
       See Also
         ``xfig_new_text''
 
-  2.55.  xfig_plot_add_symbol
+  2.59.  xfig_plot_add_symbol
 
 
       Synopsis
@@ -1296,7 +1412,7 @@
         polygon is required to represent the object, an array of arrays
         may be returned.
 
-  2.56.  xfig_plot_add_transform
+  2.60.  xfig_plot_add_transform
 
 
       Usage
@@ -1317,7 +1433,7 @@
         arguments: xmin, xmax, maxtics, and client_data.  It is supposed
         to return two arrays of major and minor tic marks.
 
-  2.57.  xfig_plot_get_symbol_names
+  2.61.  xfig_plot_get_symbol_names
 
 
       Usage
@@ -1326,7 +1442,7 @@
       See Also
         ``xfig_plot.plot''
 
-  2.58.  xfig_plot_new
+  2.62.  xfig_plot_new
 
 
       Synopsis
@@ -1352,7 +1468,7 @@
       See Also
         ``xfig_plot_define_world'', ``xfig_render_object''
 
-  2.59.  xfig_plot_new_png
+  2.63.  xfig_plot_new_png
 
 
       Synopsis
@@ -1361,20 +1477,19 @@
       Usage
         w = xfig_plot_new_png (file)
 
-      Description
-        TBD
-
-      Example
-        TBD
+      Qualifiers
+        ; depth: Xfig depth
 
       See Also
-        ``xfig_new_object''
+        ``xfig_plot_new'', ``xfig_plot.plot_png'',
+        ``xfig_plot.plot_pict''
 
-  2.60.  xfig_plot_text
+  2.64.  xfig_plot_text
 
 
       Synopsis
         Add text to the plot
+
       Usage
         xfig_plot_text (w, text, x, y [,dx, dy])
 
@@ -1397,14 +1512,12 @@
 
              xfig_plot_text (w, "$cos(\omega t)$"R, 3.2, 6.0, -0.5, 0);
 
-
-
      will left justify the text at the position (3.2,6.0).
 
       See Also
         ``xfig_plot_add_object'', ``xfig_new_text''
 
-  2.61.  xfig_render_object
+  2.65.  xfig_render_object
 
 
       Synopsis
@@ -1421,7 +1534,7 @@
       See Also
         ``xfig_create_file'', ``xfig_close_file''
 
-  2.62.  xfig_set_eye
+  2.66.  xfig_set_eye
 
 
       Synopsis
@@ -1439,7 +1552,7 @@
         ``xfig_get_eye'', ``xfig_get_eye_roll'', ``xfig_set_eye_roll'',
         ``xfig_set_focus''
 
-  2.63.  xfig_set_eye_roll
+  2.67.  xfig_set_eye_roll
 
 
       Synopsis
@@ -1455,7 +1568,7 @@
       See Also
         ``xfig_get_eye_roll'', ``xfig_set_eye'', ``xfig_set_focus''
 
-  2.64.  xfig_set_focus
+  2.68.  xfig_set_focus
 
 
       Synopsis
@@ -1464,10 +1577,11 @@
       Usage
         xfig_set_focus (Vector_Type X);
 
+
       See Also
         ``xfig_get_focus'', ``xfig_set_eye''
 
-  2.65.  xfig_set_font_style
+  2.69.  xfig_set_font_style
 
 
       Synopsis
@@ -1483,7 +1597,7 @@
         ``xfig_make_font'', ``xfig_new_text'',
         ``xfig_add_latex_package''
 
-  2.66.  xfig_set_latex_preamble
+  2.70.  xfig_set_latex_preamble
 
 
       Usage
@@ -1492,7 +1606,7 @@
       See Also
         ``xfig_get_latex_preamble''
 
-  2.67.  xfig_set_output_driver
+  2.71.  xfig_set_output_driver
 
 
       Synopsis
@@ -1540,7 +1654,7 @@
       See Also
         ``xfig_set_paper_size''
 
-  2.68.  xfig_set_verbose
+  2.72.  xfig_set_verbose
 
 
       Synopsis
