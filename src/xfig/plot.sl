@@ -215,13 +215,18 @@ private define normalized_to_world (wcs, t, x0, x1)
    return (@wcs.wcs_invfunc)(t0 + t*(t1-t0), cd);
 }
 
-private define round_generic_tic (x)
+private define round_generic_tic (x, np)
 {
    % Try to choose tics that end in 0 or 5
    variable y = x mod 10;
    x -= y;
    if (2.5 <= y <= 7.5)
-     return x + 5;
+     {
+	@np = 5;
+	return x + 5;
+     }
+
+   @np = 10;
    if (y < 2.5)
      return x;
    return x + 10;
@@ -254,6 +259,7 @@ private define generic_compute_tics (wcs, xmin, xmax, ntics)
    tics = a * 10^b;
    variable n = length (tics);
    variable ok = Char_Type[n];
+   variable isnice = Char_Type[n];
    variable loop_num = 0;
    loop (5)
      {
@@ -266,8 +272,8 @@ private define generic_compute_tics (wcs, xmin, xmax, ntics)
 	     variable a_i = a[i];
 	     variable b_i = 10^b[i];
 	     variable c_i = c[i];
-	     variable dc1, dc2, tic_1, tic_2;
-	     tic_1 = round_generic_tic (a_i) * b_i;
+	     variable dc1, dc2, tic_1, tic_2, ia_1, ia_2;
+	     tic_1 = round_generic_tic (a_i, &ia_1) * b_i;
 	     if (xmin <= tic_1 <= xmax)
 	       {
 		  dc1 = abs(c_i-world_to_normalized (wcs, s[i]*tic_1, xmin, xmax));
@@ -275,18 +281,22 @@ private define generic_compute_tics (wcs, xmin, xmax, ntics)
 		    {
 		       tics[i] = tic_1;
 		       ok[i] = loop_num;
+		       isnice[i] = ia_1;
 		       continue;
 		    }
 	       }
 
-	     tic_1 = int(a_i)*b_i;
-	     tic_2 = nint(a_i)*b_i;
+	     ia_1 = int(a_i);
+	     ia_2 = nint(a_i);
+	     tic_1 = ia_1*b_i;
+	     tic_2 = ia_2*b_i;
 	     dc1 = abs(c_i-world_to_normalized (wcs, s[i]*tic_1, xmin, xmax));
 	     dc2 = abs(c_i-world_to_normalized (wcs, s[i]*tic_2, xmin, xmax));
 	     if (dc1 < dc2)
 	       {
 		  if (dc1 < dc)
 		    {
+		       if (ia_1 == 1) isnice[i] = 10;
 		       tics[i] = tic_1;
 		       ok[i] = loop_num;
 		       continue;
@@ -296,6 +306,7 @@ private define generic_compute_tics (wcs, xmin, xmax, ntics)
 	       {
 		  if (dc2 < dc)
 		    {
+		       if (ia_2 == 1) isnice[i] = 10;
 		       tics[i] = tic_2;
 		       ok[i] = loop_num;
 		       continue;
@@ -316,22 +327,29 @@ private define generic_compute_tics (wcs, xmin, xmax, ntics)
    while (i < n)
      {
 	variable t1 = tics[i];
-	variable ok1 = ok[i];
-	i++;
 	if (t1 == t0)
-	  continue;
+	  {
+	     i++;
+	     continue;
+	  }
 	j++;
 	tics[j] = t1;
-	ok[j] = ok1;
+	ok[j] = ok[i];
+	isnice[j] = isnice[i];
 	t0 = t1;
+	i++;
      }
    tics = tics[[0:j]];
    ok = ok[[0:j]];
+   isnice = isnice[[0:j]];
    n = length(tics);
    if (n <= 1)
      return NULL, NULL;
 
-   tics = tics[where(xmin <= tics <= xmax)];
+   i = where(xmin <= tics <= xmax);
+   tics = tics[i];
+   ok = ok[i];
+   isnice = isnice[i];
 
    t0 = tics[0];
    t1 = tics[-1];
@@ -350,16 +368,17 @@ private define generic_compute_tics (wcs, xmin, xmax, ntics)
 	     % We can eliminate tics[i] or tics[i+1].
 	     %   |---------|-----|---------|
 	     %     dc[i-1]  dc[i]  dc[i+1]
-	     if ((tics[i] == 0)
-		 || ((tics[i+1] != 0)
-		     && (ok[i+1]>=ok[i])
-		     && ((i == 0)
+	     if ((ok[i] < ok[i+1])
+		 || ((ok[i] == ok[i+1])
+		     && ((isnice[i] > isnice[i+1])
+			 || (i == 0)
 			 || (dc[i-1] > dc[i+1]))))
 	       i++;
 	     j = [[0:i-1],[i+1:length(tics)-1]];
 	     tics = tics[j];
 	     c = c[j];
 	     ok = ok[j];
+	     isnice = isnice[j];
 	  }
      }
    return tics, NULL;
@@ -718,30 +737,33 @@ private define format_labels_using_scientific_notation (tics) %{{{
 	b[j] -= 1;
      }
 
-#ifnfalse   % This logic is flawed
-   variable mant_factor = 1.0;
-   loop (20)
+   % This logic is flawed
+   variable mant, mant_factor = 1.0, s = where(tics<0);
+   loop (8)
      {
-	variable mant = nint(10^a);
-	mant[where(tics<0)] *= -1;
-	ifnot (all(shift(mant,1)-mant))
-	  {
-	     mant_factor *= 0.1;
-	     a += 1;
-	  }
+	mant = nint(10^a);
+	mant[s] *= -1;
+	if (all(shift(mant,1)-mant))
+	  break;
+
+	mant_factor *= 0.1;
+	a += 1;
      }
+   mant = nint(10^a);
    mant *= mant_factor;
+   if (any(mant < 1))
+     {
+	mant *= 10;
+	b--;
+     }
+   mant[s] *= -1;
+
    j = where (mant >= 10);
    if (length(j)*2 >= length(mant))
      {
 	mant *= 0.1;
 	b += 1;
      }
-   
-#else % This fails on linear grids from, e.g., 0 to 3e5
-   variable mant = nint(10^a);
-   mant[where(tics<0)] *= -1;
-#endif
    return array_map (String_Type, &sprintf, `$\text{%g}{\times}\text{10}^\text{%d}$`, mant, b);
 }
 %}}}
