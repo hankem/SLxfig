@@ -107,16 +107,17 @@ define xfig_new_random_polyline (dx, dy, dz, max_points)
 }
 
 % Created photon will have head at the origin and tail at dX
-define xfig_new_photon (dX, amp, period)
+define xfig_new_photon (dX, amp, wavelength)
 {
    dX = vector_chs (dX);
    variable x, y, z, t;
    variable len = vector_norm (dX);
-   z = [0:len:period/(10*len)];
-   t = z*(2*PI/period);
+   variable npts_per_wavelength = qualifier ("npts", 16);
+   z = [0:len:wavelength/(1.0*npts_per_wavelength)];
+   t = z*(2*PI/wavelength);
 
    % For the arrow to look ok, make the amp fall off near the end
-   amp *= (1.0 - exp ((z-len)/(3*period)));
+   amp *= (1.0 - exp ((z-len)/(3*wavelength)));
    x = amp*cos (t);
    y = amp*sin (t);
    variable v = vector (x, y, z);
@@ -125,10 +126,10 @@ define xfig_new_photon (dX, amp, period)
    variable cos_theta = dX.z/len;
    v = vector_rotate (v, n, acos (cos_theta));
    variable photon = xfig_new_polyline (v);
-   variable a = xfig_new_arrow_head (0.5*period, period, dX);
+   variable a = xfig_new_arrow_head (0.5*wavelength, wavelength, dX);
    dX = vector_chs (dX);
    photon.translate (dX);
-   a.translate (dX*(period/len));
+   a.translate (dX*(wavelength/len));
    return xfig_new_compound (photon, a);
 }
 
