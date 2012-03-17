@@ -203,3 +203,6 @@ Changes since 0.1.0
 100. src/xfig/plot.sl: Allow the depth qualifier to be NULL.
 101. Added patches from Manfred: documentation updates, render to a
      specified depth, different dvips methods.
+102. tweak the tic code in plot.sl
+103. xfig_new_photon: add npts qualifier to specify the number of pts
+     per period.
