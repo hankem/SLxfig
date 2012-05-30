@@ -211,6 +211,24 @@ xfig_ellipse.rotate
 
 --------------------------------------------------------------
 
+xfig_get_color_names
+
+ SYNOPSIS
+  Get a list color names
+
+ USAGE
+  Array_Type xfig_get_color_names ()
+
+ DESCRIPTION
+ This function returns an array of strings giving the available color
+ names.  This list includes the Xfig color names, user-defined
+ colors, and the W3C color names.
+
+ SEE ALSO
+  xfig_new_color, xfig_list_colors, xfig_lookup_w3c_color
+
+--------------------------------------------------------------
+
 xfig_get_eye
 
  SYNOPSIS
@@ -304,6 +322,34 @@ xfig_justify_object
 
  SEE ALSO
   <xfig_object>.justify, <xfig_object>.get_bbox, <xfig_object>.translate
+
+--------------------------------------------------------------
+
+xfig_lookup_w3c_color (name)
+
+ SYNOPSIS
+  Lookup an RGB value for an W3C color name
+
+ USAGE
+  rgb = xfig_lookup_w3c_color (name)
+
+ DESCRIPTION
+ This function may be used to lookup the RGB value for a specified
+ W3C color name.  If the W3C rgb.txt file could not be loaded, or
+ the color name does not exist within he file, NULL will be returned.
+
+ The primary purpose of this function is to provide a mechanism for
+ overriding Xfig color values with those defined by W3C.
+
+ EXAMPLE
+ Xfig uses 0x00FF00 for green, whereas W3C defines 0x008000.  Use the
+ W3C value:
+
+  xfig_new_color ("green", xfig_lookup_w3c_color ("green"));
+
+
+ SEE ALSO
+  xfig_new_color, xfig_list_colors, xfig_get_color_names
 
 --------------------------------------------------------------
 
@@ -410,6 +456,12 @@ xfig_new_color
  with the specified RGB (24 bit integer) value.  If the optional
  third parameter is provided, it must be a reference to a variable
  whose value upon return will be set to the integer index of the color.
+
+ NOTES
+ Color names are converted to a canonical form by removing whitespace
+ from the name and converting it to lowercase.  This means that
+ `"OffWhite"', `"offwhite"', and `"off White"' are all
+ equivalent.
 
  SEE ALSO
   xfig_lookup_color_rgb, xfig_lookup_color

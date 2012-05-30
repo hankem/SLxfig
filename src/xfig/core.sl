@@ -372,7 +372,7 @@ private variable Next_XFig_Color_Id = LAST_XFIG_COLOR_ID+1;
 private define new_color (name, rgb, xfigid, id)
 {
    variable s = @Color_Type;
-   name = strlow (name);
+   name = strlow (strtrans (name, " ", ""));
    s.name = name;
    s.rgb = rgb;
    s.xfigid = xfigid;
@@ -397,14 +397,14 @@ add_color ("white",	0xFFFFFF,	7);
 
 add_color ("black",	0x000000,	0);
 add_color ("red",	0xFF0000,	4);
-add_color ("green3",	0x00b000,	13);
+add_color ("green4",	0x009000,	12);
 add_color ("blue",	0x0000FF,	1);
 add_color ("magenta",	0xFF00FF,	5);
 add_color ("cyan",	0x00FFFF,	3);
 
 add_color ("brown4",	0x803000,	24);
 add_color ("red4",	0x900000,	18);
-add_color ("green4",	0x009000,	12);
+add_color ("green3",	0x00b000,	13);
 add_color ("blue4",	0x000090,	8);
 add_color ("magenta4",	0x900090,	21);
 add_color ("cyan4",	0x009090,	15);
@@ -431,6 +431,11 @@ add_color ("pink3",	0xffa0a0,	28);
 add_color ("pink2",	0xffc0c0,	29);
 add_color ("pink",	0xffe0e0,	30);
 
+private define make_canonical_color_name (name)
+{
+   return strlow (str_delete_chars (name));
+}
+
 define xfig_new_color () %{{{
 %!%+
 %\function{xfig_new_color}
@@ -441,6 +446,11 @@ define xfig_new_color () %{{{
 % with the specified RGB (24 bit integer) value.  If the optional
 % third parameter is provided, it must be a reference to a variable
 % whose value upon return will be set to the integer index of the color.
+%\notes
+% Color names are converted to a canonical form by removing whitespace
+% from the name and converting it to lowercase.  This means that
+% \exmp{"OffWhite"}, \exmp{"offwhite"}, and \exmp{"off White"} are all
+% equivalent.
 %\seealso{xfig_lookup_color_rgb, xfig_lookup_color}
 %!%-
 {
@@ -449,11 +459,18 @@ define xfig_new_color () %{{{
    if (_NARGS == 3)
      idp = ();
    (name, rgb) = ();
+
+   if (rgb == NULL)
+     return;
+
+   name = make_canonical_color_name (name);
+
    if (assoc_key_exists (Color_Table, name))
      {
 	variable s = Color_Table[name];
 	if (rgb != s.rgb)
 	  {
+	     %vmessage ("%s 0x%X --> 0x%X", name, s.rgb, rgb);
 	     s.rgb = rgb;
 	     if (s.xfigid <= LAST_XFIG_COLOR_ID)
 	       s.xfigid = Next_XFig_Color_Id;
@@ -479,13 +496,80 @@ xfig_new_color ("orange", to_rgb(255,165,0));
 xfig_new_color ("orange2",to_rgb(238,154,0));
 xfig_new_color ("orange3",to_rgb(205,133,0));
 xfig_new_color ("orange4",to_rgb(139,90,0));
-xfig_new_color ("gray", 0xC0C0C0);
+xfig_new_color ("silver", 0xC0C0C0);   %  W3C
+xfig_new_color ("x11gray", 0xBEBEBE);     %  X11
+xfig_new_color ("gray", 0x808080);     %  W3C
+
+private variable W3C_RGB_Data = NULL;
+private variable W3C_RGB_Txt_File
+  = path_concat (path_dirname (__FILE__), "w3ccolors.txt");
+
+private define load_w3c_colors ()
+{
+   if (W3C_RGB_Data != NULL)
+     return 0;
+
+   variable names, values;
+   variable fp = fopen (W3C_RGB_Txt_File, "r");
+   if ((fp == NULL)
+       || (readascii (fp, &values, &names; format="0x%X %s") <= 0))
+     return -1;
+   () = fclose (fp);
+   W3C_RGB_Data = Assoc_Type[Int_Type, -1];
+   _for (0, length (names)-1, 1)
+     {
+	variable i = ();
+	variable name = make_canonical_color_name (names[i]);
+	W3C_RGB_Data[name] = values[i];
+     }
+   return 0;
+}
+
+%!%+
+%\function{xfig_lookup_w3c_color (name)}
+%\synopsis{Lookup an RGB value for an W3C color name}
+%\usage{rgb = xfig_lookup_w3c_color (name)}
+%\description
+% This function may be used to lookup the RGB value for a specified
+% W3C color name.  If the W3C rgb.txt file could not be loaded, or
+% the color name does not exist within he file, NULL will be returned.
+%
+% The primary purpose of this function is to provide a mechanism for
+% overriding Xfig color values with those defined by W3C.
+%\example
+% Xfig uses 0x00FF00 for green, whereas W3C defines 0x008000.  Use the
+% W3C value:
+%#v+
+%  xfig_new_color ("green", xfig_lookup_w3c_color ("green"));
+%#v-
+%\seealso{xfig_new_color, xfig_list_colors, xfig_get_color_names}
+%!%-
+define xfig_lookup_w3c_color (color)
+{
+   if (-1 == load_w3c_colors ())
+     return NULL;
+
+   color = make_canonical_color_name (color);
+   color = W3C_RGB_Data[color];
+   if (color == -1)
+     return NULL;
+   return color;
+}
+
+private define load_w3c_color (color)
+{
+   variable rgb = xfig_lookup_w3c_color (color);
+   if (rgb == NULL)
+     return;
+   xfig_new_color (color, rgb);
+}
+
 
 private define find_color (color)
 {
    if (typeof (color) == String_Type)
      {
-	color = strlow (color);
+	color = make_canonical_color_name (color);
 	ifnot (assoc_key_exists (Color_Table, color))
 	  {
 	     variable h = `[0-9A-Fa-f]`  + dup;  % two hex characters
@@ -493,28 +577,71 @@ private define find_color (color)
 	     if (h != NULL && sscanf (h[1], "%x", &h))
 	       xfig_new_color(color, h);
 	  }
-	if (assoc_key_exists (Color_Table, color))
-	  return Color_Table[color];
-	return NULL;
+
+	ifnot (assoc_key_exists (Color_Table, color))
+	  {
+	     load_w3c_color (color);
+	     ifnot (assoc_key_exists (Color_Table, color))
+	       return NULL;
+	  }
+	return Color_Table[color];
      }
-   else
-     {
-	if (color > 0)
-	  return Color_List[2 + (color mod (length (Color_List)-2))];
-	if (color)
-	  return Color_List[0];
-	return Color_List[1];
-     }
+
+   if (color > 0)
+     return Color_List[2 + (color mod (length (Color_List)-2))];
+   if (color)
+     return Color_List[0];
+   return Color_List[1];
 }
 
-define xfig_list_colors()
+private define get_colors ()
+{
+   variable a = Assoc_Type[Int_Type];
+   variable name, rgb, s;
+
+   if (0 == load_w3c_colors ())
+     {
+	foreach name, rgb (W3C_RGB_Data)
+	  a[name] = rgb;
+     }
+
+   foreach s (Color_List)
+     a[s.name] = s.rgb;
+
+   return a;
+}
+
+define xfig_list_colors ()
 {
    variable s, col = NULL;
    if(_NARGS==1)  col = ();
 
-   foreach s (Color_List)
-     if(col==NULL || string_match(s.name, col, 1))
-       vmessage("0x%06x - %s", s.rgb, s.name);
+   variable a = get_colors (), names = assoc_get_keys (a);
+   names = names[array_sort (names)];
+   foreach (names)
+     {
+	variable name = ();
+	if ((col==NULL) || string_match (name, col, 1))
+	  vmessage("0x%06x - %s", a[name], name);
+     }
+}
+
+
+%!%+
+%\function{xfig_get_color_names}
+%\synopsis{Get a list color names}
+%\usage{Array_Type xfig_get_color_names ()}
+%\description
+% This function returns an array of strings giving the available color
+% names.  This list includes the Xfig color names, user-defined
+% colors, and the W3C color names.
+%\seealso{xfig_new_color, xfig_list_colors, xfig_lookup_w3c_color}
+%!%-
+define xfig_get_color_names ()
+{
+   variable names = assoc_get_keys (get_colors ());
+   names = names[array_sort (names)];
+   return names;
 }
 
 define xfig_lookup_color (color)

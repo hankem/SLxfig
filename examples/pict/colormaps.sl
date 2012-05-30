@@ -6,6 +6,7 @@ define slsh_main ()
    variable height = 1;
 
    variable cmaps = png_get_colormap_names ();
+   cmaps = cmaps[array_sort (cmaps)];
    variable list = {};
    variable tmpnames = {};
    foreach (cmaps)

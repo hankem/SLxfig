@@ -206,3 +206,5 @@ Changes since 0.1.0
 102. tweak the tic code in plot.sl
 103. xfig_new_photon: add npts qualifier to specify the number of pts
      per period.
+104. Added support for W3C colornames, and a new example showing the
+     colors (examples/pict/colornames.sl)

@@ -1,4 +1,5 @@
 PNG_FILES = \
-  colormaps.png
+  colormaps.png \
+  colornames.png
 
 include ../Makefile.sub
