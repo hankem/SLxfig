@@ -13,6 +13,7 @@ PNG_FILES = \
   simple.png \
   subplot.png \
   symbol.png \
+  scilabel.png \
   ticlabels.png \
   world.png
 # project.png \

@@ -1204,6 +1204,12 @@ define xfig_new_vbox_compound ()
 %  such that all of them align vertically according to their size.
 %  If the last argument \exmp{space} is numeric, it indicates additional
 %  vertical space that is inserted between each of the objects.
+%\qualifiers
+%\qualifier{just=val}{Justifiy the objects with respect to the first.}
+%  If \exmp{val} is 0 then the objects will be centered.  If val is
+%  -1, the objects will be left justified.  If val is +1, they will be
+%  right justified.
+%\qualifier{center}{Center the objects with respect to the first}
 %\seealso{xfig_new_hbox_compound, xfig_new_compound}
 %!%-
 {
@@ -1211,13 +1217,18 @@ define xfig_new_vbox_compound ()
    variable space = is_struct_type (objs[-1])
                   ? 0
                   : list_pop (objs, -1);
-   variable ymin, obj, y0, y1;
-   (,,ymin,,,) = objs[0].get_bbox ();
+   variable ymin, xmin, xmax, obj, y0, y1, x0, x1;
+   (xmin,xmax,ymin,,,) = objs[0].get_bbox ();
+   variable t = qualifier ("just", qualifier_exists ("center") ? 0 : NULL);
    foreach obj (objs[[1:]])
      {
-	(,,y0,y1,,) = obj.get_bbox ();
+	(x0,x1,y0,y1,,) = obj.get_bbox ();
 	variable dy = ymin-y1-space;
-	obj.translate (vector (0, dy, 0));
+	variable dx = 0;
+	if (t != NULL)
+	  dx = 0.5*((xmin-x0)*(1-t)+(xmax-x1)*(1+t));
+
+	obj.translate (vector (dx, dy, 0));
 	ymin = y0 + dy;
      }
    return xfig_new_compound (__push_list (objs));
@@ -1233,21 +1244,30 @@ define xfig_new_hbox_compound ()
 %  such that all of them align horizontally according to their size.
 %  If the last argument \exmp{space} is numeric, it indicates additional
 %  horizontal space that is inserted between each of the objects.
+%\qualifiers
+%\qualifier{just=val}{Justifiy the objects with respect to the first.}
+%  If \exmp{val} is 0 then the objects will be centered.  If val is
+%  1, the objects will be aligned at the top.  If val is -1, they will be
+%  aligned at the bottom.
+%\qualifier{center}{Center the objects with respect to the first}
 %\seealso{xfig_new_vbox_compound, xfig_new_compound}
 %!%-
 {
    variable objs = __pop_list (_NARGS);
-   variable xmax, obj, x0, x1;
+   variable xmax, ymin, ymax, obj, x0, x1, y0, y1;
    variable space = is_struct_type (objs[-1])
                   ? 0
                   : list_pop (objs, -1);
-   (,xmax,,,,) = objs[0].get_bbox ();
+   (,xmax,ymin,ymax,,) = objs[0].get_bbox ();
    variable v0 = vector (xmax, 0, 0);
+   variable t = qualifier ("just", qualifier_exists ("center") ? 0 : NULL);
    foreach obj (objs[[1:]])
      {
-	(x0,x1,,,,) = obj.get_bbox ();
-	variable dx = xmax-x0+space;
-	obj.translate (vector (dx, 0, 0));
+	(x0,x1,y0,y1,,) = obj.get_bbox ();
+	variable dx = xmax-x0+space, dy = 0;
+	if (t != NULL)
+	  dy = 0.5*((ymin-y0)*(1-t)+(ymax-y1)*(1+t));
+	obj.translate (vector (dx, dy, 0));
 	xmax = x1 + dx;
      }
    return xfig_new_compound (__push_list (objs));

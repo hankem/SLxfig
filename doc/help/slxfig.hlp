@@ -537,6 +537,13 @@ xfig_new_hbox_compound
   If the last argument `space' is numeric, it indicates additional
   horizontal space that is inserted between each of the objects.
 
+ QUALIFIERS
+  ; just=val: Justifiy the objects with respect to the first.
+  If `val' is 0 then the objects will be centered.  If val is
+  1, the objects will be aligned at the top.  If val is -1, they will be
+  aligned at the bottom.
+  ; center: Center the objects with respect to the first
+
  SEE ALSO
   xfig_new_vbox_compound, xfig_new_compound
 
@@ -704,6 +711,13 @@ xfig_new_vbox_compound
   such that all of them align vertically according to their size.
   If the last argument `space' is numeric, it indicates additional
   vertical space that is inserted between each of the objects.
+
+ QUALIFIERS
+  ; just=val: Justifiy the objects with respect to the first.
+  If `val' is 0 then the objects will be centered.  If val is
+  -1, the objects will be left justified.  If val is +1, they will be
+  right justified.
+  ; center: Center the objects with respect to the first
 
  SEE ALSO
   xfig_new_hbox_compound, xfig_new_compound

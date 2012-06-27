@@ -208,3 +208,6 @@ Changes since 0.1.0
      per period.
 104. Added support for W3C colornames, and a new example showing the
      colors (examples/pict/colornames.sl)
+105. Justification qualifiers added to the xfig_new_h/vbox_compound
+     functions: c = xfig_new_vbox_compound (a,b;just=-1) will left
+     justify the objects.
