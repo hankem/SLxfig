@@ -566,7 +566,7 @@ private define polygon_render_to_fp (obj, fp)
 {
    ifnot (_xfig_render_depth (obj;; __qualifiers))
      return;
-   variable eye = xfig_get_eye ();
+   variable eye = xfig_get_eye ()-xfig_get_focus();
    variable n = obj.n;
    variable X = obj.X;
    variable dX = vector_diff (eye, vector(X.x[0],X.y[0],X.z[0]));
@@ -733,6 +733,18 @@ private define polygon_list_set_area_fill (obj, val)
      }
 }
 
+private define polygon_list_rotate (obj, axis, angle)
+{
+   foreach (obj.list)
+     {
+	obj = ();
+	obj.n = vector_rotate (obj.n, axis, angle);
+	obj.rotate (axis, angle);
+     }
+}
+
+
+
 define xfig_new_polygon_list ()
 {
    return struct_combine (xfig_new_compound_list (), struct {
@@ -741,7 +753,8 @@ define xfig_new_polygon_list ()
       set_pen_color = &polygon_list_set_pen_color,
       set_fill_color = &polygon_list_set_fill_color,
       set_area_fill = &polygon_list_set_area_fill,
-      render_to_fp = &polygon_list_render_to_fp
+      render_to_fp = &polygon_list_render_to_fp,
+      rotate = &polygon_list_rotate,
    });
 }
 

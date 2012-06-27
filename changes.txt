@@ -211,3 +211,5 @@ Changes since 0.1.0
 105. Justification qualifiers added to the xfig_new_h/vbox_compound
      functions: c = xfig_new_vbox_compound (a,b;just=-1) will left
      justify the objects.
+106. src/xfig/polyline.sl: The rotate method was not rotating surface
+     normals.
