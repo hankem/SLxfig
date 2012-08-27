@@ -213,3 +213,4 @@ Changes since 0.1.0
      justify the objects.
 106. src/xfig/polyline.sl: The rotate method was not rotating surface
      normals.
+107. src/xfig/core.sl: autoload readascii (Thomas Dauser).

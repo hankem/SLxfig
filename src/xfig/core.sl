@@ -1,6 +1,8 @@
 require ("vector");
 require ("rand");
 
+autoload ("readascii", "readascii");
+
 private variable PIX_PER_INCH = 1200.0; %  xfig units per inch
 private variable XFig_Origin_X = 10.795;%  [cm]
 private variable XFig_Origin_Y = 13.97; %  [cm]
