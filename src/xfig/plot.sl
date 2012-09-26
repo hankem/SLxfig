@@ -112,7 +112,7 @@ private variable Plot_Axis_Type = struct
    %tic_label_format, tic_labels, tic_labels_dX,   %  from tic
    tic_label_format, tic_label_strings,
    tic_labels_font_struct, % do not initialize font_struct here, but only in do_axis_method,
-                           % when user may have changed the default font_style
+   % when user may have changed the default font_style
    tic_label_objects,
    tic_labels_tweak, % from tic
    tic_labels_just,    % justification for tic labels and axis_label
@@ -488,8 +488,8 @@ private define cdf_tan_wcs_func (x, theta0)
 {
    return 0.5 * (1.0 + tan((2.0*x-1.0)*theta0)/tan(theta0));
 
-  % (1 + tan((2x-1)*t0)/tan(t0)/2;
-  % 2*x-1 = tan((2x-1)*t0)/tan(t0)
+   % (1 + tan((2x-1)*t0)/tan(t0)/2;
+   % 2*x-1 = tan((2x-1)*t0)/tan(t0)
 
 }
 private define cdf_tan_wcs_invfunc (x, theta0)
@@ -686,9 +686,9 @@ private define make_tic_marks (axis) %{{{
    if (axis.draw_line)
      axis.line = xfig_new_polyline (X.x+[0,dX.x], X.y+[0,dX.y], X.z+[0,dX.z]
 				    ; color=axis.axis_color,
-				      line=axis.axis_linestyle,
-				      width=axis.axis_thickness,
-				      depth=axis.axis_depth
+				    line=axis.axis_linestyle,
+				    width=axis.axis_thickness,
+				    depth=axis.axis_depth
 				   );
    axis.minor_tic_marks = NULL;
    axis.major_tic_marks = NULL;
@@ -832,7 +832,7 @@ private define construct_tic_label_strings (axis, tics)
 	     %        = 1.5*10-4
 	     %        > 0.00001
 	     i = where (((abs_tics > 0) and (abs_tics < 1e-4))
-		   or (abs_tics >= 99999.5));
+			or (abs_tics >= 99999.5));
 	     if (length(i))
 	       {
 		  % FIXME: This should be configurable!!!
@@ -1019,7 +1019,7 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
 #ifnfalse
 	if ((num_major <= 1)
 	    %&& (0.001 <= xmin <= xmax <= 100.0)
-	    )
+	   )
 	  {
 	     % 0 or 1 major tic.  Format as non-log (linear)
 	     variable maxtics = (2*axis.maxtics)/3;
@@ -1042,12 +1042,12 @@ private define make_major_minor_tic_positions (axis, major_tics, minor_tics) %{{
    i = j-1;
 
    if (islog && (num_minor == 0))
-      {
-	 num_minor = 8;
-	 i = [0:num_minor-1];
-	 j = log10 ([2:9]);	       %  log10([2:9])
-	 minor_tic_interval = 1.0;
-      }
+     {
+	num_minor = 8;
+	i = [0:num_minor-1];
+	j = log10 ([2:9]);	       %  log10([2:9])
+	minor_tic_interval = 1.0;
+     }
    else minor_tic_interval = major_tic_interval/(num_minor+1.0);
 
    minor_tics = Double_Type[num_minor*length(major_tics)];
@@ -1194,14 +1194,14 @@ private define plot_scale () %{{{
 
    variable axis, object;
    foreach axis ([p.x1axis, p.y1axis, p.x2axis, p.y2axis])
-   {
-     foreach X ([axis.X, axis.dX])
-       X.x *= sx, X.y *= sy, X.z *= sz;
-     foreach object (get_axis_objects (axis))
-	object.scale (sx, sy, sz);
-     axis.max_tic_w *= sx;
-     axis.max_tic_h *= sy;
-   }
+     {
+	foreach X ([axis.X, axis.dX])
+	  X.x *= sx, X.y *= sy, X.z *= sz;
+	foreach object (get_axis_objects (axis))
+	  object.scale (sx, sy, sz);
+	axis.max_tic_w *= sx;
+	axis.max_tic_h *= sy;
+     }
 
    foreach object ([p.object_list, p.title_object, p.legend])
      if(object != NULL)
@@ -1502,8 +1502,8 @@ private define do_axis_method (name, grid_axis) %{{{
    q = qualifier ("ticlabels");
    if (typeof (q) == Int_Type)
      {
-       axis.draw_tic_labels = q;
-       axis.user_specified_tic_labels = NULL;
+	axis.draw_tic_labels = q;
+	axis.user_specified_tic_labels = NULL;
      }
    else if ((typeof (q) == Array_Type)
 	    && ((_typeof(q) == String_Type) || __is_numeric(q)))
@@ -1678,7 +1678,7 @@ private define get_world_min_max (axis, x0, x1, islog, pad) %{{{
 {
    x0 *= 1.0; x1 *= 1.0;	       %  convert ints
 
-   if (isnan (x0) or isnan (x1) or isinf (x0) or isinf (x1))
+   if (isnan (x0) || isnan (x1) || isinf (x0) || isinf (x1))
      {
 	() = fprintf (stderr, "xfig_plot_define_world: Axis limits must be finite.\n");
 	return 0.1, 1.0;
@@ -1770,8 +1770,8 @@ private define do_world_method (nth, nargs) %{{{
 
    variable xlog, ylog;
    (xlog, ylog) = get_log_qualifiers (;;__qualifiers);
-   xlog = xlog or xaxis.islog;
-   ylog = ylog or yaxis.islog;
+   xlog = xlog || xaxis.islog;
+   ylog = ylog || yaxis.islog;
 
    if (x0 == NULL)
      {
@@ -2008,7 +2008,7 @@ private define plot_lines (p, x, y) %{{{
 
 private define insert_errbar(err_axis, lines, const, err)
 {
-  lines.insert (vector (err_axis=="x" ? (err, const) : (const, err), [0., 0.]));
+   lines.insert (vector (err_axis=="x" ? (err, const) : (const, err), [0., 0.]));
 }
 
 private define plot_err (p, err_axis, val_const, val_err, err) %{{{
@@ -2041,8 +2041,8 @@ private define plot_err (p, err_axis, val_const, val_err, err) %{{{
    if (typeof (err) == List_Type)  % asymmetric error bars
      {
 	(err_neg, err_pos) = qualifier_exists ("minmax") || qualifier_exists (err_axis+"minmax")
-	                     ? (val_err-err[0], err[1]-val_err)
-	                     : (err[0], err[1]);
+	  ? (val_err-err[0], err[1]-val_err)
+	    : (err[0], err[1]);
 	i = wherenot (isnan(val_const) or isnan(val_err) or isnan(err_neg) or isnan(err_pos));
      }
    else
@@ -2082,7 +2082,7 @@ private define plot_err (p, err_axis, val_const, val_err, err) %{{{
 	variable err1_i = val_err1[i];
 
         if (   const1_i <= 0 || const0_i >= len_const
-	    ||   err1_i <= 0 ||   err0_i >= len_err)
+	       ||   err1_i <= 0 ||   err0_i >= len_err)
 	  continue;
 
 	variable const_term = [_max (const0_i, 0), _min (const1_i, len_const)];
@@ -2586,7 +2586,7 @@ private define plot_histogram (w, xpts, ypts) %{{{
    variable len2 = 2*length(xpts);
    variable x = Double_Type[len2];
    variable y = Double_Type[len2];
-   y[0] = qualifier("y_first", ypts[0]); 
+   y[0] = qualifier("y_first", ypts[0]);
    x[[0::2]] = xpts;
    x[[1::2]] = xpts;
    y[[1:len2-3:2]] = ypts;
@@ -2729,7 +2729,7 @@ private define hplot_method () %{{{
 	variable ax; (ax,) = get_world_axes (p.plot_data;; __qualifiers);
 	variable x0, x1; (x0, x1) = get_world_for_axis(ax);
 	variable n = .5 * (  world_to_normalized(ax.wcs_transform, x       , x0, x1)
-			   + world_to_normalized(ax.wcs_transform, xH[[1:]], x0, x1) );
+			     + world_to_normalized(ax.wcs_transform, xH[[1:]], x0, x1) );
 	x = normalized_to_world(ax.wcs_transform, n, x0, x1);
 	plot_err (p, "y", x, y, dy ;; __qualifiers);
      }
@@ -3099,13 +3099,13 @@ define plot_png_method () %{{{
    if (typeof(png)==Array_Type)
      {
 #ifnexists png_write_flipped
-       throw ApplicationError, "The png module is not available.";
+	throw ApplicationError, "The png module is not available.";
 #else
-       variable pngfile = xfig_make_tmp_file ("png", ".png");
-       variable cmap = qualifier ("cmap");
-       png = png_gray_to_rgb (png, cmap!=NULL ? cmap : ();; __qualifiers);
-       png_write_flipped (pngfile, png);
-       png = pngfile;
+	variable pngfile = xfig_make_tmp_file ("png", ".png");
+	variable cmap = qualifier ("cmap");
+	png = png_gray_to_rgb (png, cmap!=NULL ? cmap : ();; __qualifiers);
+	png_write_flipped (pngfile, png);
+	png = pngfile;
 #endif
      }
    png = xfig_new_png (png);
@@ -3357,52 +3357,6 @@ define xfig_plot_new_png (png) %{{{
 }
 %}}}
 
-private define ones()
-{
-   !if (_NARGS) return 1;
-   variable a = __pop_args (_NARGS);
-   return 1 + Int_Type[__push_args (a)];
-}
-
-define xfig_meshgrid () %{{{
-%!%+
-%\function{xfig_meshgrid}
-%\synopsis{Produce grid points for an image}
-%\usage{(xx,yy) = xfig_meshgrid (xx, yy)}
-%\description
-%  This function takes two 1-d vectors representing the orthogonal
-%  grids for a rectangular region in the (x,y) plane and returns two
-%  2-d arrays corresponding to the (x,y) coordinates of each
-%  intersecting grid point.
-%
-%  Suppose that one wants to evaluate a
-%  function \exmp{f(x,y)} at each point defined by the two grid
-%  vectors.  Simply calling \exmp{f(x,y)} using the grid vectors would
-%  lead to either a type-mismatch error or produce a 1-d result.  The
-%  correct way to do this is to use the \sfun{xfig_meshgrid} function:
-%#v+
-%    result = f(xfig_meshgrid(x,y));
-%#v-
-%!%-
-{
-   variable x,y;
-
-   if (_NARGS != 2)
-     usage ("(xx,yy)=xfig_meshgrid (x,y) ==> produces grid vectors for an image");
-
-   (x,y) = ();
-
-   variable nx, ny, xx, yy, i;
-   nx = length (x);
-   ny = length (y);
-
-   xx = x # ones(1,ny);
-   yy = ones(nx) # transpose(y);
-
-   return xx, yy;
-}
-%}}}
-
 define xfig_multiplot () %{{{
 %!%+
 %\function{xfig_multiplot}
@@ -3436,144 +3390,144 @@ define xfig_multiplot () %{{{
 %  labels of the first or last plot are set (possibly overwritten).
 %!%-
 {
-  if (_xfig_check_help (_NARGS, _function_name();; __qualifiers)) return;
+   if (_xfig_check_help (_NARGS, _function_name();; __qualifiers)) return;
 
-  variable args = __pop_list(_NARGS), element, plots={};
-  loop(_NARGS)
-    foreach element ( list_pop(args) )
-      list_append(plots, element);
+   variable args = __pop_list(_NARGS), element, plots={};
+   loop(_NARGS)
+     foreach element ( list_pop(args) )
+       list_append(plots, element);
 
-  variable cols = qualifier("cols", 1);
+   variable cols = qualifier("cols", 1);
 
-  variable ix, iy, last_ix=cols-1, last_iy=length(plots)/cols-1;
-  variable dy=0., y1label_x=_Inf, y2label_x=-_Inf;
-  _for iy (0, last_iy, 1)
-  {
-    % shift all plots at first in negative y-direction (will be corrected at the end):
-    dy -= plots[0].plot_data.plot_height;
-    variable dx=0.;
-    _for ix (0, last_ix, 1)
-    {
-      variable p = list_pop(plots);
-      p.translate( vector(dx-p.plot_data.X.x, dy-p.plot_data.X.y, -p.plot_data.X.z) );
-      if(ix)
-      { p.y1axis(; ticlabels=0);
-        p.plot_data.y1axis.axis_label = NULL;
-      }
-      else
-        if(p.plot_data.y1axis.axis_label!=NULL)
-          y1label_x = _min(y1label_x, p.plot_data.y1axis.axis_label.X.x);
-      if(ix<last_ix)
-      { p.y2axis(; ticlabels=0);
-        p.plot_data.y2axis.axis_label = NULL;
-      }
-      else
-        if(p.plot_data.y2axis.axis_label!=NULL)
-          y2label_x = _max(y2label_x, p.plot_data.y2axis.axis_label.X.x);
-      if(iy)
-      { p.x2axis(; ticlabels=0);
-        p.plot_data.x2axis.axis_label = NULL;
-        p.plot_data.title_object = NULL;
-      }
-      if(iy<last_iy)
-      { p.x1axis(; ticlabels=0);
-        p.plot_data.x1axis.axis_label = NULL;
-      }
-      list_append(args, p);
-      dx += p.plot_data.plot_width;
-    }
-  }
-  variable align_ylabels = qualifier ("align_ylabels", 3);
-  variable label;
-  _for iy (0, last_iy, 1)
-    {
-       if (align_ylabels & 1)
-         {
-            label = args[iy*cols].plot_data.y1axis.axis_label;
-            if (label!=NULL)  label.X.x = y1label_x;
-         }
-       if (align_ylabels & 2)
-         {
-	    label = args[iy*cols+last_ix].plot_data.y2axis.axis_label;
-	    if (label!=NULL)  label.X.x = y2label_x;
-	 }
-    }
+   variable ix, iy, last_ix=cols-1, last_iy=length(plots)/cols-1;
+   variable dy=0., y1label_x=_Inf, y2label_x=-_Inf;
+   _for iy (0, last_iy, 1)
+     {
+	% shift all plots at first in negative y-direction (will be corrected at the end):
+	dy -= plots[0].plot_data.plot_height;
+	variable dx=0.;
+	_for ix (0, last_ix, 1)
+	  {
+	     variable p = list_pop(plots);
+	     p.translate( vector(dx-p.plot_data.X.x, dy-p.plot_data.X.y, -p.plot_data.X.z) );
+	     if(ix)
+	       { p.y1axis(; ticlabels=0);
+		  p.plot_data.y1axis.axis_label = NULL;
+	       }
+	     else if (p.plot_data.y1axis.axis_label!=NULL)
+	       y1label_x = _min(y1label_x, p.plot_data.y1axis.axis_label.X.x);
 
-  if(length(plots))
-    vmessage("warning (%s): %d plots left over when using cols=%d", _function_name(), length(plots), cols);
+	     if(ix<last_ix)
+	       { p.y2axis(; ticlabels=0);
+		  p.plot_data.y2axis.axis_label = NULL;
+	       }
+	     else
+	       if(p.plot_data.y2axis.axis_label!=NULL)
+		 y2label_x = _max(y2label_x, p.plot_data.y2axis.axis_label.X.x);
+	     if(iy)
+	       { p.x2axis(; ticlabels=0);
+		  p.plot_data.x2axis.axis_label = NULL;
+		  p.plot_data.title_object = NULL;
+	       }
+	     if(iy<last_iy)
+	       { p.x1axis(; ticlabels=0);
+		  p.plot_data.x1axis.axis_label = NULL;
+	       }
+	     list_append(args, p);
+	     dx += p.plot_data.plot_width;
+	  }
+     }
+   variable align_ylabels = qualifier ("align_ylabels", 3);
+   variable label;
+   _for iy (0, last_iy, 1)
+     {
+	if (align_ylabels & 1)
+	  {
+	     label = args[iy*cols].plot_data.y1axis.axis_label;
+	     if (label!=NULL)  label.X.x = y1label_x;
+	  }
+	if (align_ylabels & 2)
+	  {
+	     label = args[iy*cols+last_ix].plot_data.y2axis.axis_label;
+	     if (label!=NULL)  label.X.x = y2label_x;
+	  }
+     }
 
-  plots = xfig_new_compound( __push_list(args) );
-  dy *= -1;                             % correct shift in negative y-direction
-  plots.translate (vector (0, dy, 0));  % lower left corner is now back at (0,0,0)
-  variable xmin, xmax, ymin, ymax;
-  (xmin,xmax, ymin,ymax, ,) = plots.get_bbox();
+   if(length(plots))
+     vmessage("warning (%s): %d plots left over when using cols=%d", _function_name(), length(plots), cols);
 
-  variable q, txt;
-  q = qualifier("x2label");
-  if(q!=NULL)
-  {
-    if(cols==1)
-      args[0].x2label(q);
-    else
-    {
-      txt = xfig_new_text(q);
-      xfig_justify_object(txt, vector(.5*dx, ymax, 0), vector(0, -1, 0));
-      plots.append(txt);
-    }
-  }
-  q = qualifier("xlabel");
-  if(q!=NULL)
-  {
-    if(cols==1)
-      args[-1].xlabel(q);
-    else
-    {
-      txt = xfig_new_text(q);
-      xfig_justify_object(txt, vector(.5*dx, ymin, 0), vector(0, 1, 0));
-      plots.append(txt);
-    }
-  }
-  q = qualifier("ylabel");
-  if(q!=NULL)
-  {
-    if(last_iy==0)
-      args[0].ylabel(q);
-    else
-    {
-      txt = xfig_new_text(q);
-      txt.rotate_pict(90);
-      xfig_justify_object(txt, vector(xmin, .5*dy, 0), vector(1, 0, 0));
-      plots.append(txt);
-    }
-  }
-  q = qualifier("y2label");
-  if(q!=NULL)
-  {
-    if(last_iy==0)
-      args[-1].y2label(q);
-    else
-    {
-      txt = xfig_new_text(q);
-      txt.rotate_pict(270);
-      xfig_justify_object(txt, vector(xmax, .5*dy, 0), vector(-1, 0, 0));
-      plots.append(txt);
-    }
-  }
+   plots = xfig_new_compound( __push_list(args) );
+   dy *= -1;                             % correct shift in negative y-direction
+   plots.translate (vector (0, dy, 0));  % lower left corner is now back at (0,0,0)
+   variable xmin, xmax, ymin, ymax;
+   (xmin,xmax, ymin,ymax, ,) = plots.get_bbox();
 
-  (xmin,xmax, ymin,ymax, ,) = plots.get_bbox();
-  q = qualifier("title");
-  if(q!=NULL)
-  {
-    if(cols==1)
-      args[0].title(q);
-    else
-    {
-      txt = xfig_new_text(q);
-      xfig_justify_object(txt, vector(.5*dx, ymax, 0), vector(0, -1, 0));
-      plots.append(txt);
-    }
-  }
+   variable q, txt;
+   q = qualifier("x2label");
+   if(q!=NULL)
+     {
+	if(cols==1)
+	  args[0].x2label(q);
+	else
+	  {
+	     txt = xfig_new_text(q);
+	     xfig_justify_object(txt, vector(.5*dx, ymax, 0), vector(0, -1, 0));
+	     plots.append(txt);
+	  }
+     }
+   q = qualifier("xlabel");
+   if(q!=NULL)
+     {
+	if(cols==1)
+	  args[-1].xlabel(q);
+	else
+	  {
+	     txt = xfig_new_text(q);
+	     xfig_justify_object(txt, vector(.5*dx, ymin, 0), vector(0, 1, 0));
+	     plots.append(txt);
+	  }
+     }
+   q = qualifier("ylabel");
+   if(q!=NULL)
+     {
+	if(last_iy==0)
+	  args[0].ylabel(q);
+	else
+	  {
+	     txt = xfig_new_text(q);
+	     txt.rotate_pict(90);
+	     xfig_justify_object(txt, vector(xmin, .5*dy, 0), vector(1, 0, 0));
+	     plots.append(txt);
+	  }
+     }
+   q = qualifier("y2label");
+   if(q!=NULL)
+     {
+	if(last_iy==0)
+	  args[-1].y2label(q);
+	else
+	  {
+	     txt = xfig_new_text(q);
+	     txt.rotate_pict(270);
+	     xfig_justify_object(txt, vector(xmax, .5*dy, 0), vector(-1, 0, 0));
+	     plots.append(txt);
+	  }
+     }
 
-  return plots;
+   (xmin,xmax, ymin,ymax, ,) = plots.get_bbox();
+   q = qualifier("title");
+   if(q!=NULL)
+     {
+	if(cols==1)
+	  args[0].title(q);
+	else
+	  {
+	     txt = xfig_new_text(q);
+	     xfig_justify_object(txt, vector(.5*dx, ymax, 0), vector(0, -1, 0));
+	     plots.append(txt);
+	  }
+     }
+
+   return plots;
 }
 %}}}

@@ -1487,6 +1487,52 @@ define xfig_make_tmp_file (base, ext)
    throw IOError, "Unable to create a tmp file";
 }
 
+private define ones()
+{
+   !if (_NARGS) return 1;
+   variable a = __pop_args (_NARGS);
+   return 1 + Int_Type[__push_args (a)];
+}
+
+define xfig_meshgrid () %{{{
+%!%+
+%\function{xfig_meshgrid}
+%\synopsis{Produce grid points for an image}
+%\usage{(xx,yy) = xfig_meshgrid (xx, yy)}
+%\description
+%  This function takes two 1-d vectors representing the orthogonal
+%  grids for a rectangular region in the (x,y) plane and returns two
+%  2-d arrays corresponding to the (x,y) coordinates of each
+%  intersecting grid point.
+%
+%  Suppose that one wants to evaluate a
+%  function \exmp{f(x,y)} at each point defined by the two grid
+%  vectors.  Simply calling \exmp{f(x,y)} using the grid vectors would
+%  lead to either a type-mismatch error or produce a 1-d result.  The
+%  correct way to do this is to use the \sfun{xfig_meshgrid} function:
+%#v+
+%    result = f(xfig_meshgrid(x,y));
+%#v-
+%!%-
+{
+   variable x,y;
+
+   if (_NARGS != 2)
+     usage ("(xx,yy)=xfig_meshgrid (x,y) ==> produces grid vectors for an image");
+
+   (x,y) = ();
+
+   variable nx, ny, xx, yy, i;
+   nx = length (x);
+   ny = length (y);
+
+   xx = x # ones(1,ny);
+   yy = ones(nx) # transpose(y);
+
+   return xx, yy;
+}
+%}}}
+
 % Use CM as the default system
 xfig_use_cm ();
 xfig_set_eye (1e6, 0, 0);
