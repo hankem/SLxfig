@@ -216,3 +216,7 @@ Changes since 0.1.0
 107. src/xfig/core.sl: autoload readascii (Thomas Dauser).
 108. src/xfig/core.sl: Moved xfig_meshgrid from plot.sl, and
      reindented plot.sl
+109. src/xfig/plot.sl: Tweaked the code to xfig_multiplot, and
+     reformtted its documentation.
+110. examples/plot/scilabel.sl was not in the git repository.
+

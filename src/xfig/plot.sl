@@ -3371,20 +3371,23 @@ define xfig_multiplot () %{{{
 %\qualifier{y2label=strval}{overall y2label right of the multiplot}
 %\qualifier{align_ylabels=intval}{bitmask for aligning all y{1,2}axis-labels}{1|2}
 %\description
-%  \var{p1}, \var{p2}, ... can be single plot objects or arrays of them.
-%  \sfun{xfig_multiplot} arranges a multi-panel plot with \var{cols} columns.
-%  It may thus be desirable to have common sizes of the plot windows,
-%  as well as common ranges and coordinate systems on adjoining axes.
+%  \exmp{p1}, \exmp{p2}, ... can be single plot objects or arrays of them.
+%  \sfun{xfig_multiplot} arranges a multi-panel plot with \exmp{cols} columns.
+%
 %  The plot windows are aligned in left-right, top-down order.
 %  \sfun{xfig_multiplot} switches off titles, axis- and ticmark labels
-%  of those plots for which those would overlap with other plots.
+%  of those plots for which those would overlap with other plots. It
+%  is thus be desirable to have common sizes of the plot windows, as
+%  well as common ranges and coordinate systems on adjoining axes.
+%  This is particularly important if when more than one column is
+%  used.
 %
 %  The return value is a compound object containing all plots in the
-%  multiplot (note that their number has to be a multiple of \var{cols}).
-%  If the \var{title} or \var{x(2)label} qualifiers are specified and \var{cols>1},
+%  multiplot (note that their number has to be a multiple of \exmp{cols}).
+%  If the \exmp{title} or \exmp{x(2)label} qualifiers are specified and \exmp{cols>1},
 %  additional text objects are added above and below the multiplot.
-%  (For \var{cols==1}, the title/x(2)label of the first/last plot are set.)
-%  The same holds for the \var{y(2)label} qualifiers, for which it depends
+%  (For \exmp{cols==1}, the title/x(2)label of the first/last plot are set.)
+%  The same holds for the \exmp{y(2)label} qualifiers, for which it depends
 %  on the resulting number of rows whether additional text is added
 %  on the left or right of the multiplot or whether the corresponding
 %  labels of the first or last plot are set (possibly overwritten).
@@ -3400,7 +3403,7 @@ define xfig_multiplot () %{{{
    variable cols = qualifier("cols", 1);
 
    variable ix, iy, last_ix=cols-1, last_iy=length(plots)/cols-1;
-   variable dy=0., y1label_x=_Inf, y2label_x=-_Inf;
+   variable dy=0., y1label_x=_Inf, y2label_x=-_Inf, X, pd;
    _for iy (0, last_iy, 1)
      {
 	% shift all plots at first in negative y-direction (will be corrected at the end):
@@ -3409,32 +3412,34 @@ define xfig_multiplot () %{{{
 	_for ix (0, last_ix, 1)
 	  {
 	     variable p = list_pop(plots);
-	     p.translate( vector(dx-p.plot_data.X.x, dy-p.plot_data.X.y, -p.plot_data.X.z) );
+	     pd = p.plot_data;
+	     X = pd.X;
+	     p.translate( vector(dx-X.x, dy-X.y, -X.z) );
 	     if(ix)
 	       { p.y1axis(; ticlabels=0);
-		  p.plot_data.y1axis.axis_label = NULL;
+		  pd.y1axis.axis_label = NULL;
 	       }
-	     else if (p.plot_data.y1axis.axis_label!=NULL)
-	       y1label_x = _min(y1label_x, p.plot_data.y1axis.axis_label.X.x);
+	     else if (pd.y1axis.axis_label!=NULL)
+	       y1label_x = _min(y1label_x, pd.y1axis.axis_label.X.x);
 
 	     if(ix<last_ix)
 	       { p.y2axis(; ticlabels=0);
-		  p.plot_data.y2axis.axis_label = NULL;
+		  pd.y2axis.axis_label = NULL;
 	       }
-	     else
-	       if(p.plot_data.y2axis.axis_label!=NULL)
-		 y2label_x = _max(y2label_x, p.plot_data.y2axis.axis_label.X.x);
+	     else if (pd.y2axis.axis_label!=NULL)
+	       y2label_x = _max(y2label_x, pd.y2axis.axis_label.X.x);
+
 	     if(iy)
-	       { p.x2axis(; ticlabels=0);
-		  p.plot_data.x2axis.axis_label = NULL;
-		  p.plot_data.title_object = NULL;
+	       {  p.x2axis(; ticlabels=0);
+		  pd.x2axis.axis_label = NULL;
+		  pd.title_object = NULL;
 	       }
 	     if(iy<last_iy)
-	       { p.x1axis(; ticlabels=0);
-		  p.plot_data.x1axis.axis_label = NULL;
+	       {  p.x1axis(; ticlabels=0);
+		  pd.x1axis.axis_label = NULL;
 	       }
 	     list_append(args, p);
-	     dx += p.plot_data.plot_width;
+	     dx += pd.plot_width;
 	  }
      }
    variable align_ylabels = qualifier ("align_ylabels", 3);

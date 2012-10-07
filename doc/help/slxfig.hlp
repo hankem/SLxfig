@@ -425,11 +425,14 @@ xfig_multiplot
  DESCRIPTION
   `p1', `p2', ... can be single plot objects or arrays of them.
   `xfig_multiplot' arranges a multi-panel plot with `cols' columns.
-  It may thus be desirable to have common sizes of the plot windows,
-  as well as common ranges and coordinate systems on adjoining axes.
+
   The plot windows are aligned in left-right, top-down order.
   `xfig_multiplot' switches off titles, axis- and ticmark labels
-  of those plots for which those would overlap with other plots.
+  of those plots for which those would overlap with other plots. It
+  is thus be desirable to have common sizes of the plot windows, as
+  well as common ranges and coordinate systems on adjoining axes.
+  This is particularly important if when more than one column is
+  used.
 
   The return value is a compound object containing all plots in the
   multiplot (note that their number has to be a multiple of `cols').
