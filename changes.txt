@@ -219,4 +219,7 @@ Changes since 0.1.0
 109. src/xfig/plot.sl: Tweaked the code to xfig_multiplot, and
      reformtted its documentation.
 110. examples/plot/scilabel.sl was not in the git repository.
+111. src/xfig/core.sl: A "fig" qualifier added to the render method:
+     If 0, the .fig will be removed, otherwise it will be kept.  The
+     default is 0.
 

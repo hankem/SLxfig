@@ -746,7 +746,16 @@ define xfig_close_file (dev)
    fmt = strreplace (fmt, "%B", path_sans_extname(dev.figfile));
 
    if (qualifier ("verbose", _XFig_Verbose) >= 0)  message("$ "+fmt);
-   () = system_intr (fmt);
+   if (0 != system_intr (fmt))
+     {
+	() = fprintf (stderr, "*** WARNING: %S exited with non-zero status\n", fmt);
+	return;
+     }
+
+   ifnot (qualifier ("fig", 0))
+     {
+	() = remove (dev.figfile);
+     }
 }
 
 #iffalse
@@ -800,6 +809,7 @@ private define default_render ()
 %\qualifiers
 %\qualifier{depth=intarray}{if specified, only objects of these depths are rendered}
 %\qualifier{verbose=intval}{if >=0, the fig2dev command is displayed}
+%\qualifier{fig=0|1}{if 0 (default), the .fig file will be removed, otherwise kept}
 %\seealso{xfig_set_verbose}
 %!%-
 {

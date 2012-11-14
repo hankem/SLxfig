@@ -33,6 +33,7 @@
  QUALIFIERS
   ; depth=intarray: if specified, only objects of these depths are rendered
   ; verbose=intval: if >=0, the fig2dev command is displayed
+  ; fig=0|1: if 0 (default), the .fig file will be removed, otherwise kept
 
  SEE ALSO
   xfig_set_verbose

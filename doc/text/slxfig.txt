@@ -1,7 +1,7 @@
   SLxfig Reference
   John E. Davis, with numerous contributions from Manfred
   Hanke
-  Oct 7, 2012
+  Nov 14, 2012
   ____________________________________________________________
 
   Table of Contents
@@ -170,6 +170,8 @@
         ; depth=intarray: if specified, only objects of these depths are
         rendered
         ; verbose=intval: if >=0, the fig2dev command is displayed
+        ; fig=0|1: if 0 (default), the .fig file will be removed,
+        otherwise kept
 
       See Also
         ``xfig_set_verbose''
@@ -199,6 +201,7 @@
 
       Description
         A picture object can only be rotated by multiples of 90 degrees.
+
   2.5.  xfig_add_latex_package
 
 
@@ -258,6 +261,8 @@
 
       See Also
         ``xfig_clip_polygon2d'', ``xfig_new_polyline_list''
+
+
 
   2.8.  xfig_compound.append
 
@@ -322,6 +327,7 @@
         ``xfig_new_polyline''
 
   2.11.  xfig_ellipse.rotate
+
 
 
       Usage
@@ -390,7 +396,6 @@
 
       See Also
         ``xfig_set_focus''
-
   2.16.  xfig_get_latex_preamble
 
 
@@ -528,6 +533,8 @@
 
               result = f(xfig_meshgrid(x,y));
 
+
+
   2.21.  xfig_multiplot
 
 
@@ -593,7 +600,6 @@
         means that "OffWhite", "offwhite", and "off White" are all
         equivalent.
 
-
       See Also
         ``xfig_lookup_color_rgb'', ``xfig_lookup_color''
 
@@ -650,6 +656,8 @@
       See Also
         ``xfig_new_pict''
 
+
+
   2.26.  xfig_new_hbox_compound
 
 
@@ -658,7 +666,6 @@
 
       Usage
         c = xfig_new_hbox_compound (obj1, obj2 [, ...] [, space]);
-
 
       Description
         The objects obj2, ... are translated in negative y-direction
@@ -723,12 +730,11 @@
         image scaled with respect to the bounding box. Examples include:
 
 
-
-         just=[0,0]           Center object upon the origin (default)
-         just=[-0.5,-0.5]     Put the lower-left corner at the origin
-         just=[0.5,-0.5]      Put the lower-right corner at the origin
-         just=[0.5,0.5]       Put the upper-right corner at the origin
-         just=[-0.5,-0.5]     Put the upper-left corner at the origin
+              just=[0,0]           Center object upon the origin (default)
+              just=[-0.5,-0.5]     Put the lower-left corner at the origin
+              just=[0.5,-0.5]      Put the lower-right corner at the origin
+              just=[0.5,0.5]       Put the upper-right corner at the origin
+              just=[-0.5,-0.5]     Put the upper-left corner at the origin
 
 
 
@@ -913,6 +919,7 @@
       Synopsis
         Qualifiers to initialize the axes of an xfig_plot object:
 
+
       Qualifiers
         ; xlog: use a logarithmic x-axis
         ; ylog: use a logarithmic y-axis
@@ -986,6 +993,7 @@
 
       See Also
         ``xfig_plot--wcs''
+
   2.38.  xfig_plot.axis
 
 
@@ -1044,13 +1052,11 @@
 
       Synopsis
         Get the world coordinates of a plot
-
       Usage
         [xmin,xmax,ymin,ymax] = xfig_plot.get_world ();
 
       Qualifiers
         % qualifiers to specifiy the world coordinate system
-
 
       See Also
         ``xfig_plot--wcs''
@@ -1177,6 +1183,7 @@
         xfig_plot--initialize_plot ; cmap: name of the color map used by
         png_gray_to_rgb
 
+
       Description
         The image from pngfile is drawn in the plot region.
 
@@ -1184,6 +1191,7 @@
         converted to a png file in the temporary directory, using the
         png_gray_to_rgb function and possibly a color map.  All other
         qualifiers are forwarded to png_gray_to_rgb.
+
       See Also
         ``xfig_plot_new_png'', ``xfig_plot.plot_pict'',
         ``xfig_set_tmp_dir'', ``png_gray_to_rgb''
@@ -1306,6 +1314,7 @@
 
       See Also
         ``xfig_plot.axis''
+
 
   2.51.  xfig_plot.x2label
 
@@ -1446,8 +1455,6 @@
       See Also
         ``xfig_plot.axis''
 
-
-
   2.60.  xfig_plot.ylabel
 
 
@@ -1504,6 +1511,8 @@
         The qualifier ticfun may reference a function that takes 4
         arguments: xmin, xmax, maxtics, and client_data.  It is supposed
         to return two arrays of major and minor tic marks.
+
+
 
   2.63.  xfig_plot_get_symbol_names
 
@@ -1570,14 +1579,13 @@
                x, y: world coordinates
              dx, dy: justification
 
-
-
       Description
         This function creates a text object at the specified location on
         the plot.  By default, the text will be centered on the
         specified world coordinates.  The justification parameters dx
         and dy may be used to specify the justifcation of the text. See
         the documentation for xfig_plot_add_object for more information.
+
       Example
 
 
@@ -1635,13 +1643,12 @@
       Usage
         xfig_get_eye_roll (Double_Type roll);
 
+
       Description
         The roll angle is measured in degrees.
 
       See Also
         ``xfig_get_eye_roll'', ``xfig_set_eye'', ``xfig_set_focus''
-
-
 
   2.70.  xfig_set_focus
 
@@ -1701,10 +1708,11 @@
         the shell:
 
 
-             %I    Input .fig file
-             %O    Output file
-             %P    paper-size
-             %B    basename of the file
+
+        %I    Input .fig file
+        %O    Output file
+        %P    paper-size
+        %B    basename of the file
 
 
 
