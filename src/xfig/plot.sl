@@ -1322,6 +1322,9 @@ private define allocate_axis_type (len, maxtics, has_tic_labels, xpos, ypos, dir
    a.geom = geom;
    a.tic_labels_just = vector (geom.ticofs_x, geom.ticofs_y, 0);
    a.draw_tic_labels = has_tic_labels;
+   a.tic_labels_font_struct = xfig_make_font (qualifier ("ticlabel_style"),
+					      qualifier ("ticlabel_size"),
+					      qualifier ("ticlabel_color"));
    return a;
 }
 %}}}
@@ -1487,9 +1490,12 @@ private define do_axis_method (name, grid_axis) %{{{
    axis.tic_depth = get_reftype_qualifier ("tic_depth", axis.tic_depth;;__qualifiers);
    axis.maxtics = qualifier ("maxtics", axis.maxtics);
 
-   axis.tic_labels_font_struct = xfig_make_font (qualifier ("ticlabel_style"),
-						 qualifier ("ticlabel_size"),
-						 qualifier ("ticlabel_color") );
+   variable ticlabel_color = NULL, ticlabel_size = NULL, ticlabel_style = NULL;
+
+   variable fs = axis.tic_labels_font_struct;
+   fs.style = qualifier ("ticlabel_style", fs.style);
+   fs.size = qualifier ("ticlabel_size", fs.size);
+   fs.color = qualifier ("ticlabel_color", fs.color);
 
    % .islog already has a default value.  Don't muck with it unless
    % requested.
@@ -3307,10 +3313,10 @@ define xfig_plot_new () %{{{
    p.plot_height = h;
    variable maxticsx = int(w*0.5 + 1.5);
    variable maxticsy = int(h+1.5);
-   p.x1axis = allocate_axis_type (w, maxticsx, 1, (0,0), (1,0), (0,1), X1_Axis_Geom);
-   p.y1axis = allocate_axis_type (h, maxticsy, 1, (0,0), (0,1), (1,0), Y1_Axis_Geom);
-   p.x2axis = allocate_axis_type (w, maxticsx, 0, (0,h), (1,0), (0,-1), X2_Axis_Geom);
-   p.y2axis = allocate_axis_type (h, maxticsy, 0, (w,0), (0,1), (-1,0), Y2_Axis_Geom);
+   p.x1axis = allocate_axis_type (w, maxticsx, 1, (0,0), (1,0), (0,1), X1_Axis_Geom;; __qualifiers);
+   p.y1axis = allocate_axis_type (h, maxticsy, 1, (0,0), (0,1), (1,0), Y1_Axis_Geom;; __qualifiers);
+   p.x2axis = allocate_axis_type (w, maxticsx, 0, (0,h), (1,0), (0,-1), X2_Axis_Geom;; __qualifiers);
+   p.y2axis = allocate_axis_type (h, maxticsy, 0, (w,0), (0,1), (-1,0), Y2_Axis_Geom;; __qualifiers);
 
    p.line_color = "black";
    p.line_style = 0;

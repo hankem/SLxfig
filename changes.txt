@@ -222,4 +222,6 @@ Changes since 0.1.0
 111. src/xfig/core.sl: A "fig" qualifier added to the render method:
      If 0, the .fig will be removed, otherwise it will be kept.  The
      default is 0.
+112. src/xfig/plot.sl: xfig_plot_new supports ticlabel qualifiers to
+     define defaults.
 
