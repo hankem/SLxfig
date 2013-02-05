@@ -885,6 +885,7 @@ xfig_plot.axis
   ; ticlabel_style: tic label font style
   ; ticlabel_color: tic label font color
   ; ticlabel_size: tic label font size
+  ; format: tic label format string in `sprintf' style
   ; wcs: name of a custom world coordinate system transformation
 
  DESCRIPTION

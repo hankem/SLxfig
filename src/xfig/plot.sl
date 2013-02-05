@@ -1396,6 +1396,7 @@ private define do_axis_method (name, grid_axis) %{{{
 %\qualifier{ticlabel_style}{tic label font style}
 %\qualifier{ticlabel_color}{tic label font color}
 %\qualifier{ticlabel_size}{tic label font size}
+%\qualifier{format}{tic label format string in `sprintf' style}
 %\qualifier{wcs}{name of a custom world coordinate system transformation}
 %\description
 %  All axes can be configured with the qualifiers mentioned above.
