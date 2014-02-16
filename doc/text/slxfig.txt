@@ -1029,9 +1029,9 @@
         ; ticlabels: draw tic labels (requires major tic marks)
         ; ticlabels_confine: prevent tic labels from overhanging the
         plot box
-        ; ticlabel_style: tic label font style
-        ; ticlabel_color: tic label font color
-        ; ticlabel_size: tic label font size
+        ; ticlabel_style: tic label font style, see xfig_make_font
+        ; ticlabel_color: tic label font color, see xfig_make_font
+        ; ticlabel_size: tic label font size, see xfig_make_font
         ; format: tic label format string in `sprintf' style
         ; wcs: name of a custom world coordinate system transformation
 
@@ -1530,6 +1530,13 @@
         defaults will be used.  The width and height values specify the
         size of the plotting area and do not include the space for tic
         marks and labels.
+
+        The following qualifiers configure all axes' tic labels at once:
+
+      Qualifiers
+        ; ticlabel_style: tic label font style, see xfig_make_font
+        ; ticlabel_color: tic label font color, see xfig_make_font
+        ; ticlabel_size: tic label font size, see xfig_make_font
 
       Example
 

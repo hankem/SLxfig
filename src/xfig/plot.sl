@@ -1213,7 +1213,7 @@ private define plot_set_attr (p, attr, val)
 {
 }
 
-private define merge_bbox (bbox1, bbox2)
+private define merge_bbox (bbox1, bbox2) %{{{
 {
    if (bbox1 == NULL)
      return bbox2;
@@ -1224,8 +1224,9 @@ private define merge_bbox (bbox1, bbox2)
    bbox[[::2]] = _min(bbox1, bbox2)[[::2]];
    return bbox;
 }
+%}}}
 
-private define get_list_bbox (list)
+private define get_list_bbox (list) %{{{
 {
    variable bbox = NULL;
    foreach (list)
@@ -1236,8 +1237,9 @@ private define get_list_bbox (list)
      }
    return bbox;
 }
+%}}}
 
-private define get_axis_bbox (axis)
+private define get_axis_bbox (axis) %{{{
 {
    variable X0 = axis.X, X1 = X0+axis.dX;
    variable bbox = [_min(X0.x,X1.x), _max(X0.x,X1.x),
@@ -1245,6 +1247,7 @@ private define get_axis_bbox (axis)
 		    _min(X0.z,X1.z), _max(X0.z,X1.z)];
    return merge_bbox (bbox, get_list_bbox (get_axis_objects(axis)));
 }
+%}}}
 
 private define plot_get_bbox (p) %{{{
 {
@@ -1351,7 +1354,7 @@ private define get_log_qualifiers () %{{{
 }
 %}}}
 
-private define get_reftype_qualifier (name, defval)
+private define get_reftype_qualifier (name, defval) %{{{
 {
    variable val = qualifier (name, defval);
    if (typeof (val) == Ref_Type)
@@ -1362,6 +1365,7 @@ private define get_reftype_qualifier (name, defval)
    if (val == NULL) val = defval;
    return val;
 }
+%}}}
 
 private define do_axis_method (name, grid_axis) %{{{
 %!%+
@@ -1393,9 +1397,9 @@ private define do_axis_method (name, grid_axis) %{{{
 %\qualifier{maxtics}{ maximum number of major tic marks}
 %\qualifier{ticlabels}{draw tic labels (requires major tic marks)}
 %\qualifier{ticlabels_confine}{prevent tic labels from overhanging the plot box}
-%\qualifier{ticlabel_style}{tic label font style}
-%\qualifier{ticlabel_color}{tic label font color}
-%\qualifier{ticlabel_size}{tic label font size}
+%\qualifier{ticlabel_style}{tic label font style, see \sfun{xfig_make_font}}
+%\qualifier{ticlabel_color}{tic label font color, see \sfun{xfig_make_font}}
+%\qualifier{ticlabel_size}{tic label font size, see \sfun{xfig_make_font}}
 %\qualifier{format}{tic label format string in `sprintf' style}
 %\qualifier{wcs}{name of a custom world coordinate system transformation}
 %\description
@@ -1907,7 +1911,7 @@ private define get_world_axes (p) %{{{
 }
 %}}}
 
-private define get_world_for_axis (a)
+private define get_world_for_axis (a) %{{{
 {
    if (a == NULL)
      return (0.0, 1.0);
@@ -1920,6 +1924,7 @@ private define get_world_for_axis (a)
 
    return (x0, x1);
 }
+%}}}
 
 private define scale_coords_for_axis (axis, axis_len, x) %{{{
 {
@@ -2013,10 +2018,11 @@ private define plot_lines (p, x, y) %{{{
 }
 %}}}
 
-private define insert_errbar(err_axis, lines, const, err)
+private define insert_errbar(err_axis, lines, const, err) %{{{
 {
    lines.insert (vector (err_axis=="x" ? (err, const) : (const, err), [0., 0.]));
 }
+%}}}
 
 private define plot_err (p, err_axis, val_const, val_err, err) %{{{
 %!%+
@@ -2743,81 +2749,109 @@ private define hplot_method () %{{{
 }
 %}}}
 
-define xfig_plot_set_line_color (p, color)
+define xfig_plot_set_line_color (p, color) %{{{
 {
    p.plot_data.line_color = color;
 }
+%}}}
 
-define xfig_plot_set_line_style (p, style)
+define xfig_plot_set_line_style (p, style) %{{{
 {
    p.plot_data.line_style = style;
 }
+%}}}
 
-define xfig_plot_set_line_thickness (p, thickness)
+define xfig_plot_set_line_thickness (p, thickness) %{{{
 {
    p.plot_data.thickness = thickness;
 }
+%}}}
 
-define xfig_plot_set_line_depth (p, depth)
+define xfig_plot_set_line_depth (p, depth) %{{{
 {
    p.plot_data.line_depth = depth;
 }
-define xfig_plot_set_axis_depth (p, depth)
+%}}}
+
+define xfig_plot_set_axis_depth (p, depth) %{{{
 {
    p.plot_data.axis_depth = depth;
 }
-define xfig_plot_set_point_depth (p, depth)
+%}}}
+
+define xfig_plot_set_point_depth (p, depth) %{{{
 {
    p.plot_data.point_depth = depth;
 }
-define xfig_plot_inc_line_depth (p, depth)
+%}}}
+
+define xfig_plot_inc_line_depth (p, depth) %{{{
 {
    p.plot_data.line_depth += depth;
 }
-define xfig_plot_inc_axis_depth (p, depth)
+%}}}
+
+define xfig_plot_inc_axis_depth (p, depth) %{{{
 {
    p.plot_data.axis_depth += depth;
 }
-define xfig_plot_inc_point_depth (p, depth)
+%}}}
+
+define xfig_plot_inc_point_depth (p, depth) %{{{
 {
    p.plot_data.point_depth += depth;
 }
-define xfig_plot_get_line_depth (p)
+%}}}
+
+define xfig_plot_get_line_depth (p) %{{{
 {
    return p.plot_data.line_depth;
 }
-define xfig_plot_get_axis_depth (p)
+%}}}
+
+define xfig_plot_get_axis_depth (p) %{{{
 {
    return p.plot_data.axis_depth;
 }
-define xfig_plot_get_point_depth (p)
+%}}}
+
+define xfig_plot_get_point_depth (p) %{{{
 {
    return p.plot_data.point_depth;
 }
+%}}}
 
-define xfig_plot_inc_image_depth (p, depth)
+define xfig_plot_inc_image_depth (p, depth) %{{{
 {
    p.plot_data.image_depth += depth;
 }
-define xfig_plot_get_image_depth (p)
+%}}}
+
+define xfig_plot_get_image_depth (p) %{{{
 {
    return p.plot_data.image_depth;
 }
-define xfig_plot_set_image_depth (p, depth)
+%}}}
+
+define xfig_plot_set_image_depth (p, depth) %{{{
 {
    p.plot_data.image_depth = depth;
 }
+%}}}
 
-define xfig_plot_set_point_size (p, point_size)
+define xfig_plot_set_point_size (p, point_size) %{{{
 {
    if (point_size < 0)
      point_size = 0;
    p.plot_data.point_size = point_size;
 }
-define xfig_plot_set_point_color (p, color)
+%}}}
+
+define xfig_plot_set_point_color (p, color) %{{{
 {
    p.plot_data.point_color = color;
 }
+%}}}
 
 private define add_object_method () %{{{
 %!%+
@@ -3222,7 +3256,7 @@ private define shade_region_method () %{{{
 }
 %}}}
 
-private define get_world_method (w)
+private define get_world_method (w) %{{{
 %!%+
 %\function{xfig_plot.get_world}
 %\synopsis{Get the world coordinates of a plot}
@@ -3241,6 +3275,7 @@ private define get_world_method (w)
 
    return [get_world_for_axis(ax), get_world_for_axis(ay)];
 }
+%}}}
 
 private variable XFig_Plot_Type = struct %{{{
 {
@@ -3277,15 +3312,18 @@ private variable XFig_Plot_Type = struct %{{{
 
 private variable Default_Width = 14.0;
 private variable Default_Height = 10.0;
-define xfig_plot_set_default_size (w, h)
+define xfig_plot_set_default_size (w, h) %{{{
 {
    Default_Width = w;
    Default_Height = h;
 }
-define xfig_plot_get_default_size ()
+%}}}
+
+define xfig_plot_get_default_size () %{{{
 {
    return Default_Width, Default_Height;
 }
+%}}}
 
 define xfig_plot_new () %{{{
 %!%+
@@ -3297,6 +3335,12 @@ define xfig_plot_new () %{{{
 %  If the width and height parameters are not given, defaults will be used.
 %  The width and height values specify the size of the plotting area and do not
 %  include the space for tic marks and labels.
+%
+%  The following qualifiers configure all axes' tic labels at once:
+%\qualifiers
+%\qualifier{ticlabel_style}{tic label font style, see \sfun{xfig_make_font}}
+%\qualifier{ticlabel_color}{tic label font color, see \sfun{xfig_make_font}}
+%\qualifier{ticlabel_size}{tic label font size, see \sfun{xfig_make_font}}
 %\example
 %#v+
 %   w = xfig_plot_new ();
