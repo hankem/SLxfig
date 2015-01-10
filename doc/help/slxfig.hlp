@@ -1566,7 +1566,7 @@ xfig_set_output_driver
  the shell command that will be used to generate the file.
 
  The `cmd' may contain the following format descriptors that will be
- replace by the corresponding objects before being passed to the shell:
+ replaced by the corresponding objects before being passed to the shell:
 
    %I    Input .fig file
    %O    Output file

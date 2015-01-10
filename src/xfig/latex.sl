@@ -37,14 +37,14 @@ private define make_sha1_cached_filename (sha1, ext)
    return path_concat (dir, strcat (sha1, ext));
 }
 
-private define make_autoeps_file (base, sha1)
+private define make_auto_file (base, ext, sha1)
 {
    if (sha1 == NULL)
      {
 	base = path_concat (xfig_get_autoeps_dir (), base);
-	return xfig_make_tmp_file (base, ".eps");
+	return xfig_make_tmp_file (base, ext);
      }
-   variable file = make_sha1_cached_filename (sha1, ".eps");
+   variable file = make_sha1_cached_filename (sha1, ext);
    variable dir = path_dirname (file);
    if ((-1 == mkdir (dir)) && (errno != EEXIST))
      throw OSError, sprintf ("Unable to mkdir %s: %s", dir, errno_string());
@@ -62,6 +62,14 @@ private define make_tmp_latex_file (base)
 
 private variable LaTeX_Pgm = "latex";
 private variable Dvi2Eps_Method = 0;
+#ifdef SLXFIG_RENDER_LATEX_AS_TRANSPARENT_PNG
+private variable Png_Resolution = 600;
+
+define xfig_set_png_resolution (png_resolution)
+{
+  Png_Resolution = png_resolution;
+}
+#endif
 
 private define run_cmd (do_error, cmd)
 {
@@ -99,38 +107,42 @@ private define run_latex (file)
 		);
 }
 
-private define run_dvips (dvi, eps)
+private define process_dvi (dvi, target)
 {
-   variable tmp_eps = xfig_make_tmp_file (path_basename_sans_extname(eps), ".eps");
+#ifdef SLXFIG_RENDER_LATEX_AS_TRANSPARENT_PNG
+   () = run_cmd (1, sprintf ("dvipng -bgTransparent -D%d -Ttight '%s' -o '%s'", Png_Resolution, dvi, target));
+#else
+   variable tmp_eps = xfig_make_tmp_file (path_basename_sans_extname(target), ".eps");
    variable tmp_ps = path_sans_extname (tmp_eps) + ".ps";
 
    switch (qualifier ("dvi2eps_method", Dvi2Eps_Method))
     { case 0:  % works fine for non-rotated text, but clips BoundingBox for rotated text
-	() = run_cmd (1, sprintf ("dvips -E '%s' -o '%s'", dvi, eps));
+	() = run_cmd (1, sprintf ("dvips -E '%s' -o '%s'", dvi, target));
     }
     { case 1:  % eps output is ugly, also when converted to png, but okay when converted to pdf.
 	       % eps2eps does not preserve the text (in vector format)!
 	       % eps2eps sometimes generates 0 size bounding box, causing gs to produce NaNs.
 	() = run_cmd (1, sprintf ("dvips -E '%s' -o '%s'", dvi, tmp_eps));
-	() = run_cmd (1, sprintf ("eps2eps '%s' '%s'", tmp_eps, eps));
+	() = run_cmd (1, sprintf ("eps2eps '%s' '%s'", tmp_eps, target));
     }
     { case 2:  % ps2epsi fails for some colors including #FF00000
 	() = run_cmd (1, sprintf ("dvips -E '%s' -o '%s'", dvi, tmp_eps));
-	() = run_cmd (1, sprintf ("ps2epsi '%s' '%s'", tmp_eps, eps));
+	() = run_cmd (1, sprintf ("ps2epsi '%s' '%s'", tmp_eps, target));
       % () = remove (tmp_eps);	% tidy up tmp dir?
     }
     { case 3:  % ps2eps sometimes clips BoundingBox for rotated text (despite the -B option)
 	() = run_cmd (1, sprintf ("dvips '%s' -o '%s'", dvi, tmp_ps));
 	() = run_cmd (1, sprintf ("ps2eps -B -f '%s'", tmp_ps));
-	() = run_cmd (1, sprintf ("mv '%s' '%s'", tmp_eps, eps));  % S-Lang's `rename' might fail
+	() = run_cmd (1, sprintf ("mv '%s' '%s'", tmp_eps, target));  % S-Lang's `rename' might fail
       % () = remove (tmp_ps);  % tidy up tmp dir?
     }
     { case 4:  % ps2eps with --loose (does not produce a tight BoundingBox)
 	() = run_cmd (1, sprintf ("dvips '%s' -o '%s'", dvi, tmp_ps));
 	() = run_cmd (1, sprintf ("ps2eps -l -B -f '%s'", tmp_ps));
-	() = run_cmd (1, sprintf ("mv '%s' '%s'", tmp_eps, eps));  % S-Lang's `rename' might fail
+	() = run_cmd (1, sprintf ("mv '%s' '%s'", tmp_eps, target));  % S-Lang's `rename' might fail
       % () = remove (tmp_ps);  % tidy up tmp dir?
     }
+#endif
 }
 
 %}}}
@@ -409,9 +421,9 @@ private define find_cached_file_sha1 (sha1, ext)
    return file;
 }
 
-private define upgrade_autoeps_file_to_sha1 (epsfile, sha1)
+private define upgrade_autoeps_file_to_sha1 (epsfile, ext, sha1)
 {
-   variable sha1file = make_sha1_cached_filename (sha1, ".eps");
+   variable sha1file = make_sha1_cached_filename (sha1, ext);
    variable dir = path_dirname (sha1file);
    () = mkdir (dir);
    if (-1 == rename (epsfile, sha1file))
@@ -508,50 +520,57 @@ private define latex_xxx2eps (env, envargs, xxx, base, fontstruct)
 {
    variable str = make_latex_string (env, envargs, xxx, fontstruct;; __qualifiers);
    variable hash = escape_latex_string (str);
-   variable sha1, epsfile;
+   variable sha1, target;
+
+   variable ext =
+#ifdef SLXFIG_RENDER_LATEX_AS_TRANSPARENT_PNG
+     ".png";
+#else
+     ".eps";
+#endif
 
 #ifexists sha1sum
    sha1 = sha1sum (hash);
-   epsfile = find_cached_file_sha1 (sha1, ".eps");
-   if (epsfile == NULL)
+   target = find_cached_file_sha1 (sha1, ext);
+   if (target == NULL)
      {
-	epsfile = find_cached_file (hash);
-	if (epsfile != NULL)
+	target = find_cached_file (hash);
+	if (target != NULL)
 	  {
-	     epsfile = upgrade_autoeps_file_to_sha1 (epsfile, sha1);
+	     target = upgrade_autoeps_file_to_sha1 (target, ext, sha1);
 	     save_cache ();
 	  }
      }
 #else
-   epsfile = find_cached_file (hash);
+   target = find_cached_file (hash);
    sha1 = NULL;
 #endif
 
-   if (epsfile != NULL)
+   if (target != NULL)
      {
 	if (_XFig_Verbose > 0)
 	  {
-	     vmessage ("Using cached file %s", epsfile);
+	     vmessage ("Using cached file %s", target);
 	  }
-	return epsfile;
+	return target;
      }
 
    variable tex = make_tmp_latex_file (base);
 
-   epsfile = make_autoeps_file (base, sha1);
+   target = make_auto_file (base, ext, sha1);
 
    write_latex_file (tex, str);
 
    run_latex (tex);
-   run_dvips (path_sans_extname (tex) + ".dvi", epsfile ;; __qualifiers);
+   process_dvi (path_sans_extname (tex) + ".dvi", target ;; __qualifiers);
 
    if (sha1 == NULL)
      {
-	add_to_cache (epsfile, hash);
+	add_to_cache (target, hash);
 	save_cache ();
      }
 
-   return epsfile;
+   return target;
 }
 
 private define xfig_text2eps (text, fontstruct)
@@ -611,7 +630,13 @@ define xfig_new_eps (file)
 private define do_xfig_new_xxx (fun, text, fontstruct)
 {
    variable eps = (@fun) (text, fontstruct;; __qualifiers);
+#ifdef SLXFIG_RENDER_LATEX_AS_TRANSPARENT_PNG
+   variable png = xfig_new_png (eps;; __qualifiers);
+   png.scale(72./Png_Resolution);
+   return png;
+#else
    return xfig_new_eps (eps;; __qualifiers);
+#endif
 }
 
 define xfig_new_eq (eq)
@@ -659,7 +684,7 @@ define xfig_new_text () %{{{
 %#c  |   | + make_preamble
 %#c  |   |   +-> extra_packages
 %#c  |   |   +-> preamble
-%#c  |   + run_dvips
+%#c  |   + process_dvi
 %#c  |     +-> dvi2eps_method
 %#c  + xfig_new_eps
 %#c    + xfig_new_pict

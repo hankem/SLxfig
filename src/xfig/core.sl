@@ -326,7 +326,7 @@ private variable Fig2dev_Formats = Assoc_Type[String_Type];
 % the shell command that will be used to generate the file.
 %
 % The \exmp{cmd} may contain the following format descriptors that will be
-% replace by the corresponding objects before being passed to the shell:
+% replaced by the corresponding objects before being passed to the shell:
 %#v+
 %   %I    Input .fig file
 %   %O    Output file
@@ -358,6 +358,7 @@ xfig_set_output_driver("png", "fig2dev -L png %I %O");
 xfig_set_output_driver("gif", "fig2dev -L gif %I %O");
 xfig_set_output_driver("jpg", "fig2dev -L jpeg %I %O");
 xfig_set_output_driver("jpeg", "fig2dev -L jpeg %I %O");
+xfig_set_output_driver("svg", "fig2dev -L svg %I %O");
 
 % Colors
 private variable Color_Type = struct
