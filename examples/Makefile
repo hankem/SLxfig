@@ -1,6 +1,7 @@
 SUBDIRS = \
   3d \
   draw \
+  transparent \
   pict \
   plot \
   polyline

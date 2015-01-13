@@ -10,4 +10,4 @@ clean:
 	-/bin/rm -rf autoeps
 
 distclean: clean
-	-/bin/rm -f $(PNG_FILES)
+	-/bin/rm -f $(PNG_FILES) $(ADDITIONAL_FILES_TO_CLEAN)
