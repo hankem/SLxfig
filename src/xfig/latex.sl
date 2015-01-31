@@ -71,9 +71,46 @@ define xfig_set_png_resolution (png_resolution)
 }
 #endif
 
+private define search_path_for_file (path, file)
+{
+   variable delim = path_get_delimiter ();
+
+   if (path == NULL)
+     return NULL;
+
+   foreach (strtok (path, char(delim)))
+     {
+        variable dir = ();
+        variable dirfile = path_concat (dir, file);
+
+	if (NULL != stat_file (dirfile))
+	  return dirfile;
+     }
+
+   return NULL;
+}
+
 private define run_cmd (do_error, cmd)
 {
    variable verbose = qualifier("verbose", _XFig_Verbose);
+
+   variable exec_exists = 1;
+   variable exec = strtok (cmd, " \t")[0];
+   if (path_is_absolute (exec))
+     {
+	if (NULL == stat_file (exec))
+	  exec_exists = 0;
+     }
+   else
+     {
+	variable path = getenv ("PATH");   %  !FIXME: Unix only
+	if (path != NULL)
+	  exec_exists = (NULL != search_path_for_file (path, exec));
+     }
+
+   ifnot (exec_exists)
+     verbose = 1;
+
    if (verbose <= 0)
      cmd += " >/dev/null 2>&1";
 

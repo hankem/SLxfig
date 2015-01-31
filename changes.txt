@@ -236,3 +236,5 @@ Changes since 0.1.0
      and avoid \ at end of string literal (so that editors such as jed
      do not have to understand the semantics associated with backtick
      strings).
+115. src/xfig/latex.sl: If an executable cannot be found on the path,
+     enable verbose mode for better error checking.
