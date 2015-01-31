@@ -25,8 +25,10 @@ define mandelbrot(x, y)
 
   variable c = x + 1i*y,  z = c,  i = 0;
   while (i < mandelbrot_max && abs(z) < 2)
-    z = z^2 + c,
-    i++;
+     {
+	z = z*z + c;
+	i++;
+     }
   return log(1 + i) / log(1 + mandelbrot_max);
 }
 

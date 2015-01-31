@@ -232,7 +232,7 @@ Changes since 0.1.0
        Experimental support for for rendering LaTex as tranparent PNGs.
          (See examples/transparent/README)
 
-
-
-
-
+114. mandlebrot.sl,font-style.sl: minor (cosmetic) tweaks: z^2 -> z*z
+     and avoid \ at end of string literal (so that editors such as jed
+     do not have to understand the semantics associated with backtick
+     strings).

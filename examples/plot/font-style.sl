@@ -18,7 +18,8 @@ public define slsh_main ()
    p.plot (a_planet, P_planet; sym="diamond", fill=20);
    variable i;
    _for i (0, 7, 1)
-     p.xylabel (a_planet[i]*1.05, P_planet[i], `\Large\`+planet[i], -0.5, 0.5);
+     p.xylabel (a_planet[i]*1.05, P_planet[i],
+		"\\Large\\"+planet[i], -0.5, 0.5);
 
    p.xlabel ("Axis: semimaior [unitas: astronomica]");
    p.ylabel ("Periodus: orbitalis: [annus:]");
