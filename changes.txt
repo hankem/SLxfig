@@ -224,4 +224,15 @@ Changes since 0.1.0
      default is 0.
 112. src/xfig/plot.sl: xfig_plot_new supports ticlabel qualifiers to
      define defaults.
+113. Merged Manfred's updates:
+
+       new example showing xfig fill-styles
+       added description of 'format' qualifier to xfig_plot.axis
+       documentation update reflecting change 112
+       Experimental support for for rendering LaTex as tranparent PNGs.
+         (See examples/transparent/README)
+
+
+
+
 

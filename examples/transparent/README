@@ -1,0 +1,19 @@
+SLxfig supports -DSLXFIG_RENDER_LATEX_AS_TRANSPARENT_PNG
+
+When the symbol SLXFIG_RENDER_LATEX_AS_TRANSPARENT_PNG is defined,
+any LaTeX output is rendered as transparent png (instead of eps)
+-- which may be desirable when other transparent pngs are used.
+
+In this case, its probably best to render the Xfig output to svg.
+The following can be used to generate a pdf from an intermediate svg:
+
+  xfig_set_output_driver ("pdf", "fig2dev -L svg %I %B.svg && rsvg-convert -f pdf %B.svg > %O && rm %B.svg");
+  % or
+  xfig_set_output_driver ("pdf", "fig2dev -L svg %I %B.svg && inkscape %B.svg --export-pdf=%O && rm %B.svg");
+
+The current implementation requires the following programs to be
+installed:
+
+   dvipng         (debian package: dvipng)
+   rsvg-convert   (debian package: librsvg2-bin)
+
