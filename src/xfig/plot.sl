@@ -795,8 +795,7 @@ private define construct_tic_label_strings (axis, tics)
 	variable frac, whole;
 	variable is_frac = fneqs (log10_tics, nint(log10_tics));
 	frac = where (is_frac, &whole);
-	tic_labels = String_Type[length(tics)];
-	tic_labels[whole] = array_map (String_Type, &sprintf, format, log10_tics[whole]);
+	tic_labels = array_map (String_Type, &sprintf, format, tics);
 
 	variable is_small = (0.01 <= tics < 99999.5);
 	ifnot (fixed_format)

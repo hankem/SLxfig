@@ -3,6 +3,7 @@ PNG_FILES = \
   color.png \
   colors.png \
   errbar.png \
+  fixed_format.png \
   font-style.png \
   histplt.png \
   image.png \
