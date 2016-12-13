@@ -2890,6 +2890,11 @@ private define add_object_method () %{{{
      }
    (p, obj) = ();
 
+   %%% To ensure that in case of logarithmic axis the added object is placed
+   %%% correctly it is neccessary to initialize the plot. Otherwise the added
+   %%% object is placed on a linear axis, although the axis is set to log.
+   initialize_plot (p, NULL, NULL ;;__qualifiers);
+
    p = p.plot_data;
 
    if ((x != NULL) and (y != NULL))

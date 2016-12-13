@@ -240,3 +240,6 @@ Changes since 0.1.0
      enable verbose mode for better error checking.
 116. src/xfig/latex.sl: in xfig_new_text set dvi2eps_method to 3 (was
      2) for rotated text (Sebastian Falkner).
+117. src/xfig/plot.sl: %.add_object was not working correctly if a log
+     qualifier was given and was called before %.plot. To fix this
+     %.add_object now initializes the plot. (Sebastian Falkner)
