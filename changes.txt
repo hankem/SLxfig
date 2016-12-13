@@ -238,3 +238,5 @@ Changes since 0.1.0
      strings).
 115. src/xfig/latex.sl: If an executable cannot be found on the path,
      enable verbose mode for better error checking.
+116. src/xfig/latex.sl: in xfig_new_text set dvi2eps_method to 3 (was
+     2) for rotated text (Sebastian Falkner).

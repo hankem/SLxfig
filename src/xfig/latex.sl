@@ -745,7 +745,7 @@ define xfig_new_text () %{{{
         if (rotate mod 90 != 0)
           {
              text = sprintf ("\\rotatebox{%S}{%s}", rotate, text);
-             q = struct_combine (struct{extra_packages="graphicx", dvi2eps_method=2}, q);
+             q = struct_combine (struct{extra_packages="graphicx", dvi2eps_method=3}, q);
           }
         else
           theta = rotate;
