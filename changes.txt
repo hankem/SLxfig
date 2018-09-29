@@ -243,3 +243,6 @@ Changes since 0.1.0
 117. src/xfig/plot.sl: %.add_object was not working correctly if a log
      qualifier was given and was called before %.plot. To fix this
      %.add_object now initializes the plot. (Sebastian Falkner)
+118. avoid empty line in .fig file for a polyline with n x 16
+     vertices, which does not work with some versions of fig2dev.
+     (Manfred Hanke)
