@@ -250,3 +250,6 @@ Changes since 0.1.0
      may be used to obtain get or add paper size information.
 120. src/xfig/multiplot.sl: Added xfig_multipage_open function that
      allows the creation of a PDF file with multiple pages.
+121. src/xfig/plot.sl: The hplot function was generating an exception
+     plotting error bars when the number of elements in the x array is
+     one larger than the y array.

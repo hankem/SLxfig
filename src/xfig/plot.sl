@@ -2724,10 +2724,19 @@ private define hplot_method () %{{{
      }
    p = ();
 
+   variable nx = length(x), ny = length(y);
+   if (ny == 0)
+     return;
+
    variable xH;  % array including last bin's upper limit
-   if(length(x) == length(y))
-     xH = [x, 2*x[-1]-x[-2]];
-   else if(length(x) == length(y)+1)
+   if (nx == ny)
+     {
+	if (nx == 1)
+	  xH = [x, x+1];
+	else
+	  xH = [x, 2*x[-1]-x[-2]];
+     }
+   else if (nx == ny+1)
      xH = x;
    else
      throw UsageError, ".hplot(x, y):  length(x) must be length(y) or length(y)+1";
@@ -2741,10 +2750,13 @@ private define hplot_method () %{{{
      {
 	variable ax; (ax,) = get_world_axes (p.plot_data;; __qualifiers);
 	variable x0, x1; (x0, x1) = get_world_for_axis(ax);
-	variable n = .5 * (  world_to_normalized(ax.wcs_transform, x       , x0, x1)
+	variable xmid = 0.5*(xH[[:-2]] + xH[[1:]]);
+#iffalse
+	variable xmid = .5 * (  world_to_normalized(ax.wcs_transform, xH[[:-2]], x0, x1)
 			     + world_to_normalized(ax.wcs_transform, xH[[1:]], x0, x1) );
-	x = normalized_to_world(ax.wcs_transform, n, x0, x1);
-	plot_err (p, "y", x, y, dy ;; __qualifiers);
+	xmid = normalized_to_world(ax.wcs_transform, xmid, x0, x1);
+#endif
+	plot_err (p, "y", xmid, y, dy ;; __qualifiers);
      }
 }
 %}}}
