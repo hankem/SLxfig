@@ -248,3 +248,5 @@ Changes since 0.1.0
      (Manfred Hanke)
 119. src/xfig/core.sl: Added xfig_get/add_paper_info functions that
      may be used to obtain get or add paper size information.
+120. src/xfig/multiplot.sl: Added xfig_multipage_open function that
+     allows the creation of a PDF file with multiple pages.

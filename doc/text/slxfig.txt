@@ -1,7 +1,7 @@
   SLxfig Reference
   John E. Davis, with numerous contributions from Manfred
   Hanke
-  Jan 10, 2015
+  May 29, 2019
   ____________________________________________________________
 
   Table of Contents
@@ -31,60 +31,63 @@
      2.18 xfig_lookup_w3c_color (name)
      2.19 xfig_make_font
      2.20 xfig_meshgrid
-     2.21 xfig_multiplot
-     2.22 xfig_new_color
-     2.23 xfig_new_compound
-     2.24 xfig_new_ellipse
-     2.25 xfig_new_eps
-     2.26 xfig_new_hbox_compound
-     2.27 xfig_new_legend
-     2.28 xfig_new_pict
-     2.29 xfig_new_png
-     2.30 xfig_new_polyline
-     2.31 xfig_new_text
-     2.32 xfig_new_vbox_compound
-     2.33 xfig_pict.scale
-     2.34 xfig_plot--errorbars
-     2.35 xfig_plot--initialize_plot
-     2.36 xfig_plot--wcs
-     2.37 xfig_plot.add_object
-     2.38 xfig_plot.axis
-     2.39 xfig_plot.get_world
-     2.40 xfig_plot.hplot
-     2.41 xfig_plot.plot
-     2.42 xfig_plot.plot_pict
-     2.43 xfig_plot.plot_png
-     2.44 xfig_plot.shade_region
-     2.45 xfig_plot.title
-     2.46 xfig_plot.world
-     2.47 xfig_plot.world1
-     2.48 xfig_plot.world2
-     2.49 xfig_plot.x1axis
-     2.50 xfig_plot.x2axis
-     2.51 xfig_plot.x2label
-     2.52 xfig_plot.xaxis
-     2.53 xfig_plot.xfig_coords
-     2.54 xfig_plot.xlabel
-     2.55 xfig_plot.xylabel
-     2.56 xfig_plot.y1axis
-     2.57 xfig_plot.y2axis
-     2.58 xfig_plot.y2label
-     2.59 xfig_plot.yaxis
-     2.60 xfig_plot.ylabel
-     2.61 xfig_plot_add_symbol
-     2.62 xfig_plot_add_transform
-     2.63 xfig_plot_get_symbol_names
-     2.64 xfig_plot_new
-     2.65 xfig_plot_new_png
-     2.66 xfig_plot_text
-     2.67 xfig_render_object
-     2.68 xfig_set_eye
-     2.69 xfig_set_eye_roll
-     2.70 xfig_set_focus
-     2.71 xfig_set_font_style
-     2.72 xfig_set_latex_preamble
-     2.73 xfig_set_output_driver
-     2.74 xfig_set_verbose
+     2.21 xfig_multipage.add
+     2.22 xfig_multipage.close
+     2.23 xfig_multipage_open
+     2.24 xfig_multiplot
+     2.25 xfig_new_color
+     2.26 xfig_new_compound
+     2.27 xfig_new_ellipse
+     2.28 xfig_new_eps
+     2.29 xfig_new_hbox_compound
+     2.30 xfig_new_legend
+     2.31 xfig_new_pict
+     2.32 xfig_new_png
+     2.33 xfig_new_polyline
+     2.34 xfig_new_text
+     2.35 xfig_new_vbox_compound
+     2.36 xfig_pict.scale
+     2.37 xfig_plot--errorbars
+     2.38 xfig_plot--initialize_plot
+     2.39 xfig_plot--wcs
+     2.40 xfig_plot.add_object
+     2.41 xfig_plot.axis
+     2.42 xfig_plot.get_world
+     2.43 xfig_plot.hplot
+     2.44 xfig_plot.plot
+     2.45 xfig_plot.plot_pict
+     2.46 xfig_plot.plot_png
+     2.47 xfig_plot.shade_region
+     2.48 xfig_plot.title
+     2.49 xfig_plot.world
+     2.50 xfig_plot.world1
+     2.51 xfig_plot.world2
+     2.52 xfig_plot.x1axis
+     2.53 xfig_plot.x2axis
+     2.54 xfig_plot.x2label
+     2.55 xfig_plot.xaxis
+     2.56 xfig_plot.xfig_coords
+     2.57 xfig_plot.xlabel
+     2.58 xfig_plot.xylabel
+     2.59 xfig_plot.y1axis
+     2.60 xfig_plot.y2axis
+     2.61 xfig_plot.y2label
+     2.62 xfig_plot.yaxis
+     2.63 xfig_plot.ylabel
+     2.64 xfig_plot_add_symbol
+     2.65 xfig_plot_add_transform
+     2.66 xfig_plot_get_symbol_names
+     2.67 xfig_plot_new
+     2.68 xfig_plot_new_png
+     2.69 xfig_plot_text
+     2.70 xfig_render_object
+     2.71 xfig_set_eye
+     2.72 xfig_set_eye_roll
+     2.73 xfig_set_focus
+     2.74 xfig_set_font_style
+     2.75 xfig_set_latex_preamble
+     2.76 xfig_set_output_driver
+     2.77 xfig_set_verbose
 
 
   ______________________________________________________________________
@@ -532,7 +535,88 @@
 
 
 
-  2.21.  xfig_multiplot
+  2.21.  xfig_multipage.add
+
+
+      Synopsis
+        Add an xfig object to a multipage file
+
+      Usage
+        <multipage_object>.add(ob)
+
+      Description
+        This function is used to render an xfig object to a multipage
+        file.  This is done by rendering the object to an intermediate
+        .eps file.  The file will removed upon closing the multipage
+        file.
+
+      Qualifiers
+        ; save: Keep the intermediate file, do not remove it
+        ; file=fname: Use fname as the basename of the intermediate
+        file. The .eps extension will be used.
+
+      See Also
+        ``xfig_multipage_open'', ``xfig_multipage_close''
+
+  2.22.  xfig_multipage.close
+
+
+      Synopsis
+        Close a multipage file
+
+      Usage
+        <multipage_object>.close
+
+      Description
+        This function is used to close a multipage file. It will invoke
+        ghostscript to write the intermediate files to the final
+        document, and then remove those intermediate files that were
+        flagged for removal.
+
+      Qualifiers
+        ; verbose=value: If greater than 0, show the ghostscript command
+        line.
+        ; crop: If given, crop the resulting multipage file to the
+        largest bounding box of intermediate files.
+        ; margin=value: When not cropping, add a margins to each page of
+        the specified size in inches. The default is 0.5 inches
+
+      See Also
+        ``xfig_multipage_open'', ``xfig_multipage.add''
+
+  2.23.  xfig_multipage_open
+
+
+      Synopsis
+        Create an xfig multipage file
+
+      Usage
+        m = xfig_multipage_open (String_Type file [;qualifiers])
+
+      Description
+        This function will create a new multipage file. Xfig objects may
+        be written to the multipage file using the .add method. Each
+        call to the .add method will result in the object being rendered
+        to an intermediate eps file. When finished, the .close method
+        must be used to produce the final file and remove the
+        intermediate files.
+
+        The file parameter is used to specify the name of the multipage
+        file. Only multipage pdf files are supported; hence, the
+        filename extension must be .pdf.
+
+      Qualifiers
+        ; save: Do not remove the intermediate files
+
+      Example
+        m = xfig_multipage_open ("example.pdf"); w = xfig_plot_new (); %
+        Code create the first plot m.add (w); w = xfig_plot_new (); %
+        Code to create the second plot m.add (w); m.close ();
+
+      See Also
+        ``xfig_multipage.close'', ``xfig_multipage.add''
+
+  2.24.  xfig_multiplot
 
 
       Synopsis
@@ -575,7 +659,7 @@
         or whether the corresponding labels of the first or last plot
         are set (possibly overwritten).
 
-  2.22.  xfig_new_color
+  2.25.  xfig_new_color
 
 
       Synopsis
@@ -600,7 +684,7 @@
       See Also
         ``xfig_lookup_color_rgb'', ``xfig_lookup_color''
 
-  2.23.  xfig_new_compound
+  2.26.  xfig_new_compound
 
 
       Synopsis
@@ -617,7 +701,7 @@
       See Also
         ``xfig_new_vbox_compound'', ``xfig_new_hbox_compound''
 
-  2.24.  xfig_new_ellipse
+  2.27.  xfig_new_ellipse
 
 
       Synopsis
@@ -638,7 +722,7 @@
         ; y0: y-position (default: 0)
         ; z0: z-position (default: 0)
 
-  2.25.  xfig_new_eps
+  2.28.  xfig_new_eps
 
 
       Synopsis
@@ -653,7 +737,7 @@
       See Also
         ``xfig_new_pict''
 
-  2.26.  xfig_new_hbox_compound
+  2.29.  xfig_new_hbox_compound
 
 
       Synopsis
@@ -679,7 +763,7 @@
       See Also
         ``xfig_new_vbox_compound'', ``xfig_new_compound''
 
-  2.27.  xfig_new_legend
+  2.30.  xfig_new_legend
 
 
       Synopsis
@@ -698,7 +782,7 @@
         The xfig_new_legend function creates a legend object suitable
         for adding to a plot. The legend will consist of ...
 
-  2.28.  xfig_new_pict
+  2.31.  xfig_new_pict
 
 
       Synopsis
@@ -736,7 +820,7 @@
       See Also
         ``xfig_new_text'', ``xfig_justify_object''
 
-  2.29.  xfig_new_png
+  2.32.  xfig_new_png
 
 
       Synopsis
@@ -760,7 +844,7 @@
       See Also
         ``xfig_new_pict''
 
-  2.30.  xfig_new_polyline
+  2.33.  xfig_new_polyline
 
 
       Synopsis
@@ -795,7 +879,7 @@
       See Also
         ``xfig_create_arrow''
 
-  2.31.  xfig_new_text
+  2.34.  xfig_new_text
 
 
       Synopsis
@@ -831,7 +915,7 @@
         ``xfig_make_font'', ``xfig_add_latex_package'',
         ``xfig_set_latex_preamble'', ``xfig_new_pict''
 
-  2.32.  xfig_new_vbox_compound
+  2.35.  xfig_new_vbox_compound
 
 
       Synopsis
@@ -856,7 +940,7 @@
       See Also
         ``xfig_new_hbox_compound'', ``xfig_new_compound''
 
-  2.33.  xfig_pict.scale
+  2.36.  xfig_pict.scale
 
 
       Synopsis
@@ -870,7 +954,7 @@
       See Also
         ``xfig_new_pict''
 
-  2.34.  xfig_plot--errorbars
+  2.37.  xfig_plot--errorbars
 
 
       Qualifiers
@@ -908,7 +992,7 @@
       See Also
         ``xfig_plot.plot'', ``xfig_plot.hplot''
 
-  2.35.  xfig_plot--initialize_plot
+  2.38.  xfig_plot--initialize_plot
 
 
       Synopsis
@@ -930,7 +1014,7 @@
         ``xfig_plot.plot'', ``xfig_plot.hplot'', ``xfig_plot.plot_png'',
         ``xfig_plot.plot_pict'', ``xfig_plot.shade_region''
 
-  2.36.  xfig_plot--wcs
+  2.39.  xfig_plot--wcs
 
 
       Synopsis
@@ -963,7 +1047,7 @@
         ``xfig_plot.world'', ``xfig_plot.world1'', ``xfig_plot.world2'',
         ``xfig_plot--initialize_plot''
 
-  2.37.  xfig_plot.add_object
+  2.40.  xfig_plot.add_object
 
 
       Synopsis
@@ -988,7 +1072,7 @@
       See Also
         ``xfig_plot--wcs''
 
-  2.38.  xfig_plot.axis
+  2.41.  xfig_plot.axis
 
 
       Usage
@@ -1042,7 +1126,7 @@
         ``xfig_plot.xaxis'', ``xfig_plot.x1axis'', ``xfig_plot.x2axis'',
         ``xfig_plot.yaxis'', ``xfig_plot.y1axis'', ``xfig_plot.y2axis''
 
-  2.39.  xfig_plot.get_world
+  2.42.  xfig_plot.get_world
 
 
       Synopsis
@@ -1057,7 +1141,7 @@
       See Also
         ``xfig_plot--wcs''
 
-  2.40.  xfig_plot.hplot
+  2.43.  xfig_plot.hplot
 
 
       Usage
@@ -1099,7 +1183,7 @@
         ``xfig_plot--initialize_plot'', ``xfig_plot--wcs'',
         ``xfig_plot--errorbars''
 
-  2.41.  xfig_plot.plot
+  2.44.  xfig_plot.plot
 
 
       Usage
@@ -1146,7 +1230,7 @@
         ``xfig_plot--initialize_plot'', ``xfig_plot--wcs'',
         ``xfig_plot--errorbars''
 
-  2.42.  xfig_plot.plot_pict
+  2.45.  xfig_plot.plot_pict
 
 
       Usage
@@ -1161,7 +1245,7 @@
       See Also
         ``xfig_plot.plot_png''
 
-  2.43.  xfig_plot.plot_png
+  2.46.  xfig_plot.plot_png
 
 
       Synopsis
@@ -1191,7 +1275,7 @@
         ``xfig_plot_new_png'', ``xfig_plot.plot_pict'',
         ``xfig_set_tmp_dir'', ``png_gray_to_rgb''
 
-  2.44.  xfig_plot.shade_region
+  2.47.  xfig_plot.shade_region
 
 
       Synopsis
@@ -1219,7 +1303,7 @@
       See Also
         ``xfig_plot--initialize_plot'', ``xfig_plot--wcs''
 
-  2.45.  xfig_plot.title
+  2.48.  xfig_plot.title
 
 
       Synopsis
@@ -1237,7 +1321,7 @@
         The title is centered above the plot area.  Any previously
         existing title object is removed.
 
-  2.46.  xfig_plot.world
+  2.49.  xfig_plot.world
 
 
       Synopsis
@@ -1260,7 +1344,7 @@
       See Also
         ``xfig_plot.world1'', ``xfig_plot.world2''
 
-  2.47.  xfig_plot.world1
+  2.50.  xfig_plot.world1
 
 
       Synopsis
@@ -1269,7 +1353,7 @@
       See Also
         ``xfig_plot.world''
 
-  2.48.  xfig_plot.world2
+  2.51.  xfig_plot.world2
 
 
       Synopsis
@@ -1284,7 +1368,7 @@
       See Also
         ``xfig_plot.world''
 
-  2.49.  xfig_plot.x1axis
+  2.52.  xfig_plot.x1axis
 
 
       Usage
@@ -1297,7 +1381,7 @@
       See Also
         ``xfig_plot.axis''
 
-  2.50.  xfig_plot.x2axis
+  2.53.  xfig_plot.x2axis
 
 
       Usage
@@ -1310,7 +1394,7 @@
       See Also
         ``xfig_plot.axis''
 
-  2.51.  xfig_plot.x2label
+  2.54.  xfig_plot.x2label
 
 
       Synopsis
@@ -1326,7 +1410,7 @@
       See Also
         ``xfig_new_text''
 
-  2.52.  xfig_plot.xaxis
+  2.55.  xfig_plot.xaxis
 
 
       Usage
@@ -1343,7 +1427,7 @@
       See Also
         ``xfig_plot.axis''
 
-  2.53.  xfig_plot.xfig_coords
+  2.56.  xfig_plot.xfig_coords
 
 
       Usage
@@ -1360,7 +1444,7 @@
       See Also
         ``xfig_plot--wcs''
 
-  2.54.  xfig_plot.xlabel
+  2.57.  xfig_plot.xlabel
 
 
       Synopsis
@@ -1376,7 +1460,7 @@
       See Also
         ``xfig_new_text''
 
-  2.55.  xfig_plot.xylabel
+  2.58.  xfig_plot.xylabel
 
 
       Usage
@@ -1390,7 +1474,7 @@
       See Also
         ``xfig_plot_text'', ``xfig_plot--wcs''
 
-  2.56.  xfig_plot.y1axis
+  2.59.  xfig_plot.y1axis
 
 
       Usage
@@ -1403,7 +1487,7 @@
       See Also
         ``xfig_plot.axis''
 
-  2.57.  xfig_plot.y2axis
+  2.60.  xfig_plot.y2axis
 
 
       Usage
@@ -1416,7 +1500,7 @@
       See Also
         ``xfig_plot.axis''
 
-  2.58.  xfig_plot.y2label
+  2.61.  xfig_plot.y2label
 
 
       Synopsis
@@ -1432,7 +1516,7 @@
       See Also
         ``xfig_new_text''
 
-  2.59.  xfig_plot.yaxis
+  2.62.  xfig_plot.yaxis
 
 
       Usage
@@ -1449,7 +1533,7 @@
       See Also
         ``xfig_plot.axis''
 
-  2.60.  xfig_plot.ylabel
+  2.63.  xfig_plot.ylabel
 
 
       Synopsis
@@ -1465,7 +1549,7 @@
       See Also
         ``xfig_new_text''
 
-  2.61.  xfig_plot_add_symbol
+  2.64.  xfig_plot_add_symbol
 
 
       Synopsis
@@ -1485,7 +1569,7 @@
         polygon is required to represent the object, an array of arrays
         may be returned.
 
-  2.62.  xfig_plot_add_transform
+  2.65.  xfig_plot_add_transform
 
 
       Usage
@@ -1506,7 +1590,7 @@
         arguments: xmin, xmax, maxtics, and client_data.  It is supposed
         to return two arrays of major and minor tic marks.
 
-  2.63.  xfig_plot_get_symbol_names
+  2.66.  xfig_plot_get_symbol_names
 
 
       Usage
@@ -1515,7 +1599,7 @@
       See Also
         ``xfig_plot.plot''
 
-  2.64.  xfig_plot_new
+  2.67.  xfig_plot_new
 
 
       Synopsis
@@ -1548,7 +1632,7 @@
       See Also
         ``xfig_plot_define_world'', ``xfig_render_object''
 
-  2.65.  xfig_plot_new_png
+  2.68.  xfig_plot_new_png
 
 
       Synopsis
@@ -1564,7 +1648,7 @@
         ``xfig_plot_new'', ``xfig_plot.plot_png'',
         ``xfig_plot.plot_pict''
 
-  2.66.  xfig_plot_text
+  2.69.  xfig_plot_text
 
 
       Synopsis
@@ -1599,7 +1683,7 @@
       See Also
         ``xfig_plot_add_object'', ``xfig_new_text''
 
-  2.67.  xfig_render_object
+  2.70.  xfig_render_object
 
 
       Synopsis
@@ -1616,7 +1700,7 @@
       See Also
         ``xfig_create_file'', ``xfig_close_file''
 
-  2.68.  xfig_set_eye
+  2.71.  xfig_set_eye
 
 
       Synopsis
@@ -1634,7 +1718,7 @@
         ``xfig_get_eye'', ``xfig_get_eye_roll'', ``xfig_set_eye_roll'',
         ``xfig_set_focus''
 
-  2.69.  xfig_set_eye_roll
+  2.72.  xfig_set_eye_roll
 
 
       Synopsis
@@ -1650,7 +1734,7 @@
       See Also
         ``xfig_get_eye_roll'', ``xfig_set_eye'', ``xfig_set_focus''
 
-  2.70.  xfig_set_focus
+  2.73.  xfig_set_focus
 
 
       Synopsis
@@ -1662,7 +1746,7 @@
       See Also
         ``xfig_get_focus'', ``xfig_set_eye''
 
-  2.71.  xfig_set_font_style
+  2.74.  xfig_set_font_style
 
 
       Synopsis
@@ -1678,7 +1762,7 @@
         ``xfig_make_font'', ``xfig_new_text'',
         ``xfig_add_latex_package''
 
-  2.72.  xfig_set_latex_preamble
+  2.75.  xfig_set_latex_preamble
 
 
       Usage
@@ -1687,7 +1771,7 @@
       See Also
         ``xfig_get_latex_preamble''
 
-  2.73.  xfig_set_output_driver
+  2.76.  xfig_set_output_driver
 
 
       Synopsis
@@ -1735,7 +1819,7 @@
       See Also
         ``xfig_set_paper_size''
 
-  2.74.  xfig_set_verbose
+  2.77.  xfig_set_verbose
 
 
       Synopsis

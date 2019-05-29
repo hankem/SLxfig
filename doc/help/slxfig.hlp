@@ -406,6 +406,92 @@ xfig_meshgrid
 
 --------------------------------------------------------------
 
+xfig_multipage.add
+
+ SYNOPSIS
+  Add an xfig object to a multipage file
+
+ USAGE
+  <multipage_object>.add(ob)
+
+ DESCRIPTION
+ This function is used to render an xfig object to a multipage file.
+ This is done by rendering the object to an intermediate .eps file.
+ The file will removed upon closing the multipage file.
+
+ QUALIFIERS
+  ; save: Keep the intermediate file, do not remove it
+  ; file=fname: Use `fname' as the basename of the
+intermediate file.  The .eps extension will be used.
+
+ SEE ALSO
+  xfig_multipage_open, xfig_multipage_close
+
+--------------------------------------------------------------
+
+xfig_multipage.close
+
+ SYNOPSIS
+  Close a multipage file
+
+ USAGE
+  <multipage_object>.close
+
+ DESCRIPTION
+ This function is used to close a multipage file.   It will invoke
+ ghostscript to write the intermediate files to the final document,
+ and then remove those intermediate files that were flagged for
+ removal.
+
+ QUALIFIERS
+  ; verbose=value: If greater than 0, show the ghostscript command line.
+  ; crop: If given, crop the resulting multipage file to the
+ largest bounding box of intermediate files.
+  ; margin=value: When not cropping, add a margins to each
+ page of the specified size in inches.  The default is 0.5 inches
+
+ SEE ALSO
+  xfig_multipage_open, xfig_multipage.add
+
+--------------------------------------------------------------
+
+xfig_multipage_open
+
+ SYNOPSIS
+  Create an xfig multipage file
+
+ USAGE
+  m = xfig_multipage_open (String_Type file [;qualifiers])
+
+ DESCRIPTION
+ This function will create a new multipage file.  Xfig objects may
+ be written to the multipage file using the .add method.  Each call
+ to the .add method will result in the object being rendered to an
+ intermediate eps file. When finished, the .close method must be used to
+ produce the final file and remove the intermediate files.
+
+ The `file' parameter is used to specify the name of the
+ multipage file.  Only multipage pdf files are supported; hence, the
+ filename extension must be `.pdf'.
+
+ QUALIFIERS
+  ; save: Do not remove the intermediate files
+
+ EXAMPLE
+   m = xfig_multipage_open ("example.pdf");
+   w = xfig_plot_new ();
+   % Code create the first plot
+   m.add (w);
+   w = xfig_plot_new ();
+   % Code to create the second plot
+   m.add (w);
+   m.close ();
+
+ SEE ALSO
+  xfig_multipage.close, xfig_multipage.add
+
+--------------------------------------------------------------
+
 xfig_multiplot
 
  SYNOPSIS
