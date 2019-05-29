@@ -1,6 +1,6 @@
 $1 = 0; $2 = 2; $3 = 0;
 variable _xfig_version = $1*10000 + $2*100 + $3;
-variable _xfig_version_string = "pre$1.$2.$3-118"$;
+variable _xfig_version_string = "pre$1.$2.$3-119"$;
 
 ()=evalfile ("xfig/core");
 ()=evalfile ("xfig/polyline");
@@ -11,6 +11,7 @@ variable _xfig_version_string = "pre$1.$2.$3-118"$;
 ()=evalfile ("xfig/objects");
 ()=evalfile ("xfig/clip.sl");
 ()=evalfile ("xfig/plot.sl");
+
 $1 = getenv ("HOME");
 if ($1 != NULL)
 {

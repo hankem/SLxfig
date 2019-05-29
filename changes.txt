@@ -246,3 +246,5 @@ Changes since 0.1.0
 118. avoid empty line in .fig file for a polyline with n x 16
      vertices, which does not work with some versions of fig2dev.
      (Manfred Hanke)
+119. src/xfig/core.sl: Added xfig_get/add_paper_info functions that
+     may be used to obtain get or add paper size information.

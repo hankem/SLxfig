@@ -1378,25 +1378,104 @@ define xfig_render_object (obj, fp)
    return obj.render (fp);
 }
 
-%Letter (8.5" x 11"),
-%Legal (8.5" x 14"),
-%Ledger ( 17" x 11"),
-%Tabloid ( 11" x 17"),
-%A (8.5" x 11"),
-%B ( 11" x 17"),
-%C ( 17" x 22"),
-%D ( 22" x 34"),
-%E ( 34" x 44"),
-%A4 (21 cm x 29.7cm),
-%A3 (29.7cm x 42 cm),
-%A2 (42 cm x 59.4cm),
-%A1 (59.4cm x 84.1 cm),
-%A0 (84.1 cm x 118.9cm),
-%B5 (18.2cm x 25.7cm)
+private variable Paper_Info = Assoc_Type[Struct_Type];
+
+%\function{xfig_add_paper_size_info}
+%\synopsis{Add paper-size information}
+%\usage{xfig_add_paper_size_info (String_Type name, Double_Type width, Double_Type height)}
+%\description
+%  This function may be used to add paper size information for a
+%  specified paper size name.  By default, the width and height
+%  parameters are to be specified in  inches.  If the \em{cm}
+%  qualifier is give, the width an height are assumed to be given with
+%  cm units.
+%\qualifiers
+%\qualifier{cm}{The width and height parameters have cm units}.
+%\seealso{xfig_get_paper_size_info, xfig_set_paper_size}
+%!%-
+private define xfig_add_paper_size_info (name, width_inches, height_inches)
+{
+   variable s = 1.0;
+   if (qualifier_exists ("cm")) s = 1/2.54;
+   name = strlow(name);
+   Paper_Info[strlow(name)] = struct
+     {
+        name = name,
+        width = width_inches * s,
+        height = height_inches * s,
+     };
+}
+xfig_add_paper_size_info ("Letter", 8.5, 11.0);
+xfig_add_paper_size_info ("Legal", 8.5, 14.0);
+xfig_add_paper_size_info ("Ledger", 17.0, 11.0);
+xfig_add_paper_size_info ("Tabloid", 11.0, 17.0);
+xfig_add_paper_size_info ("A", 8.5, 11.0);
+xfig_add_paper_size_info ("B", 11.0, 17.0);
+xfig_add_paper_size_info ("C", 17.0, 22.0);
+xfig_add_paper_size_info ("D", 22.0, 34.0);
+xfig_add_paper_size_info ("E", 34.0, 44.0);
+xfig_add_paper_size_info ("A9", 3.7, 5.2; cm);
+xfig_add_paper_size_info ("A8", 5.2, 7.4; cm);
+xfig_add_paper_size_info ("A7", 7.4, 10.5; cm);
+xfig_add_paper_size_info ("A6", 10.5, 14.8; cm);
+xfig_add_paper_size_info ("A5", 14.8, 21.0; cm);
+xfig_add_paper_size_info ("A4", 21.0, 29.7; cm);
+xfig_add_paper_size_info ("A3", 29.7, 42.0; cm);
+xfig_add_paper_size_info ("A2", 42.0, 59.4; cm);
+xfig_add_paper_size_info ("A1", 59.4, 84.1; cm);
+xfig_add_paper_size_info ("A0", 84.1, 118.9; cm);
+xfig_add_paper_size_info ("B10", 3.2, 4.5; cm);
+xfig_add_paper_size_info ("B9", 4.5, 6.4; cm);
+xfig_add_paper_size_info ("B8", 6.4, 9.1; cm);
+xfig_add_paper_size_info ("B7", 9.1, 12.8; cm);
+xfig_add_paper_size_info ("B6", 12.8, 18.2; cm);
+xfig_add_paper_size_info ("B5", 18.2, 25.7; cm);
+xfig_add_paper_size_info ("B4", 25.7, 36.4; cm);
+xfig_add_paper_size_info ("B3", 36.4, 51.5; cm);
+xfig_add_paper_size_info ("B2", 51.5, 72.8; cm);
+xfig_add_paper_size_info ("B1", 72.8 , 103.0; cm);
+xfig_add_paper_size_info ("B0", 103.0 , 145.6; cm);
+
+%\function{xfig_get_paper_size_info}
+%\synopsis{Get information about a paper size}
+%\usage{xfig_get_paper_info ( [ paper ] }
+%\description
+%  This function returns information about the currently selected
+%  paper size, or optionally, a specified paper size.  In particular, the
+%  function returns a structure with the fields:
+%#v+
+%    name   : the paper size name
+%    width  : the paper width in inches
+%    height : the paper height in inches
+%#v-
+%  Currently supported paper size names include:
+%#v+
+%    letter, legal, ledger, tabloid,
+%    A, B, C, D, E,
+%    A0, A1, A2, A3, A4, A5, A6, A7, A8, A9
+%    B0, B1, B2, B3, B4, B5, B6, B7, B8, B9, B10
+%#v-
+%\seealso{xfig_add_paper_size_info, xfig_set_paper_size}
+%!%-
+define xfig_get_paper_size_info ()
+{
+   variable p = XFig_Header.papersize;
+   if (_NARGS) p = ();
+   p = strlow (p);
+   ifnot (assoc_key_exists (Paper_Info, p))
+     {
+        () = fprintf (stderr, "Unable to find paper info for '%s', assuming 'letter'\n", p);
+        p = "letter";
+     }
+   return Paper_Info[p];
+}
+
 define xfig_set_paper_size (paper)
 {
-   XFig_Header.papersize = paper;
+   variable s = xfig_get_paper_size_info (paper);
+   XFig_Header.papersize = s.name;
 }
+
 
 %!%+
 %\function{xfig_set_verbose}
