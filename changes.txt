@@ -253,3 +253,4 @@ Changes since 0.1.0
 121. src/xfig/plot.sl: The hplot function was generating an exception
      plotting error bars when the number of elements in the x array is
      one larger than the y array.
+122. src/Makefile.in: Added defintions for CC, CFLAGS, LDFLAGS
