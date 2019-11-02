@@ -1697,3 +1697,56 @@ xfig_set_verbose
   the output will not be redirected.
 
 --------------------------------------------------------------
+
+xfig_timetics
+
+ USAGE
+  xfig_timetics(tmin, tmax [;qualifiers])
+
+ DESCRIPTION
+ This function may be used to construct nice tic-labels for the time
+ interval specified by the tmin and tmax variables.  By default,
+ these values represent the number of seconds since the POSIX epoch
+ 1970-01-01T00:00:00Z.  The format of the tic-labels may be controlled
+ by qualifiers.
+
+ This function returns a structure with the following fields:
+
+   tmin       The value of the tmin parameter
+   tmax       The value of the tmax parameter
+   major      An array of major tic positions
+   minor      An array of minor tic positions
+   ticlabels  An array of ticlabels correponding to the major tic positions
+
+ The field names of this structure were chosen to correspond to the
+ qualifiers accepted by the plot axis methods.
+
+ QUALIFIERS
+   ; localtime: Construct tic labels using localtime
+   ; timetotm=&func: Use func to convert a time value to a tm structure
+   ; tmtotime=&func: Use func to convert a tm structure to a time value
+
+ The default is to format the time as UTC using the `gmtime' and
+ `timegm' functions.  If the `localtime' qualifier is
+ given, the `localtime' and `mktime' functions will be used.
+ The `timetotm' and `tmtotime' qualifiers may be used to
+ specify the functions to be used convert to and from tm structures.
+ The default (no qualifiers) corresponds to using
+ `timetotm=&gmtime' and `tmtotime=timegm'.
+
+ EXAMPLE
+
+   tmax = _time();             % Current time
+   tmin = tmax - 100*86400;    % 100 days prior
+   tinfo = xfig_timetics (tmin, tmax; localtime, maxtics=6);
+   t = [tmin:tmax:#1024];
+   y = sin(2*PI/(5*86400)*(t-tmin));   % 5 day period
+   w = xfig_plot_new();
+   w.plot (t, y; color="blue");
+   w.x1axis (;;tinfo);
+   w.render ("/tmp/example.pdf");
+
+ Note that the structure returned by the `xfig_timetics' was
+ passed as a structure of qualifiers to the `x1axis' method.
+
+--------------------------------------------------------------

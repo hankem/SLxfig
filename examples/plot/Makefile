@@ -15,6 +15,7 @@ PNG_FILES = \
   symbol.png \
   scilabel.png \
   ticlabels.png \
+  timetics.png \
   world.png
 # project.png \
 

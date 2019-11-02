@@ -254,3 +254,6 @@ Changes since 0.1.0
      plotting error bars when the number of elements in the x array is
      one larger than the y array.
 122. src/Makefile.in: Added defintions for CC, CFLAGS, LDFLAGS
+123. src/xfig/timetics.sl: Added xfig_timetics, which generates tic
+     labels for a specified time range.  See
+     examples/plot/timetics.sl for an example.
