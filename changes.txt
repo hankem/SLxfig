@@ -259,3 +259,5 @@ Changes since 0.1.0
      examples/plot/timetics.sl for an example.
 124. src/xfig/timetics.sl: Tweaked the year labels so that the
      month/day are not included when each label has the same month/day.
+125. src/xfig/plot.sl: The plot label position for a single user-specified
+     label was being ignored.
