@@ -76,7 +76,7 @@ private define tm_decend (level_sets, level, values, tinfo)
 	     tm_decend (level_sets, level + 1, values, tinfo);
 	  }
 	last_set = set;
-	if (length (tinfo.tics) >= maxtics)
+	if (length (tinfo.tics) > maxtics)   %  go down one additional level for minor tics
 	  break;
      }
    % Replace the level_sets at this level with either the last (most
@@ -111,12 +111,29 @@ private define prune_level_sets (level_sets, level, x0, x1)
 
 private define prune_labels (dlabs, tlabs)
 {
+   variable endstr;
    % xx:xx:xx
    % 12345678
    if (all (tlabs == "00:00:00"))
-     return dlabs, NULL;	       %  don't display times
+     {
+	tlabs = NULL;	       %  don't display times
+	% dlabs: yyyy-mm-dd
+	%        1234567890
+	% Map YYYY-MM-01 to YYYY-MM
+	endstr = array_map (String_Type, &substr, dlabs, 9, 2);
+	ifnot (all (endstr == "01"))
+	  return dlabs, tlabs;
+	dlabs = array_map (String_Type, &substr, dlabs, 1, 7);
 
-   variable endstr = array_map (String_Type, &substr, tlabs, 7, 2);
+	% Map YYYY-01 to YYYY
+	endstr = array_map (String_Type, &substr, dlabs, 6, 2);
+	ifnot (all (endstr == "01"))
+	  return dlabs, tlabs;
+	dlabs = array_map (String_Type, &substr, dlabs, 1, 4);
+	return dlabs, tlabs;
+     }
+
+   endstr = array_map (String_Type, &substr, tlabs, 7, 2);
    if (all (endstr == "00"))
      {
 	tlabs = array_map (String_Type, &substr, tlabs, 1, 5);
@@ -216,7 +233,7 @@ define xfig_timetics (tmin, tmax)
 	{[0], [0,12], [0:23:6], [0:23:3], [0:23]}, %  hours
 	{[1], [1,15], [1,8,15,22,29], [1:31]},     % days
 	{[0], [0,6], [0,3,6,9], [0:11]},           % months
-	{[1925:2035:25], [1910:2030:10], [1905:2035:5], [1902:2038:1]}%, [1970:2030:1]}, % years
+	{[1920:2030:20], [1910:2030:10], [1905:2035:5], [1902:2038:1]}%, [1970:2030:1]}, % years
      };
 
    tmin = typecast (tmin, Long_Type);

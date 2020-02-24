@@ -257,3 +257,5 @@ Changes since 0.1.0
 123. src/xfig/timetics.sl: Added xfig_timetics, which generates tic
      labels for a specified time range.  See
      examples/plot/timetics.sl for an example.
+124. src/xfig/timetics.sl: Tweaked the year labels so that the
+     month/day are not included when each label has the same month/day.
